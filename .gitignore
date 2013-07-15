@@ -11,3 +11,11 @@
 *.lai
 *.la
 *.a
+
+# Libraries by location
+lib/*
+
+# Compiled test programs
+test/minimal
+test/multithread
+
