@@ -26,9 +26,15 @@ SelectionStep::SelectionStep(SelectionStep &&src):
 {}
 
 
-EventCounter::EventCounter(string const &title_):
+EventCounter::EventCounter(string const &title_ /* = ""*/):
     title(title_)
 {}
+
+
+void EventCounter::ResetTitle(string const &title_)
+{
+    title = title_;
+}
 
 
 void EventCounter::RegisterSelectionStep(string const &label, string const &description)
