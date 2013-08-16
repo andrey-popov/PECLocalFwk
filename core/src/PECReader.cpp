@@ -541,8 +541,6 @@ void PECReader::CloseSourceFile()
 
 bool PECReader::BuildAndSelectEvent()
 {
-    /**/cout << "PECReader, line: " << __LINE__ << endl;
-    
     // Filter inclusive Wjets dataset if needed
     if (dataset.GetProcess() == Dataset::Process::Wjets and dataset.TestFlag("WjetsKeep0p1p") and
      processID % 5 > 1)
