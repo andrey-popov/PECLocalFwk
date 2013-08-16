@@ -329,6 +329,7 @@ class PECReader
         Float_t elePhi[MAX_LEN];
         Float_t eleRelIso[MAX_LEN];
         Float_t eleDB[MAX_LEN];
+        Bool_t eleTriggerPreselection[MAX_LEN];
         Float_t eleMVAID[MAX_LEN];
         Bool_t elePassConversion[MAX_LEN];
         Bool_t eleQuality[MAX_LEN];
@@ -340,7 +341,6 @@ class PECReader
         Float_t muPhi[MAX_LEN];
         Float_t muRelIso[MAX_LEN];
         Float_t muDB[MAX_LEN];
-        Bool_t muQualityLoose[MAX_LEN];
         Bool_t muQualityTight[MAX_LEN];
         Bool_t muCharge[MAX_LEN];
         
@@ -351,7 +351,6 @@ class PECReader
         Float_t jetMass[MAX_LEN];
         Float_t jetCSV[MAX_LEN];
         Float_t jetTCHP[MAX_LEN];
-        //Float_t jetTCHE[MAX_LEN];
         //Float_t jetJP[MAX_LEN];
         Int_t jetFlavour[MAX_LEN];
         Float_t jecUncertainty[MAX_LEN];

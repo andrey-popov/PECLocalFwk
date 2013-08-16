@@ -381,6 +381,7 @@ void PECReader::OpenSourceFile()
     generalTree->SetBranchAddress("elePhi", elePhi);
     generalTree->SetBranchAddress("eleRelIso", eleRelIso);
     generalTree->SetBranchAddress("eleDB", eleDB);
+    generalTree->SetBranchAddress("eleTriggerPreselection", eleTriggerPreselection);
     generalTree->SetBranchAddress("eleMVAID", eleMVAID);
     generalTree->SetBranchAddress("elePassConversion", elePassConversion);
     generalTree->SetBranchAddress("eleSelectionA", eleQuality);
@@ -392,8 +393,7 @@ void PECReader::OpenSourceFile()
     generalTree->SetBranchAddress("muPhi", muPhi);
     generalTree->SetBranchAddress("muRelIso", muRelIso);
     generalTree->SetBranchAddress("muDB", muDB);
-    generalTree->SetBranchAddress("muSelectionA", muQualityLoose);
-    generalTree->SetBranchAddress("muSelectionB", muQualityTight);
+    generalTree->SetBranchAddress("muSelectionA", muQualityTight);
     generalTree->SetBranchAddress("muCharge", muCharge);
     
     generalTree->SetBranchAddress("jetSize", &jetSize);
@@ -448,7 +448,6 @@ void PECReader::OpenSourceFile()
     
     generalTree->SetBranchAddress("jetCSV", jetCSV);
     generalTree->SetBranchAddress("jetTCHP", jetTCHP);
-    //generalTree->SetBranchAddress("jetTCHE", jetTCHE);
     //generalTree->SetBranchAddress("jetJP", jetJP);
     
     generalTree->SetBranchAddress("metSize", &metSize);
@@ -542,6 +541,8 @@ void PECReader::CloseSourceFile()
 
 bool PECReader::BuildAndSelectEvent()
 {
+    /**/cout << "PECReader, line: " << __LINE__ << endl;
+    
     // Filter inclusive Wjets dataset if needed
     if (dataset.GetProcess() == Dataset::Process::Wjets and dataset.TestFlag("WjetsKeep0p1p") and
      processID % 5 > 1)
@@ -562,7 +563,7 @@ bool PECReader::BuildAndSelectEvent()
         p4.SetPtEtaPhiM(elePt[i], eleEta[i], elePhi[i], 0.511e-3);
         
         
-        if (p4.Pt() < 20. or fabs(p4.Eta()) > 2.5 or eleRelIso[i] > 0.15 or eleMVAID[i] < 0.)
+        if (p4.Pt() < 20. or fabs(p4.Eta()) > 2.5 or eleRelIso[i] > 0.15)
             continue;
         
         // A loose electron is found
@@ -574,8 +575,8 @@ bool PECReader::BuildAndSelectEvent()
         looseLeptons.push_back(lepton);
         
         
-        if (p4.Pt() < 20. or !eleQuality[i] or eleRelIso[i] > 0.1 or not elePassConversion[i]
-         or eleMVAID[i] < 0.5)
+        if (p4.Pt() < 20. or not eleQuality[i] or eleRelIso[i] > 0.1 or not elePassConversion[i]
+         or not eleTriggerPreselection[i] or eleMVAID[i] < 0.5)
         //^ The pt cut is the same as for the loose electrons
             continue;
         
@@ -591,7 +592,7 @@ bool PECReader::BuildAndSelectEvent()
         p4.SetPtEtaPhiM(muPt[i], muEta[i], muPhi[i], 0.105);
         
         
-        if (p4.Pt() < 10. or fabs(p4.Eta()) > 2.5 or !muQualityLoose[i] or muRelIso[i] > 0.2)
+        if (p4.Pt() < 10. or fabs(p4.Eta()) > 2.5 or muRelIso[i] > 0.2)
                 continue;
         
         // A loose muon is found
@@ -603,7 +604,7 @@ bool PECReader::BuildAndSelectEvent()
         looseLeptons.push_back(lepton);
         
         
-        if (p4.Pt() < 10. or fabs(p4.Eta()) > 2.1 or !muQualityTight[i] or fabs(muDB[i]) > 0.2 or
+        if (p4.Pt() < 10. or fabs(p4.Eta()) > 2.1 or not muQualityTight[i] or fabs(muDB[i]) > 0.2 or
          muRelIso[i] > 0.12)
         //^ The pt cut is the same as for loose muons
             continue;
