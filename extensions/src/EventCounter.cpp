@@ -22,6 +22,7 @@ SelectionStep::SelectionStep(string const &description_):
 
 SelectionStep::SelectionStep(SelectionStep &&src):
     description(move(src.description)),
+    nPassed(src.nPassed),
     eventIDs(move(src.eventIDs))
 {}
 
