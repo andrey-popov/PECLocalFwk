@@ -393,7 +393,7 @@ void PECReader::OpenSourceFile()
     generalTree->SetBranchAddress("muPhi", muPhi);
     generalTree->SetBranchAddress("muRelIso", muRelIso);
     generalTree->SetBranchAddress("muDB", muDB);
-    generalTree->SetBranchAddress("muSelectionA", muQualityTight);
+    generalTree->SetBranchAddress("muQualityTight", muQualityTight);
     generalTree->SetBranchAddress("muCharge", muCharge);
     
     generalTree->SetBranchAddress("jetSize", &jetSize);
