@@ -285,7 +285,7 @@ void PECReader::Initialize()
     {
         if (not bTagReweighter)
             logger << "Warning in PECReader::Initialize: No object to propagate b-tagging scale " <<
-             "factots has been specified. Simulation will not be reweighted for this effect." <<
+             "factors has been specified. Simulation will not be reweighted for this effect." <<
              eom;
         
         if (not puReweighter)
