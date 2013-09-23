@@ -121,6 +121,13 @@ class PECReaderConfig
          */
         void SetReadHardInteraction(bool readHardInteraction);
         
+        /**
+         * \brief Specifies whether generator-level jets should be read
+         * 
+         * This setting is ignored for real data.
+         */
+        void SetReadGenJets(bool readGenJets);
+        
         /// Specifies desired systematical variation
         void SetSystematics(SystVariation const &syst);
         
@@ -170,6 +177,9 @@ class PECReaderConfig
         /// Consult documentation for SetReadHardInteraction for details
         bool GetReadHardInteraction() const;
         
+        /// Consult documentation for SetReadGenJets for details
+        bool GetReadGenJets() const;
+        
         /// Consult documentation for SetSystematics for details
         SystVariation const &GetSystematics() const;
     
@@ -201,9 +211,16 @@ class PECReaderConfig
          * \brief Flag specifying whether generator information about hard interaction should be
          * read
          * 
-         * This setting is ignored for real data
+         * This setting is ignored in case of real data
          */
         bool readHardInteraction;
+        
+        /**
+         * \brief Specifies whether generator-level jets should be read from event
+         * 
+         * This setting is ignored in case of real data.
+         */
+        bool readGenJets;
         
         /// Requested systematical variation
         SystVariation syst;

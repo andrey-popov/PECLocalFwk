@@ -99,6 +99,12 @@ void PECReaderConfig::SetReadHardInteraction(bool readHardInteraction_)
 }
 
 
+void PECReaderConfig::SetReadGenJets(bool readGenJets_)
+{
+    readGenJets = readGenJets_;
+}
+
+
 void PECReaderConfig::SetSystematics(SystVariation const &syst_)
 {
     syst = syst_;
@@ -224,6 +230,12 @@ string const &PECReaderConfig::GetWeightFilesLocation() const
 bool PECReaderConfig::GetReadHardInteraction() const
 {
     return readHardInteraction;
+}
+
+
+bool PECReaderConfig::GetReadGenJets() const
+{
+    return readGenJets;
 }
 
 

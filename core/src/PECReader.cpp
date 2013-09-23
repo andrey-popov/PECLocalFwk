@@ -23,7 +23,7 @@ PECReader::PECReader(Dataset const &dataset_):
     dataset(dataset_),
     isInitialized(false),
     triggerSelection(nullptr), eventSelection(nullptr), puReweighter(nullptr),
-    readHardParticles(false),
+    readHardParticles(false), readGenJets(false),
     bTagReweighter(nullptr),
     sourceFile(nullptr),
     eventIDTree(nullptr), triggerTree(nullptr), generalTree(nullptr)
@@ -52,6 +52,7 @@ void PECReader::Configure(PECReaderConfig const &config)
         SetPileUpReweighter(config.GetPileUpReweighter());
     
     SetReadHardInteraction(config.GetReadHardInteraction());
+    SetReadGenJets(config.GetReadGenJets());
     SetSystematics(config.GetSystematics());
 }
 
@@ -83,6 +84,12 @@ void PECReader::SetPileUpReweighter(WeightPileUpInterface const *puReweighter_)
 void PECReader::SetReadHardInteraction(bool flag /*= true*/)
 {
     readHardParticles = flag;
+}
+
+
+void PECReader::SetReadGenJets(bool flag /*= true*/)
+{
+    readGenJets = flag;
 }
 
 
@@ -169,6 +176,9 @@ bool PECReader::NextEvent()
             {
                 if (readHardParticles)
                     ParseHardInteraction();
+                
+                if (readGenJets and dataset.IsMC())
+                    BuildGenJets();
                 
                 break;
             }
@@ -261,6 +271,16 @@ vector<GenParticle> const &PECReader::GetHardGenParticles() const
 }
 
 
+vector<GenJet> const &PECReader::GetGenJets() const
+{
+    if (not dataset.IsMC())
+        throw runtime_error("PECReader::GetGenJets: Trying to get generatol-level jets in a "
+         "real collision event.");
+    
+    return genJets;
+}
+
+
 void PECReader::Initialize()
 {
     // Verify that all the needed configuration modules have been specified
@@ -328,10 +348,12 @@ void PECReader::OpenSourceFile()
     generalTree->AddFriend("eventContent/BasicInfo");
     generalTree->AddFriend("eventContent/PUInfo");
     
+    
     // Add the MC-truth information and MC weights
     if (dataset.IsMC())
     {
         generalTree->AddFriend("eventContent/GeneratorInfo");
+        generalTree->AddFriend("genJets/GenJets");
         
         /*
         // Determine name of the corresponding file with weights
@@ -464,6 +486,16 @@ void PECReader::OpenSourceFile()
             generalTree->SetBranchAddress("softJetHtJECUnc", &softJetHtJECUnc);
             */
         }
+        
+        
+        // Generator jets
+        generalTree->SetBranchAddress("genJets/GenJets.jetSize", &genJetSize);
+        generalTree->SetBranchAddress("genJets/GenJets.jetPt", &genJetPt);
+        generalTree->SetBranchAddress("genJets/GenJets.jetEta", &genJetEta);
+        generalTree->SetBranchAddress("genJets/GenJets.jetPhi", &genJetPhi);
+        generalTree->SetBranchAddress("genJets/GenJets.jetMass", &genJetMass);
+        //generalTree->SetBranchAddress("genJets/GenJets.bMult", &genJetBMult);
+        //generalTree->SetBranchAddress("genJets/GenJets.cMult", &genJetCMult);
         
         
         // Pile-up information
@@ -785,5 +817,23 @@ void PECReader::ParseHardInteraction()
                 hardParticles.at(iMother).AddDaughter(&hardParticles.at(i));
             }
         }
+    }
+}
+
+
+void PECReader::BuildGenJets()
+{
+    // Reset the vector
+    genJets.clear();
+    
+    
+    // Loop over the generator jets and fill the vector
+    for (unsigned i = 0; i < unsigned(genJetSize); ++i)
+    {
+        TLorentzVector p4;
+        p4.SetPtEtaPhiM(genJetPt[i], genJetEta[i], genJetPhi[i], genJetMass[i]);
+        
+        genJets.emplace_back(p4);
+        //genJets.back().SetMultiplicities(genJetBMult[i], genJetCMult[i]);
     }
 }

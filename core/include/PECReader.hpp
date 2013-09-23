@@ -123,6 +123,13 @@ class PECReader
         void SetReadHardInteraction(bool flag = true);
         
         /**
+         * \brief Specifies whether information on generator-level jets is to be read
+         * 
+         * This action has no effect on real data.
+         */
+        void SetReadGenJets(bool flag = true);
+        
+        /**
          * \brief Sets desired systematical variation
          * 
          * From the point of view of processing, there are two groups of sources of systematics.
@@ -227,6 +234,9 @@ class PECReader
         
         /// Returns generator-level particles involved in the hard interaction
         std::vector<GenParticle> const &GetHardGenParticles() const;
+        
+        /// Returns generator-level jets
+        std::vector<GenJet> const &GetGenJets() const;
 
     private:
         /**
@@ -270,6 +280,9 @@ class PECReader
         
         /// Stores particles from the hard interaction in hardParticles collection
         void ParseHardInteraction();
+        
+        /// Stores generator-level jets in the dedicated vector
+        void BuildGenJets();
     
     private:
         /// A copy of dataset to be processed
@@ -289,6 +302,9 @@ class PECReader
         
         /// A short-cut for PECReaderConfig::GetReadHardInteraction
         bool readHardParticles;
+        
+        /// Indicates whether generator-level jets should be read
+        bool readGenJets;
         
         /// An object to reweight event for b-tagging scale factors
         std::unique_ptr<WeightBTag const> bTagReweighter;
@@ -391,6 +407,12 @@ class PECReader
         Float_t hardPartMass[MAX_LEN];
         
         
+        // Buffers to read generator jets
+        UChar_t genJetSize;
+        Float_t genJetPt[MAX_LEN], genJetEta[MAX_LEN], genJetPhi[MAX_LEN], genJetMass[MAX_LEN];
+        //UChar_t genJetBMult[MAX_LEN], genJetCMult[MAX_LEN];
+        
+        
         // Pile-up truth information
         
         // Number of recontructed primary vertices
@@ -427,4 +449,7 @@ class PECReader
         
         /// The generator particles from the hard interaction
         std::vector<GenParticle> hardParticles;
+        
+        /// The generator-level jets
+        std::vector<GenJet> genJets;
 };

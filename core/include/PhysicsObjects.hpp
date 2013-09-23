@@ -170,3 +170,35 @@ class Jet: public Candidate
         double charge;  ///< Electric charge
         double pullAngle;  ///< "Pull angle" (characterises the colour flow)
 };
+
+
+/**
+ * \class GenJet
+ * \brief Represents a generator-level jet
+ */
+class GenJet: public Candidate
+{
+    public:
+        /// Default constructor
+        GenJet();
+        
+        /// Constructor from a four-momentum
+        GenJet(TLorentzVector const &p4);
+    
+    public:
+        /// Sets multipliticy of b and c quarks with status 2 near the jet
+        void SetMultiplicities(unsigned bMult, unsigned cMult);
+        
+        /// Returns multiplicity of b quarks
+        unsigned GetBMultiplicity() const;
+        
+        /// Returns multiplicity of c quarks
+        unsigned GetCMultiplicity() const;
+    
+    private:
+        /// Number of b quarks with status 2 near the jet
+        unsigned bMult;
+        
+        /// Number of c quarks with status 2 near the jet
+        unsigned cMult;
+};

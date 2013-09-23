@@ -226,3 +226,35 @@ double Jet::GetPullAngle() const
 {
     return pullAngle;
 }
+
+
+// Methods of class GenJet
+GenJet::GenJet():
+    Candidate(),
+    bMult(0), cMult(0)
+{}
+
+
+GenJet::GenJet(TLorentzVector const &p4):
+    Candidate(p4),
+    bMult(0), cMult(0)
+{}
+
+
+void GenJet::SetMultiplicities(unsigned bMult_, unsigned cMult_)
+{
+    bMult = bMult_;
+    cMult = cMult_;
+}
+
+
+unsigned GenJet::GetBMultiplicity() const
+{
+    return bMult;
+}
+
+
+unsigned GenJet::GetCMultiplicity() const
+{
+    return cMult;
+}
