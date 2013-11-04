@@ -26,8 +26,7 @@ PECReader::PECReader(Dataset const &dataset_):
     readHardParticles(false),
     bTagReweighter(nullptr),
     sourceFile(nullptr),
-    eventIDTree(nullptr), triggerTree(nullptr), generalTree(nullptr),
-    triggerNames(nullptr)
+    eventIDTree(nullptr), triggerTree(nullptr), generalTree(nullptr)
 {}
 
 
@@ -35,12 +34,6 @@ PECReader::PECReader(Dataset const &dataset, PECReaderConfig const &config):
     PECReader(dataset)
 {
     Configure(config);
-}
-
-
-PECReader::~PECReader()
-{
-    delete triggerNames;
 }
 
 
@@ -144,24 +137,21 @@ bool PECReader::NextEvent()
             return false;
         
         
-        // Read the event ID and trigger information
+        // Read the event ID
         eventIDTree->GetEntry(curEventTree);
-        triggerTree->GetEntry(curEventTree);
-        
         eventID.Set(runNumber, lumiSection, eventNumber);
         
-        // In case of MC disable the branch with the trigger names: it is needed only once
-        if (curEventTree == 0 and dataset.IsMC())
-            triggerTree->SetBranchStatus("names", false);
-
         
-        
-        // Check if the event meets the trigger selection
-        if (not triggerSelection or
-         not triggerSelection->PassTrigger(eventID, triggerNames, hasFired))
+        // Update the event in the trigger-selection object and check if it passes the selection
+        if (triggerSelection)
         {
-            ++curEventTree;
-            continue;
+            triggerSelection->ReadNextEvent();
+            
+            if (not triggerSelection->PassTrigger(eventID))
+            {
+                ++curEventTree;
+                continue;
+            }
         }
         
         
@@ -295,15 +285,6 @@ void PECReader::Initialize()
     }
     
     
-    // Create dynamically-allocated ROOT objects. Because of design of ROOT memory system, this
-    //block of code must be atomic
-    ROOTLock::Lock();
-    
-    triggerNames = new TClonesArray("TObjString");
-    
-    ROOTLock::Unlock();
-    
-    
     // Perform remaining initialization
     sourceFileIt = dataset.GetFiles().begin();
     
@@ -328,9 +309,16 @@ void PECReader::OpenSourceFile()
     // Open the source file
     sourceFile = TFile::Open(sourceFileIt->name.c_str());
     
+    
     // Get the trees
     eventIDTree = dynamic_cast<TTree *>(sourceFile->Get("eventContent/EventID"));
-    triggerTree = dynamic_cast<TTree *>(sourceFile->Get("trigger/TriggerInfo"));
+    
+    if (triggerSelection)
+    {
+        triggerTree = dynamic_cast<TTree *>(sourceFile->Get("trigger/TriggerInfo"));
+        triggerSelection->UpdateTree(triggerTree, not dataset.IsMC());
+    }
+    
     generalTree = dynamic_cast<TTree *>(sourceFile->Get("eventContent/BasicInfo"));
     //generalTree->AddFriend("eventContent/IntegralProperties");
     generalTree->AddFriend("eventContent/BasicInfo");
@@ -370,10 +358,6 @@ void PECReader::OpenSourceFile()
     eventIDTree->SetBranchAddress("run", &runNumber);
     eventIDTree->SetBranchAddress("lumi", &lumiSection);
     eventIDTree->SetBranchAddress("event", &eventNumber);
-    
-    triggerTree->SetBranchAddress("size", &triggerSize);
-    triggerTree->SetBranchAddress("names", &triggerNames);
-    triggerTree->SetBranchAddress("hasFired", hasFired);
     
     generalTree->SetBranchAddress("eleSize", &eleSize);
     generalTree->SetBranchAddress("elePt", elePt);
@@ -512,11 +496,6 @@ void PECReader::OpenSourceFile()
         generalTree->SetBranchAddress("hardPartPhi", hardPartPhi);
         generalTree->SetBranchAddress("hardPartMass", hardPartMass);
     }
-    
-    
-    // Notify the trigger object that a new file has been opened
-    if (triggerSelection)
-        triggerSelection->NewFile(not dataset.IsMC());
 }
 
 

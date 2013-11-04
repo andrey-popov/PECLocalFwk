@@ -24,7 +24,6 @@
 #include <TTree.h>
 #include <TLorentzVector.h>
 #include <TVector2.h>
-#include <TClonesArray.h>
 
 #include <vector>
 #include <list>
@@ -90,7 +89,7 @@ class PECReader
         PECReader &operator=(PECReader const &) = delete;
         
         /// Destructor
-        ~PECReader();
+        ~PECReader() = default;
     
     public:
         /// Configures this from a configuration object
@@ -393,11 +392,6 @@ class PECReader
         // "True" number of pile-up interactions (available in simulation only)
         Float_t puTrueNumInteractions;
         
-        
-        // Buffers to read a tree with trigger bits
-        Int_t triggerSize;
-        TClonesArray *triggerNames;
-        Bool_t hasFired[512];
         
         
         Int_t nWeight_PDF;

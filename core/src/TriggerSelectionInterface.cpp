@@ -1,5 +1,5 @@
 #include <TriggerSelectionInterface.hpp>
 
 
-void TriggerSelectionInterface::NewFile(bool) const
+void TriggerSelectionInterface::UpdateTree(TTree *, bool) const
 {}
