@@ -70,11 +70,12 @@ class TriggerRange
         /**
          * \brief Specifies the trigger in data and the corresponding int. luminosity
          * 
-         * Specifies the pattern for the name of the trigger used in data. The actual trigger name
-         * is expected to be checked to contain the given pattern as a substring, no regular
-         * expressions or wildcards should be used. The provided pattern must match exactly one
-         * trigger in each trigger menu used. The integrated luminosity is the effective integrated
-         * luminosity recorded with the given trigger, measured in 1/pb.
+         * The first argument is the full trigger name; however, the "HLT_" prefix and version
+         * postfix might optionally be stripped. Internally it is fed into the GetTriggerBasename
+         * method and the result is stored.
+         * 
+         * The integrated luminosity is the effective integrated luminosity recorded with the given
+         * trigger, measured in 1/pb.
          */
         void SetDataTrigger(std::string const &pattern, double intLumi);
         
@@ -83,7 +84,7 @@ class TriggerRange
          * 
          * Specifies the pattern for the name of the trigger in MC, which corresponds to the
          * specified trigger in data (i.e., normally, they should be as similar as possible). It
-         * must meet the same requirements as the mask provided to SetDataTrigger method.
+         * must meet the same requirements as the pattern provided to SetDataTrigger method.
          */
         void SetMCTrigger(std::string const &pattern);
         
@@ -125,6 +126,14 @@ class TriggerRange
         
         /// Returns the effective integrated luminosity, 1/pb
         double GetLuminosity() const;
+        
+        /**
+         * \brief Removes the "HLT_" prefix and version postfix from trigger name
+         * 
+         * The postfix might take the form of "_v", "_v\*", or "_v\d+". Both the postfix and
+         * prefix are optional.
+         */
+        static std::string GetTriggerBasename(std::string const &name);
     
     private:
         EventID firstEvent;  ///< The beginning of the EventID range (included in the range)
