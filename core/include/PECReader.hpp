@@ -96,7 +96,7 @@ class PECReader
         void Configure(PECReaderConfig const &config);
         
         /// Sets the trigger selection
-        void SetTriggerSelection(TriggerSelectionInterface const *triggerSelection);
+        void SetTriggerSelection(TriggerSelectionInterface *triggerSelection);
         
         /// Sets event selection
         void SetEventSelection(EventSelectionInterface const *eventSelection);
@@ -273,7 +273,7 @@ class PECReader
         bool isInitialized;
         
         /// Pointer to an object to perform trigger selection
-        TriggerSelectionInterface const *triggerSelection;
+        TriggerSelectionInterface *triggerSelection;
         
         /// Pointer to an object to perform event selection
         EventSelectionInterface const *eventSelection;

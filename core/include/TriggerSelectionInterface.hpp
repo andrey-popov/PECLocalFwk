@@ -53,7 +53,7 @@ class TriggerSelectionInterface
         TriggerSelectionInterface(TriggerSelectionInterface &&src);
         
         /// Virtual destructor
-        virtual ~TriggerSelectionInterface() = default;
+        virtual ~TriggerSelectionInterface();
         
         /// Move assignment operator
         TriggerSelectionInterface &operator=(TriggerSelectionInterface &&rhs);

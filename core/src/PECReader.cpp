@@ -56,7 +56,7 @@ void PECReader::Configure(PECReaderConfig const &config)
 }
 
 
-void PECReader::SetTriggerSelection(TriggerSelectionInterface const *triggerSelection_)
+void PECReader::SetTriggerSelection(TriggerSelectionInterface *triggerSelection_)
 {
     triggerSelection = triggerSelection_;
 }
@@ -145,9 +145,9 @@ bool PECReader::NextEvent()
         // Update the event in the trigger-selection object and check if it passes the selection
         if (triggerSelection)
         {
-            triggerSelection->ReadNextEvent();
+            triggerSelection->ReadNextEvent(eventID);
             
-            if (not triggerSelection->PassTrigger(eventID))
+            if (not triggerSelection->PassTrigger())
             {
                 ++curEventTree;
                 continue;

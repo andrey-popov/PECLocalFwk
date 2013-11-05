@@ -11,7 +11,7 @@ using namespace std;
 TriggerSelectionData::TriggerSelectionData(vector<TriggerRange const *> const &ranges_):
     TriggerSelectionInterface(),
     ranges(ranges_),
-    currentRange(nulptr)
+    currentRange(nullptr)
 {
     // A sanity check
     if (ranges_.size() == 0)
@@ -31,7 +31,7 @@ void TriggerSelectionData::UpdateTree(TTree *triggerTree_, bool)
     
     
     // Invalidate the current range
-    currentRange = nulptr;
+    currentRange = nullptr;
 }
 
 
@@ -40,7 +40,7 @@ bool TriggerSelectionData::ReadNextEvent(EventID const &eventID)
     // A sanity check
     if (not triggerTree)
         throw logic_error("TriggerSelectionData::ReadNextEvent: Attempting to read an unspecified "
-         "trigger tree.")
+         "trigger tree.");
     
     
     // Check if there are still events to read
@@ -59,7 +59,7 @@ bool TriggerSelectionData::ReadNextEvent(EventID const &eventID)
         // No range contains the given event ID
         {
             // Set the state of the object such that the event will be rejected
-            currentRange = nulptr;
+            currentRange = nullptr;
             eventAccepted = false;
             
             // There is no need to actually read the event. Just update the counter
@@ -107,7 +107,7 @@ double TriggerSelectionData::GetWeight(PECReader const &reader) const
 }
 
 
-virtual TriggerSelectionInterface *TriggerSelectionData::Clone() const
+TriggerSelectionInterface *TriggerSelectionData::Clone() const
 {
     return new TriggerSelectionData(ranges);
 }
@@ -116,7 +116,7 @@ virtual TriggerSelectionInterface *TriggerSelectionData::Clone() const
 
 TriggerSelectionMC::TriggerSelectionMC(std::vector<TriggerRange const *> const &ranges_):
     TriggerSelectionInterface(),
-    buffer(nulptr)
+    buffer(nullptr)
 {
     // A sanity check
     if (ranges_.size() == 0)
@@ -128,7 +128,7 @@ TriggerSelectionMC::TriggerSelectionMC(std::vector<TriggerRange const *> const &
     ranges.reserve(ranges_.size());
     
     for (auto const &r: ranges_)
-        ranges.emplace_back(r, nulptr);
+        ranges.emplace_back(r, nullptr);
 }
 
 
@@ -210,7 +210,7 @@ bool TriggerSelectionMC::ReadNextEvent(EventID const &)
     // A sanity check
     if (not triggerTree)
         throw logic_error("TriggerSelectionMC::ReadNextEvent: Attempting to read an unspecified "
-         "trigger tree.")
+         "trigger tree.");
     
     
     // Check if there are still events to read
@@ -300,7 +300,7 @@ bool TriggerSelection::ReadNextEvent(EventID const &eventID)
     // A sanity check
     if (not selection)
         throw logic_error("TriggerSelection::ReadNextEvent: Attempting to read an unspecified "
-         "trigger tree.")
+         "trigger tree.");
     
     return selection->ReadNextEvent(eventID);
 }
@@ -314,7 +314,7 @@ bool TriggerSelection::PassTrigger() const
 
 double TriggerSelection::GetWeight(PECReader const &reader) const
 {
-    return selection->GetWeight();
+    return selection->GetWeight(reader);
 }
 
 

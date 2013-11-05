@@ -2,7 +2,7 @@
 
 
 TriggerSelectionInterface::TriggerSelectionInterface():
-    triggerTree(nulptr),
+    triggerTree(nullptr),
     nEntriesTree(0), nextEntryTree(0)
 {}
 
@@ -11,10 +11,14 @@ TriggerSelectionInterface::TriggerSelectionInterface(TriggerSelectionInterface &
     triggerTree(src.triggerTree),
     nEntriesTree(src.nEntriesTree), nextEntryTree(src.nextEntryTree)
 {
-    src.triggerTree = nulptr;
+    src.triggerTree = nullptr;
     src.nEntriesTree = 0;
     src.nextEntryTree = 0;
 }
+
+
+TriggerSelectionInterface::~TriggerSelectionInterface()
+{}
 
 
 TriggerSelectionInterface &TriggerSelectionInterface::operator=(TriggerSelectionInterface &&rhs)
@@ -25,7 +29,7 @@ TriggerSelectionInterface &TriggerSelectionInterface::operator=(TriggerSelection
         nEntriesTree = rhs.nEntriesTree;
         nextEntryTree = rhs.nextEntryTree;
         
-        rhs.triggerTree = nulptr;
+        rhs.triggerTree = nullptr;
         rhs.nEntriesTree = 0;
         rhs.nextEntryTree = 0;
     }

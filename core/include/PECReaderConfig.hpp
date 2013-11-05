@@ -66,10 +66,10 @@ class PECReaderConfig
          * 
          * Provided object is cloned.
          */
-        void SetTriggerSelection(TriggerSelectionInterface const *triggerSelection);
+        void SetTriggerSelection(TriggerSelectionInterface *triggerSelection);
         
         /// A short-cut for SetTriggerSelection
-        void SetModule(TriggerSelectionInterface const *triggerSelection);
+        void SetModule(TriggerSelectionInterface *triggerSelection);
         
         /**
          * \brief Specifies offline event selection
@@ -129,7 +129,7 @@ class PECReaderConfig
         bool IsSetTriggerSelection() const;
         
         /// Consult documentation for SetTriggerSelection for details
-        TriggerSelectionInterface const *GetTriggerSelection() const;
+        TriggerSelectionInterface *GetTriggerSelection() const;
         
         /// Checks if a valid event selection is set
         bool IsSetEventSelection() const;

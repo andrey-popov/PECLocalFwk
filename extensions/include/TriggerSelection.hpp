@@ -131,7 +131,7 @@ class TriggerSelectionData: public TriggerSelectionInterface
 template<typename C>
 TriggerSelectionData::TriggerSelectionData(C const &ranges_):
     TriggerSelectionInterface(),
-    currentRange(nulptr)
+    currentRange(nullptr)
 {
     // First a sanity check
     if (ranges_.size() == 0)
@@ -142,7 +142,7 @@ TriggerSelectionData::TriggerSelectionData(C const &ranges_):
     // Save pointers to the TriggerRange objects
     ranges.reserve(ranges_.size());
     
-    for (C::const_iterator it = ranges_.cbegin(); it != ranges_.cend(); ++it)
+    for (typename C::const_iterator it = ranges_.cbegin(); it != ranges_.cend(); ++it)
         ranges.push_back(&*it);
 }
 
@@ -163,7 +163,7 @@ TriggerSelectionData::TriggerSelectionData(C const &ranges_):
  * 
  * The class is not thread-safe.
  */
-class TriggerSelectionMC
+class TriggerSelectionMC: public TriggerSelectionInterface
 {
     public:
         /**
@@ -282,7 +282,7 @@ class TriggerSelectionMC
 template<typename C>
 TriggerSelectionMC::TriggerSelectionMC(C const &ranges_):
     TriggerSelectionInterface(),
-    buffer(nulptr)
+    buffer(nullptr)
 {
     // First a sanity check
     if (ranges_.size() == 0)
@@ -293,8 +293,8 @@ TriggerSelectionMC::TriggerSelectionMC(C const &ranges_):
     // Save pointers to the TriggerRange objects
     ranges.reserve(ranges_.size());
     
-    for (C::const_iterator it = ranges_.cbegin(); it != ranges_.cend(); ++it)
-        ranges.emplace_back(&*it, nulptr);
+    for (typename C::const_iterator it = ranges_.cbegin(); it != ranges_.cend(); ++it)
+        ranges.emplace_back(&*it, nullptr);
 }
 
 
@@ -413,6 +413,6 @@ TriggerSelection::TriggerSelection(C const &ranges_):
     // Save pointers to the TriggerRange objects
     ranges.reserve(ranges_.size());
     
-    for (C::const_iterator it = ranges_.cbegin(); it != ranges_.cend(); ++it)
+    for (typename C::const_iterator it = ranges_.cbegin(); it != ranges_.cend(); ++it)
         ranges.push_back(&*it);
 }

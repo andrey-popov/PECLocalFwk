@@ -23,13 +23,13 @@ PECReaderConfig::PECReaderConfig(PECReaderConfig const &src):
 {}
 
 
-void PECReaderConfig::SetTriggerSelection(TriggerSelectionInterface const *triggerSelection_)
+void PECReaderConfig::SetTriggerSelection(TriggerSelectionInterface *triggerSelection_)
 {
     triggerSelection.reset(triggerSelection_->Clone());
 }
 
 
-void PECReaderConfig::SetModule(TriggerSelectionInterface const *triggerSelection)
+void PECReaderConfig::SetModule(TriggerSelectionInterface *triggerSelection)
 {
     SetTriggerSelection(triggerSelection);
 }
@@ -111,7 +111,7 @@ bool PECReaderConfig::IsSetTriggerSelection() const
 }
 
 
-TriggerSelectionInterface const *PECReaderConfig::GetTriggerSelection() const
+TriggerSelectionInterface *PECReaderConfig::GetTriggerSelection() const
 {
     if (not triggerSelection)
         throw logic_error("PECReaderConfig::GetTriggerSelection: Accessing an undefined "
