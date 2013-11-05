@@ -36,7 +36,7 @@ class TTree;
  * to provide the user with more flexibility.
  * 
  * If several instances of class PECReader are used simultaneously, each must operate on its own
- * copye of a class derived from TriggerSelectionInterface because it contains information specific
+ * copy of a class derived from TriggerSelectionInterface because it contains information specific
  * for the current file under processing. In order to allow such behaviour, a derived class must
  * provide an implementation for method Clone.
  */
@@ -46,22 +46,20 @@ class TriggerSelectionInterface
         /// Constructor with no arguments
         TriggerSelectionInterface();
         
-        /**
-         * \brief Copy constructor
-         * 
-         * Builds a valid copy of src. It is possible because the tree is not owned by this.
-         */
-        TriggerSelectionInterface(TriggerSelectionInterface const &src);
+        /// Copy constructor is deleted
+        TriggerSelectionInterface(TriggerSelectionInterface const &) = delete;
+        
+        /// Move constructor
+        TriggerSelectionInterface(TriggerSelectionInterface &&src);
         
         /// Virtual destructor
         virtual ~TriggerSelectionInterface() = default;
         
-        /**
-         * \brief Assignment operator
-         * 
-         * Builds a valid copy of rhs. It is possible because the tree is not owned by this.
-         */
-        TriggerSelectionInterface &operator=(TriggerSelectionInterface const &rhs);
+        /// Move assignment operator
+        TriggerSelectionInterface &operator=(TriggerSelectionInterface &&rhs);
+        
+        /// Assignment overator is deleted
+        TriggerSelectionInterface &operator=(TriggerSelectionInterface const &) = delete;
     
     public:
         /**
