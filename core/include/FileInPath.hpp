@@ -39,6 +39,14 @@ class FileInPath
          * an exception is thrown.
          */
         std::string Resolve(std::string const &path) const;
+        
+        /**
+         * \brief Resolves the file path
+         * 
+         * Does precisely the same as Resolve(string const &), but tries to resolve a relative path
+         * w.r.t. $PEC_FWK_INSTALL/data/$prefix/ instead of $PEC_FWK_INSTALL/data/.
+         */
+        std::string Resolve(std::string const &prefix, std::string const &path) const;
     
     private:
         /**

@@ -29,6 +29,12 @@ FileInPath::FileInPath()
 
 string FileInPath::Resolve(string const &path) const
 {
+    return Resolve("", path);
+}
+
+
+string FileInPath::Resolve(string const &prefix, string const &path) const
+{
     // Check if it is an absolute path
     if (path.length() > 0 and path[0] == '/')
     {
@@ -41,8 +47,15 @@ string FileInPath::Resolve(string const &path) const
     }
     
     
+    // Make sure the prefix ends up with a '/'
+    string canonicalPrefix(prefix);
+    
+    if (canonicalPrefix.length() > 0 and canonicalPrefix[canonicalPrefix.length() - 1] != '/')
+        canonicalPrefix += '/';
+    
+    
     // Try to resolve the path w.r.t. $PEC_FWK_INSTALL/data/
-    string tryPath = installPath + "/data/" + path;
+    string tryPath = installPath + "/data/" + canonicalPrefix + path;
     
     if (boost::filesystem::exists(tryPath))
         return tryPath;
