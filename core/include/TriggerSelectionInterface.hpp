@@ -22,34 +22,46 @@ class TTree;
  * The trigger selection is splitted into two steps represented by virtual methods PassTrigger and
  * GetWeight. At the first step the decision is taken based on the event ID and information stored
  * in the trigger tree. Normally, it would simply check if appropriate triggers accepted the event.
- * At the second step trigger scale factors are incorporated, and an additional selection using the
- * whole information from the event can be evaluated.
+ * At the second step trigger scale factors are incorporated, and an additional selection that
+ * exploits information on the whole event can be evaluated.
  * 
  * When a new dataset is opened, an instanse of this class must be notified with the help of method
  * UpdateTree. It is also given a pointer to the new trigger tree. The tree is not owned by the
  * object (normally, it is owned by an instance of the PECReader class), but all operations on it
- * must be carried in a class derived from this one. In particular, it includes setting of the tree
- * branches' addresses and reading the tree.
+ * must be carried in a class derived from this TriggerSelectionInterface. In particular, it implies
+ * setting of setting addresses for the tree's branches and reading the tree.
  * 
- * If several instances of class PECReader are used simultaneously, each must operate its own copy
- * of a class derived from TriggerSelectionInterface because it contains some information specific
- * for the current file under processing. In order to enable this feature, a derived class must
+ * Although a trigger selection is expected to be described by a set of TriggerRange objects, which
+ * sets a tight connection between the two classes, it is not specified as a part of the interface
+ * to provide the user with more flexibility.
+ * 
+ * If several instances of class PECReader are used simultaneously, each must operate on its own
+ * copye of a class derived from TriggerSelectionInterface because it contains information specific
+ * for the current file under processing. In order to allow such behaviour, a derived class must
  * provide an implementation for method Clone.
  */
 class TriggerSelectionInterface
 {
     public:
-        /// Default constructor
-        TriggerSelectionInterface() = default;
+        /// Constructor with no arguments
+        TriggerSelectionInterface();
         
-        /// Default copy constructor
-        TriggerSelectionInterface(TriggerSelectionInterface const &) = default;
+        /**
+         * \brief Copy constructor
+         * 
+         * Builds a valid copy of src. It is possible because the tree is not owned by this.
+         */
+        TriggerSelectionInterface(TriggerSelectionInterface const &src);
         
         /// Virtual destructor
         virtual ~TriggerSelectionInterface() = default;
         
-        /// Default assignment operator
-        TriggerSelectionInterface &operator=(TriggerSelectionInterface const &) = default;
+        /**
+         * \brief Assignment operator
+         * 
+         * Builds a valid copy of rhs. It is possible because the tree is not owned by this.
+         */
+        TriggerSelectionInterface &operator=(TriggerSelectionInterface const &rhs);
     
     public:
         /**
@@ -61,16 +73,22 @@ class TriggerSelectionInterface
          * the tree). Apart from the pointer to the new tree, the method must be given a flag that
          * specifies if the new dataset is real data or simulation.
          * 
-         * In the default implementation the method has an empty body.
+         * Normally, implementation of this method in a derived class is expected to update the
+         * pointer to the tree, reset the tree counters, and set addresses of buffers to read the
+         * tree.
          */
-        virtual void UpdateTree(TTree *triggerTree, bool isData) const;
+        virtual void UpdateTree(TTree *triggerTree, bool isData) = 0;
         
         /**
          * \brief Reads the next event from the trigger tree
          * 
-         * Must return true if an event was read successfully, false otherwise.
+         * In case of real data the trigger selection can depend on the data-taking period and hence
+         * on the event ID. The ID of the event which is about to be read is known by an instance of
+         * the PECReader class and must be provided for this method in order to allow it to read
+         * only necessary part of the trigger tree. The method must return true if an event was
+         * read successfully and false if there are no more events in the tree.
          */
-        virtual bool ReadNextEvent() const = 0;
+        virtual bool ReadNextEvent(EventID const &eventID) = 0;
         
         /**
          * \brief Performs the first step of trigger selection on the current event
@@ -79,10 +97,10 @@ class TriggerSelectionInterface
          * tree. Normally, it is used to determine whether the rest of the event content should be
          * read from the file. This method should be called before PECReader::BuildAndSelectEvent.
          */
-        virtual bool PassTrigger(EventID const &eventID) const = 0;
+        virtual bool PassTrigger() const = 0;
         
         /**
-         * \brief Performs the second step of the trigger selection and calculates weight
+         * \brief Performs the second step of the trigger selection and calculates event weight
          * 
          * Performs the additional event selection demanded by the TriggerRange object(s) and
          * calculates the event weight. Must be called after PECReader::BuildAndSelectEvent. The
@@ -94,11 +112,25 @@ class TriggerSelectionInterface
         /**
          * \brief Returns a copy of an instance of the class
          * 
-         * The method must return a properly initialized object, but it might ignore data members
+         * The method must return a properly initialised object, but it might ignore data members
          * that are specific to the current event or source file, i.e. it must duplicate the logic
          * and parameters of the processing algorithm, but not members referring to current state.
          * The method is only expected to be called before the first event is processed and the
          * first file is opened.
          */
         virtual TriggerSelectionInterface *Clone() const = 0;
+    
+    protected:
+        /**
+         * \brief Pointer to the tree with information on triggers
+         * 
+         * The tree is read by this but not owned. Therefore, it must not be deleted by this.
+         */
+        TTree *triggerTree;
+        
+        /// Total number of entries in the tree
+        unsigned long nEntriesTree;
+        
+        /// Index of the tree entry to be read next
+        unsigned long nextEntryTree;
 };
