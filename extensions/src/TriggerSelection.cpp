@@ -1,127 +1,240 @@
 #include <TriggerSelection.hpp>
 
-#include <TObjString.h>
+#include <TTree.h>
 
-#include <stdexcept>
+#include <algorithm>
 
 
 using namespace std;
 
 
-TriggerRangeWrapper::TriggerRangeWrapper(TriggerRange const &data_):
-    data(data_), index(0), passTrigger(false)
-{}
-
-
-TriggerSelectionData::TriggerSelectionData(list<TriggerRangeWrapper> &ranges_):
+TriggerSelectionData::TriggerSelectionData(vector<TriggerRange const *> const &ranges_):
+    TriggerSelectionInterface(),
     ranges(ranges_),
-    currentRange(ranges.begin())
-{}
-
-
-bool TriggerSelectionData::PassTrigger(EventID const &eventID, TClonesArray const *names,
- Bool_t const *fired) const
+    currentRange(nulptr)
 {
-    auto const &endRange = ranges.end();
+    // A sanity check
+    if (ranges_.size() == 0)
+        throw std::logic_error("TriggerSelectionData::TriggerSelectionData: The provided "
+         "collection of pointers to TriggerRange objects is empty.");
+}
+
+
+void TriggerSelectionData::UpdateTree(TTree *triggerTree_, bool)
+{
+    // Update the tree pointer and counters
+    triggerTree = triggerTree_;
+    nEntriesTree = triggerTree->GetEntries();
+    nextEntryTree = 0;
     
-    // Update the current trigger range if it is not compatible with the given event
-    if (not currentRange->data.InRange(eventID))
-        // Loop over all the available ranges
-        for (currentRange = ranges.begin(); ; ++currentRange)
+    triggerTree->SetBranchStatus("*", false);
+    
+    
+    // Invalidate the current range
+    currentRange = nulptr;
+}
+
+
+bool TriggerSelectionData::ReadNextEvent(EventID const &eventID)
+{
+    // A sanity check
+    if (not triggerTree)
+        throw logic_error("TriggerSelectionData::ReadNextEvent: Attempting to read an unspecified "
+         "trigger tree.")
+    
+    
+    // Check if there are still events to read
+    if (nextEntryTree == nEntriesTree)
+        return false;
+    
+    
+    // Check if the current trigger range accommodates the given event ID and update it if needed
+    if (not currentRange or not currentRange->InRange(eventID))
+    {
+        // Find the range that contains the event with the given ID
+        auto res = find_if(ranges.begin(), ranges.end(),
+         [&eventID](TriggerRange const *r){return (r->InRange(eventID));});
+        
+        if (res == ranges.end())
+        // No range contains the given event ID
         {
-            if (currentRange == endRange)
-                // No one range contains the given event. The event is rejected
-                return false;
+            // Set the state of the object such that the event will be rejected
+            currentRange = nulptr;
+            eventAccepted = false;
             
-            if (currentRange->data.InRange(eventID))
-                break;
+            // There is no need to actually read the event. Just update the counter
+            ++nextEntryTree;
+            return true;
         }
+        
+        
+        // A valid trigger range has been found. Get the corresponding branch of the tree and assign
+        //the buffer to it
+        currentRange = *res;
+        triggerTree->SetBranchStatus("*", false);
+        
+        TBranch *branch =
+         triggerTree->GetBranch((currentRange->GetDataTriggerPattern() + "__accept").c_str());
+        
+        if (not branch)
+            throw runtime_error(string("TriggerSelectionData::ReadNextEvent: State of the "
+             "trigger \"HLT_") + currentRange->GetDataTriggerPattern() + "_v*\" is not stored in "
+             "the source tree.");
+        
+        branch->SetStatus(true);
+        branch->SetAddress(&eventAccepted);
+    }
     
     
-    // Update the trigger index if it refers to a trigger with wrong name
-    string const &pattern = currentRange->data.GetDataTriggerPattern();
-    string name("");
-    unsigned const nNames = names->GetEntries();
+    // Finally, read the event
+    triggerTree->GetEntry(nextEntryTree);
+    ++nextEntryTree;
     
-    if (currentRange->index < nNames)
-        name = (dynamic_cast<TObjString *>(names->At(currentRange->index)))->String().Data();
-    
-    if (name.find(pattern) == string::npos)
-        for (currentRange->index = 0; ; ++(currentRange->index))
-        {
-            if (currentRange->index == nNames)
-                // The requested trigger was not found in the menu
-                throw runtime_error(string("TriggerSelectionData::PassTrigger: The requested "
-                 "trigger pattern \"") + currentRange->data.GetDataTriggerPattern() +
-                 "\" was not found.");
-            
-            name = (dynamic_cast<TObjString *>(names->At(currentRange->index)))->String().Data();
-            
-            if (name.find(pattern) not_eq string::npos)
-                break;
-        }
-    
-    
-    // Now currentRange::index refers to the correct trigger
-    return fired[currentRange->index];
+    return true;
+}
+
+
+bool TriggerSelectionData::PassTrigger() const
+{
+    // Everything has already been done in ReadNextEvent
+    return eventAccepted;
 }
 
 
 double TriggerSelectionData::GetWeight(PECReader const &reader) const
 {
-    return currentRange->data.PassEventSelection(reader);
+    return (currentRange->PassEventSelection(reader)) ? 1. : 0.;
+}
+
+
+virtual TriggerSelectionInterface *TriggerSelectionData::Clone() const
+{
+    return new TriggerSelectionData(ranges);
 }
 
 
 
-TriggerSelectionMC::TriggerSelectionMC(std::list<TriggerRangeWrapper> &ranges_):
-    ranges(ranges_)
-{}
-
-
-void TriggerSelectionMC::UpdateTriggerIndices(TClonesArray const *names)
+TriggerSelectionMC::TriggerSelectionMC(std::vector<TriggerRange const *> const &ranges_):
+    TriggerSelectionInterface(),
+    buffer(nulptr)
 {
-    unsigned const nNames = names->GetEntries();
+    // A sanity check
+    if (ranges_.size() == 0)
+        throw std::logic_error("TriggerSelectionMC::TriggerSelectionMC: The provided "
+         "collection of pointers to TriggerRange objects is empty.");
     
-    // Loop over all the trigger ranges
-    for (auto &range: ranges)
+    
+    // Save pointers to the TriggerRange objects
+    ranges.reserve(ranges_.size());
+    
+    for (auto const &r: ranges_)
+        ranges.emplace_back(r, nulptr);
+}
+
+
+TriggerSelectionMC::~TriggerSelectionMC()
+{
+    delete [] buffer;
+}
+
+
+void TriggerSelectionMC::UpdateTree(TTree *triggerTree_, bool)
+{
+    // Update the tree pointer and counters
+    triggerTree = triggerTree_;
+    nEntriesTree = triggerTree->GetEntries();
+    nextEntryTree = 0;
+    
+    
+    // Create buffers into which the trigger decision will be read. They are allocated in a single
+    //block. The number of buffers cannot exceed ranges.size(), but it might be smaller if some
+    //MC triggers are repeated in several TriggerRange objects. For the sake of simplicity and
+    //performance, no attempt to count distinctive triggers is made, and an array of size
+    //ranges.size() is allocated.
+    buffer = new Bool_t[ranges.size()];
+    
+    
+    // Set statuses and addresses of relevant branches of the trigger tree. A certain complication
+    //is caused by the fact that the same trigger might be specified in several trigger ranges
+    triggerTree->SetBranchStatus("*", false);
+    unsigned curBufferIndex = 0;
+    
+    for (unsigned i = 0; i < ranges.size(); ++i)
     {
-        string const &pattern = range.data.GetMCTriggerPattern();
+        string const &curTriggerName = ranges.at(i).first->GetMCTriggerPattern();
         
-        // Find the index of the trigger name which matches the pattern
-        for (range.index = 0; ; ++range.index)
-        {
-            if (range.index == nNames)
-                throw runtime_error(string("TriggerSelectionMC::PassTrigger: The requested "
-                 "trigger pattern \"") + range.data.GetMCTriggerPattern() + "\" was not "
-                 "found.");
-            
-            string name((dynamic_cast<TObjString *>(names->At(range.index)))->String().Data());
-            
-            if (name.find(pattern) not_eq string::npos)
+        
+        // Try to find name of the current trigger in previous ranges
+        unsigned iPrev = 0;
+        
+        for (; iPrev < i; ++iPrev)
+            if (curTriggerName == ranges.at(iPrev).first->GetMCTriggerPattern())
                 break;
+        
+        
+        if (iPrev == i)
+        //^ It means that the current trigger was not encountered before
+        {
+            // Get the corresponding branch of the tree
+            TBranch *branch =
+             triggerTree->GetBranch((curTriggerName + "__accept").c_str());
+            
+            if (not branch)
+                throw runtime_error(string("TriggerSelectionMC::UpdateTree: State of the "
+                 "trigger \"HLT_") + curTriggerName + "_v*\" is not stored in the source tree.");
+            
+            
+            // Set the status and address of the branch
+            branch->SetStatus(true);
+            branch->SetAddress(buffer + curBufferIndex);
+            
+            // Store the address also in ranges
+            ranges.at(i).second = buffer + curBufferIndex;
+            
+            
+            // Increment the buffer counter
+            ++curBufferIndex;
+        }
+        else
+        //^ The trigger has already been encountered. The tree had been adjusted
+        {
+            // Only need to set the pointer to buffer in ranges
+            ranges.at(i).second = ranges.at(iPrev).second;
         }
     }
 }
 
 
-bool TriggerSelectionMC::PassTrigger(Bool_t const *fired) const
+bool TriggerSelectionMC::ReadNextEvent(EventID const &)
 {
-    // Save the information about the fired triggers and logical OR of all these booleans
-    bool result = false;
-    
-    for (auto &range: ranges)
-    {
-        range.passTrigger = fired[range.index];
-        
-        if (range.passTrigger)
-            result = true;
-    }
+    // A sanity check
+    if (not triggerTree)
+        throw logic_error("TriggerSelectionMC::ReadNextEvent: Attempting to read an unspecified "
+         "trigger tree.")
     
     
-    // The event is rejected if only it fires no MC trigger in the given list of TriggerRange
-    //objects
-    return result;
+    // Check if there are still events to read
+    if (nextEntryTree == nEntriesTree)
+        return false;
+    
+    
+    // Read the next entry
+    triggerTree->GetEntry(nextEntryTree);
+    ++nextEntryTree;
+    
+    return true;
+}
+
+
+bool TriggerSelectionMC::PassTrigger() const
+{
+    // Check all the requested triggers
+    for (auto const &r: ranges)
+        if (*r.second)  // the event is accepted by the MC trigger in this range
+            return true;
+    
+    // The workflow reaches this point if only no trigger accepts the event
+    return false;
 }
 
 
@@ -129,10 +242,10 @@ double TriggerSelectionMC::GetWeight(PECReader const &reader) const
 {
     double weight = 0.;
     
-    for (auto const &range: ranges)
+    for (auto const &r: ranges)
     {
-        if (range.passTrigger and range.data.PassEventSelection(reader))
-            weight += range.data.GetLuminosity() * ScaleFactor(range.data, reader);
+        if (*r.second and r.first->PassEventSelection(reader))
+            weight += r.first->GetLuminosity() * ScaleFactor(r.first, reader);
     }
     
     
@@ -140,70 +253,72 @@ double TriggerSelectionMC::GetWeight(PECReader const &reader) const
 }
 
 
-double TriggerSelectionMC::ScaleFactor(TriggerRange const &, PECReader const &) const
+double TriggerSelectionMC::ScaleFactor(TriggerRange const *, PECReader const &) const
 {
     return 1.;
 }
 
 
-
-TriggerSelection::TriggerSelection(std::list<TriggerRange> const &ranges):
-    TriggerSelection(ranges.begin(), ranges.end())
-{}
-
-
-TriggerSelection::TriggerSelection(TriggerSelection &&src):
-    ranges(move(src.ranges)),
-    dataSelection(move(src.dataSelection)),
-    mcSelection(move(src.mcSelection)),
-    isData(src.isData), isReset(src.isReset)
-{}
-
-
-TriggerSelection::TriggerSelection(TriggerSelection const &src):
-    TriggerSelectionInterface(),
-    ranges(src.ranges),
-    dataSelection(new TriggerSelectionData(ranges)),
-    mcSelection(new TriggerSelectionMC(ranges)),
-    isData(src.isData), isReset(src.isReset)
-{}
-
-
-void TriggerSelection::NewFile(bool isData_) const
+TriggerSelectionInterface *TriggerSelectionMC::Clone() const
 {
-    isData = isData_;
-    isReset = true;
+    // Make a vector of pointers to the TriggerRange objects
+    vector<TriggerRange const *> pureRanges;
+    pureRanges.reserve(ranges.size());
+    
+    for (auto const &r: ranges)
+        pureRanges.emplace_back(r.first);
+    
+    
+    // Feed it to the appropriate constructor
+    return new TriggerSelectionMC(pureRanges);
 }
 
 
-bool TriggerSelection::PassTrigger(EventID const &eventID, TClonesArray const *names,
- Bool_t const *fired) const
+
+TriggerSelection::TriggerSelection(vector<TriggerRange const *> const &ranges_):
+    TriggerSelectionInterface(),
+    ranges(ranges_)
+{}
+
+
+void TriggerSelection::UpdateTree(TTree *triggerTree_, bool isData)
 {
+    // Create a new object to perform the trigger selection
     if (isData)
-        return dataSelection->PassTrigger(eventID, names, fired);
+        selection.reset(new TriggerSelectionData(ranges));
     else
-    {
-        if (isReset)
-        {
-            mcSelection->UpdateTriggerIndices(names);
-            isReset = false;
-        }
-        
-        return mcSelection->PassTrigger(fired);
-    }
+        selection.reset(new TriggerSelectionMC(ranges));
+    
+    
+    // Set the trigger tree in the selection object
+    selection->UpdateTree(triggerTree_, isData);
+}
+
+
+bool TriggerSelection::ReadNextEvent(EventID const &eventID)
+{
+    // A sanity check
+    if (not selection)
+        throw logic_error("TriggerSelection::ReadNextEvent: Attempting to read an unspecified "
+         "trigger tree.")
+    
+    return selection->ReadNextEvent(eventID);
+}
+
+
+bool TriggerSelection::PassTrigger() const
+{
+    return selection->PassTrigger();
 }
 
 
 double TriggerSelection::GetWeight(PECReader const &reader) const
 {
-    if (isData)
-        return dataSelection->GetWeight(reader);
-    else
-        return mcSelection->GetWeight(reader);
+    return selection->GetWeight();
 }
 
 
 TriggerSelectionInterface *TriggerSelection::Clone() const
 {
-    return new TriggerSelection(*this);
+    return new TriggerSelection(ranges);
 }
