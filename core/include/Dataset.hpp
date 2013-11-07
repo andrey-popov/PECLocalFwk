@@ -89,17 +89,18 @@ class Dataset
             Undefined,
             pp7TeV,
             pp8TeV,
-            thqExotic,
-            thqSM,
+            thqExotic,  ///< thq with kappa_t = -1
+            thqSM,      ///< Standard-Model thq (kappa_t = +1)
             ttbar,
             ttchan,
             tschan,
             ttWchan,
             tth,
             Wjets,
-            Diboson,
+            Diboson,  ///< WW, WZ, or ZZ
             DrellYan,
-            QCD
+            QCD,
+            Photon  ///< Prompt-photon production
         };
     
     public:
