@@ -169,6 +169,12 @@ void Jet::SetParentID(int pdgID)
 }
 
 
+void Jet::SetCharge(double charge_)
+{
+    charge = charge_;
+}
+
+
 double Jet::CSV() const
 {
     return CSVValue;
@@ -190,4 +196,10 @@ double Jet::TCHP() const
 int Jet::GetParentID() const
 {
     return parentPDGID;
+}
+
+
+double Jet::Charge() const
+{
+    return charge;
 }
