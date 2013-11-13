@@ -48,6 +48,24 @@ GenParticle::collection_t const &GenParticle::GetMothers() const
 }
 
 
+GenParticle const *GenParticle::GetFirstMother() const
+{
+    if (mothers.size() == 0)
+        return nullptr;
+    else
+        return mothers.front();
+}
+
+
+int GenParticle::GetFirstMotherPdgId() const
+{
+    if (mothers.size() == 0)
+        return 0;
+    else
+        return mothers.front()->GetPdgId();
+}
+
+
 GenParticle::collection_t const &GenParticle::GetDaughters() const
 {
     return daughters;
