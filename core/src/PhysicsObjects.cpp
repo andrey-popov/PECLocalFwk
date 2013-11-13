@@ -1,5 +1,10 @@
 #include <PhysicsObjects.hpp>
 
+#include <limits>
+
+
+using namespace std;
+
 
 // Methods of class Candidate
 Candidate::Candidate()
@@ -125,14 +130,18 @@ int Lepton::Charge() const
 // Methods of class Jet
 Jet::Jet():
     Candidate(),
-    CSVValue(-1e6), TCHPValue(-1e6),
+    CSVValue(-numeric_limits<double>::infinity()),
+    JPValue(-numeric_limits<double>::infinity()),
+    TCHPValue(-numeric_limits<double>::infinity()),
     parentPDGID(0)
 {}
 
 
 Jet::Jet(TLorentzVector const &p4):
     Candidate(p4),
-    CSVValue(-1e6), TCHPValue(-1e6),
+    CSVValue(-numeric_limits<double>::infinity()),
+    JPValue(-numeric_limits<double>::infinity()),
+    TCHPValue(-numeric_limits<double>::infinity()),
     parentPDGID(0)
 {}
 
