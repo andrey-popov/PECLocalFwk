@@ -777,12 +777,25 @@ void PECReader::ParseHardInteraction()
         hardParticles.emplace_back(p4, hardPartPdgId[i]);
         
         
-        for (int iMother: {hardPartFirstMother[i], hardPartLastMother[i]})
-        //^ Isn't C++11 just awesome? ;)
+        // Set pointers to mothers and daughters
+        int iMother = hardPartFirstMother[i];
+        
+        if (iMother >= 0 and iMother < hardPartSize)
+        {
+            hardParticles.at(i).AddMother(&hardParticles.at(iMother));
+            hardParticles.at(iMother).AddDaughter(&hardParticles.at(i));
+        }
+        
+        if (hardPartFirstMother[i] != hardPartLastMother[i])
+        //^ Second mother is added if only it is different from the first one
+        {
+            int iMother = hardPartLastMother[i];
+            
             if (iMother >= 0 and iMother < hardPartSize)
             {
                 hardParticles.at(i).AddMother(&hardParticles.at(iMother));
                 hardParticles.at(iMother).AddDaughter(&hardParticles.at(i));
             }
+        }
     }
 }
