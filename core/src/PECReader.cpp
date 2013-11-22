@@ -644,19 +644,6 @@ bool PECReader::BuildAndSelectEvent()
     // Several versions of MET are stored in a PEC file
     unsigned metIndex = 1;  // index of a corrected MET that is not varied for some systematics
     
-    // In 2012Alpha_v2 campaign in case of MC wrong MET is stored under index 1. Below, a hack is
-    //inserted to correct for it. In muon channel an event contains to loose electrons. Therefore,
-    //variations of MET due to electron energy scale reproduce the correct central value for MET.
-    //Similarly for electron channel
-    if (dataset.IsMC())
-    {
-        if (tightLeptons.front().GetFlavour() == Lepton::Flavour::Muon)
-        //^ I assume there is exactly one tight lepton
-            metIndex = 8;  // electron energy up
-        else
-            metIndex = 10;  // muon energy up
-    }
-    
     switch (syst.type)
     {
         case SystTypeAlgo::JEC:
