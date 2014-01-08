@@ -381,26 +381,17 @@ void PECReader::OpenSourceFile()
     generalTree->SetBranchAddress("muCharge", muCharge);
     
     generalTree->SetBranchAddress("jetSize", &jetSize);
+    generalTree->SetBranchAddress("jetPt", jetPt);
     generalTree->SetBranchAddress("jetEta", jetEta);
     generalTree->SetBranchAddress("jetPhi", jetPhi);
+    generalTree->SetBranchAddress("jetMass", jetMass);
     
     if (dataset.IsMC() and syst.type == SystTypeAlgo::JER)
     {
         if (syst.direction > 0)
-        {
-            generalTree->SetBranchAddress("jetPtJERUp", jetPt);
-            generalTree->SetBranchAddress("jetMassJERUp", jetMass);
-        }
+            generalTree->SetBranchAddress("jerFactorUp", jerFactor);
         else
-        {
-            generalTree->SetBranchAddress("jetPtJERDown", jetPt);
-            generalTree->SetBranchAddress("jetMassJERDown", jetMass);
-        }
-    }
-    else
-    {
-        generalTree->SetBranchAddress("jetPt", jetPt);
-        generalTree->SetBranchAddress("jetMass", jetMass);
+            generalTree->SetBranchAddress("jerFactorDown", jerFactor);
     }
     
     /*
@@ -604,10 +595,17 @@ bool PECReader::BuildAndSelectEvent()
         TLorentzVector p4;
         p4.SetPtEtaPhiM(jetPt[i], jetEta[i], jetPhi[i], jetMass[i]);
         
+        
+        // Vary jet four-momentum within JEC uncertainty
         if (syst.type == SystTypeAlgo::JEC)
             p4 *= 1. + syst.direction * jecUncertainty[i];
         
+        // Rescale jet four-momentum to account for JER systematical variation
+        if (syst.type == SystTypeAlgo::JER)
+            p4 *= jerFactor[i];
         
+        
+        // Reject too soft or too forward jets
         if (p4.Pt() < 20. or fabs(p4.Eta()) > 4.7)
             continue;
         

@@ -352,6 +352,7 @@ class PECReader
         Float_t jetTCHP[MAX_LEN];
         Char_t jetFlavour[MAX_LEN];
         Float_t jecUncertainty[MAX_LEN];
+        Float_t jerFactor[MAX_LEN];
         Float_t jetCharge[MAX_LEN];
         Float_t jetPullAngle[MAX_LEN];
         
