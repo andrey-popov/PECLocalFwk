@@ -217,7 +217,7 @@ Candidate const &PECReader::GetNeutrino() const
 
 unsigned PECReader::GetNPrimaryVertices() const
 {
-    return PVSize;
+    return pvSize;
 }
 
 
@@ -432,7 +432,6 @@ void PECReader::OpenSourceFile()
     
     generalTree->SetBranchAddress("jetCSV", jetCSV);
     generalTree->SetBranchAddress("jetTCHP", jetTCHP);
-    //generalTree->SetBranchAddress("jetJP", jetJP);
     
     generalTree->SetBranchAddress("jetCharge", jetCharge);
     generalTree->SetBranchAddress("jetPullAngle", jetPullAngle);
@@ -441,7 +440,7 @@ void PECReader::OpenSourceFile()
     generalTree->SetBranchAddress("metPt", metPt);
     generalTree->SetBranchAddress("metPhi", metPhi);
     
-    generalTree->SetBranchAddress("PVSize", &PVSize);
+    generalTree->SetBranchAddress("pvSize", &pvSize);
     
     
     if (dataset.IsMC())
@@ -485,7 +484,7 @@ void PECReader::OpenSourceFile()
         
         
         // Pile-up information
-        generalTree->SetBranchAddress("PUTrueNumInteractions", &puTrueNumInteractions);
+        generalTree->SetBranchAddress("puTrueNumInteractions", &puTrueNumInteractions);
     }
     
     if (dataset.IsMC() and readHardParticles)

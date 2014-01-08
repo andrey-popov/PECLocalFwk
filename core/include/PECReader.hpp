@@ -322,7 +322,7 @@ class PECReader
         // Input buffers
         ULong64_t runNumber, lumiSection, eventNumber;
         
-        Int_t eleSize;
+        UChar_t eleSize;
         Float_t elePt[MAX_LEN];
         Float_t eleEta[MAX_LEN];
         Float_t elePhi[MAX_LEN];
@@ -334,7 +334,7 @@ class PECReader
         Bool_t eleQuality[MAX_LEN];
         Bool_t eleCharge[MAX_LEN];
         
-        Int_t muSize;
+        UChar_t muSize;
         Float_t muPt[MAX_LEN];
         Float_t muEta[MAX_LEN];
         Float_t muPhi[MAX_LEN];
@@ -343,19 +343,19 @@ class PECReader
         Bool_t muQualityTight[MAX_LEN];
         Bool_t muCharge[MAX_LEN];
         
-        Int_t jetSize;
+        UChar_t jetSize;
         Float_t jetPt[MAX_LEN];
         Float_t jetEta[MAX_LEN];
         Float_t jetPhi[MAX_LEN];
         Float_t jetMass[MAX_LEN];
         Float_t jetCSV[MAX_LEN];
         Float_t jetTCHP[MAX_LEN];
-        //Float_t jetJP[MAX_LEN];
-        Int_t jetFlavour[MAX_LEN];
+        Char_t jetFlavour[MAX_LEN];
         Float_t jecUncertainty[MAX_LEN];
         Float_t jetCharge[MAX_LEN];
         Float_t jetPullAngle[MAX_LEN];
         
+        /*
         Float_t softJetPt;
         Float_t softJetEta;
         Float_t softJetPhi;
@@ -366,20 +366,21 @@ class PECReader
         Float_t softJetPhiJECUnc;
         Float_t softJetMassJECUnc;
         Float_t softJetHtJECUnc;
+        */
         
-        Int_t metSize;
+        UChar_t metSize;
         Float_t metPt[MAX_LEN];
         Float_t metPhi[MAX_LEN];
         
-        Int_t processID;  // needed to split the inclusive W+jets
+        Short_t processID;  // needed to split the inclusive W+jets
         // W+HF classification. See enum SimpleEventClass in (*) for the explanations
         //(*) https://svnweb.cern.ch/trac/singletop/browser/trunk/CMSSW/SingleTop/interface/HFClass.h
         Int_t WHFClass;
         
         // Buffers to read the hard interaction
-        Int_t hardPartSize;
-        Int_t hardPartPdgId[MAX_LEN];
-        Int_t hardPartFirstMother[MAX_LEN], hardPartLastMother[MAX_LEN];
+        UChar_t hardPartSize;
+        Char_t hardPartPdgId[MAX_LEN];
+        Char_t hardPartFirstMother[MAX_LEN], hardPartLastMother[MAX_LEN];
         Float_t hardPartPt[MAX_LEN];
         Float_t hardPartEta[MAX_LEN];
         Float_t hardPartPhi[MAX_LEN];
@@ -389,7 +390,7 @@ class PECReader
         // Pile-up truth information
         
         // Number of recontructed primary vertices
-        Int_t PVSize;
+        UChar_t pvSize;
         
         // "True" number of pile-up interactions (available in simulation only)
         Float_t puTrueNumInteractions;
