@@ -445,13 +445,6 @@ void PECReader::OpenSourceFile()
         {
             generalTree->SetBranchAddress("PDF.nVars", &nWeight_PDF);
             generalTree->SetBranchAddress("PDF.up", weight_PDFUp);
-            generalTree->SetBranchAddress("PDF.down", weight_PDFDown);
-            
-            if (WjetsMG)
-            {
-                generalTree->SetBranchAddress("WjetQ2Weights/Q2Weights.up", &weight_WjetsQ2Up);
-                generalTree->SetBranchAddress("WjetQ2Weights/Q2Weights.down", &weight_WjetsQ2Down);
-            }
         }
         */
         
@@ -467,11 +460,6 @@ void PECReader::OpenSourceFile()
             generalTree->SetBranchAddress("softJetHtJECUnc", &softJetHtJECUnc);
             */
         }
-        
-        /*
-        if (WjetsMG)
-            generalTree->SetBranchAddress("simpleClass", &WHFClass);
-        */
         
         
         // Pile-up information

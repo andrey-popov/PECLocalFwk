@@ -374,9 +374,6 @@ class PECReader
         Float_t metPhi[MAX_LEN];
         
         Short_t processID;  // needed to split the inclusive W+jets
-        // W+HF classification. See enum SimpleEventClass in (*) for the explanations
-        //(*) https://svnweb.cern.ch/trac/singletop/browser/trunk/CMSSW/SingleTop/interface/HFClass.h
-        Int_t WHFClass;
         
         // Buffers to read the hard interaction
         UChar_t hardPartSize;
