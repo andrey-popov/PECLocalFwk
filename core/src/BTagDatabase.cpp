@@ -1,6 +1,7 @@
 #include <BTagDatabase.hpp>
 
 #include <ROOTLock.hpp>
+#include <FileInPath.hpp>
 
 #include <stdexcept>
 #include <cstdlib>
@@ -21,14 +22,10 @@ BTagDatabase::BTagDatabase(BTagger const &bTagger,
     
     
     // Open file with b-tagging efficiencies
-    char const *installPath = getenv("PEC_FWK_INSTALL");
+    FileInPath pathResolver;
     
-    if (not installPath)
-        throw runtime_error("BTagDatabase::BTagDatabase: Mandatory environment variable "
-         "PEC_FWK_INSTALL is not defined.");
-    
-    effFile.reset(new TFile((string(installPath) + "/data/BTag/eff_" + bTagger.GetTextCode() +
-     ".root").c_str()));
+    effFile.reset(new TFile((pathResolver.Resolve("BTag/", string("eff_") + bTagger.GetTextCode() +
+     ".root")).c_str()));
     
     
     // The code below was generated automatically

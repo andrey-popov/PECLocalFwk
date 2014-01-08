@@ -66,7 +66,7 @@ class EventCounter
 {
     public:
         /// Constructor from a title to indentify an instance of the class
-        EventCounter(std::string const &title);
+        EventCounter(std::string const &title = "");
         
         /// Copy constructor is deleted
         EventCounter(EventCounter const &) = delete;
@@ -75,6 +75,9 @@ class EventCounter
         EventCounter &operator=(EventCounter const &) = delete;
     
     public:
+        /// Resets the title
+        void ResetTitle(std::string const &title);
+        
         /// Registers a new selection step
         void RegisterSelectionStep(std::string const &label, std::string const &description);
         
@@ -94,7 +97,7 @@ class EventCounter
     
     private:
         /// A title to identify an instance of the class
-        std::string const title;
+        std::string title;
         
         /// A map from labels of selection step (needed to access them) to SelectionStep objets
         std::map<std::string, SelectionStep> steps;

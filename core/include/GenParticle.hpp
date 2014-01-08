@@ -46,6 +46,16 @@ class GenParticle: public Candidate
         /// Returns the collection of mother particles
         collection_t const &GetMothers() const;
         
+        /// A short-cut to access first mother
+        GenParticle const *GetFirstMother() const;
+        
+        /**
+         * \brief A short-cut to access PDG ID of the first mother
+         * 
+         * If this has no mothers, zero is returned.
+         */
+        int GetFirstMotherPdgId() const;
+        
         /// Returns the collection of daughter particles
         collection_t const &GetDaughters() const;
         

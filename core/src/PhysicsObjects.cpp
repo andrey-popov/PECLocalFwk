@@ -1,5 +1,10 @@
 #include <PhysicsObjects.hpp>
 
+#include <limits>
+
+
+using namespace std;
+
 
 // Methods of class Candidate
 Candidate::Candidate()
@@ -125,15 +130,21 @@ int Lepton::Charge() const
 // Methods of class Jet
 Jet::Jet():
     Candidate(),
-    CSVValue(-1e6), TCHPValue(-1e6),
-    parentPDGID(0)
+    CSVValue(-numeric_limits<double>::infinity()),
+    JPValue(-numeric_limits<double>::infinity()),
+    TCHPValue(-numeric_limits<double>::infinity()),
+    parentPDGID(0),
+    charge(-10.), pullAngle(-10.)
 {}
 
 
 Jet::Jet(TLorentzVector const &p4):
     Candidate(p4),
-    CSVValue(-1e6), TCHPValue(-1e6),
-    parentPDGID(0)
+    CSVValue(-numeric_limits<double>::infinity()),
+    JPValue(-numeric_limits<double>::infinity()),
+    TCHPValue(-numeric_limits<double>::infinity()),
+    parentPDGID(0),
+    charge(-10.), pullAngle(-10.)
 {}
 
 
@@ -169,6 +180,18 @@ void Jet::SetParentID(int pdgID)
 }
 
 
+void Jet::SetCharge(double charge_)
+{
+    charge = charge_;
+}
+
+
+void Jet::SetPullAngle(double pullAngle_)
+{
+    pullAngle = pullAngle_;
+}
+
+
 double Jet::CSV() const
 {
     return CSVValue;
@@ -190,4 +213,16 @@ double Jet::TCHP() const
 int Jet::GetParentID() const
 {
     return parentPDGID;
+}
+
+
+double Jet::Charge() const
+{
+    return charge;
+}
+
+
+double Jet::GetPullAngle() const
+{
+    return pullAngle;
 }

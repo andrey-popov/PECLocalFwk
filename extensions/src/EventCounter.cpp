@@ -22,13 +22,20 @@ SelectionStep::SelectionStep(string const &description_):
 
 SelectionStep::SelectionStep(SelectionStep &&src):
     description(move(src.description)),
+    nPassed(src.nPassed),
     eventIDs(move(src.eventIDs))
 {}
 
 
-EventCounter::EventCounter(string const &title_):
+EventCounter::EventCounter(string const &title_ /* = ""*/):
     title(title_)
 {}
+
+
+void EventCounter::ResetTitle(string const &title_)
+{
+    title = title_;
+}
 
 
 void EventCounter::RegisterSelectionStep(string const &label, string const &description)

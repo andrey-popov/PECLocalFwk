@@ -10,138 +10,9 @@
 #include <EventID.hpp>
 #include <PECReaderForward.hpp>
 
-#include <TClonesArray.h>
 
-#include <string>
-#include <functional>
-#include <list>
-
-
-/**
- * \class TriggerRange
- * \brief An aggregate to store trigger-related information
- * 
- * This class puts together relevant information for a trigger selection in a given data-taking
- * period. In addition to the name of the trigger used in specified EventID range in data and
- * the corresponding integrated luminosity, it contains the name of the corresponding MC trigger
- * and an optional modification of the offline event selection (useful if some triggers have higher
- * thresholds, for example).
- * 
- * The class is used solely to aggregate the information together and to simply access to it, it
- * shall not describe algorithms to exploit this information, for example, to perform the actual
- * trigger selection or to calculate the MC event weight due to the triggers.
- * 
- * The class is copyable.
- */
-class TriggerRange
-{
-    public:
-        /// The default constructor
-        TriggerRange() = default;
-        
-        /**
-         * \brief Constructor
-         * 
-         * Constructor for the most typical use case. The data range is specified by the two run
-         * number (both boundaries are included in the range). Consult documentation for
-         * SetDataTrigger and SetMCTrigger for description of the rest parameters.
-         */
-        TriggerRange(unsigned long firstRun, unsigned long lastRun,
-         std::string const &dataTriggerPattern, double intLumi,
-         std::string const &MCTriggerPattern);
-        
-        /// Default copy constructor
-        TriggerRange(TriggerRange const &) = default;
-        
-        /// Destructor
-        virtual ~TriggerRange() = default;
-        
-        /// Default assignment operator
-        TriggerRange &operator=(TriggerRange const &) = default;
-    
-    public:
-        /**
-         * \brief Specifies the data range
-         * 
-         * The method sets the data range which this object is to address. Both boundaries are
-         * included in the range.
-         */
-        void SetRange(EventID const &first, EventID const &last);
-        
-        /**
-         * \brief Specifies the trigger in data and the corresponding int. luminosity
-         * 
-         * Specifies the pattern for the name of the trigger used in data. The actual trigger name
-         * is expected to be checked to contain the given pattern as a substring, no regular
-         * expressions or wildcards should be used. The provided pattern must match exactly one
-         * trigger in each trigger menu used. The integrated luminosity is the effective integrated
-         * luminosity recorded with the given trigger, measured in 1/pb.
-         */
-        void SetDataTrigger(std::string const &pattern, double intLumi);
-        
-        /**
-         * \brief Specifies the trigger to be used in MC
-         * 
-         * Specifies the pattern for the name of the trigger in MC, which corresponds to the
-         * specified trigger in data (i.e., normally, they should be as similar as possible). It
-         * must meet the same requirements as the mask provided to SetDataTrigger method.
-         */
-        void SetMCTrigger(std::string const &pattern);
-        
-        /**
-         * \brief Sets the additional event selection
-         * 
-         * Specifies the additional offline event selection to be used along with the provided
-         * data trigger. It is to be applied in PECReader after the general event selection and is
-         * useful when triggers with different thresholds are used for different data-taking
-         * ranges. The argument can be pointer to a function, a functor object, or a lambda
-         * expression; the callable object should return true if the event passes the selection.
-         */
-        void SetEventSelection(std::function<bool(PECReader const &)> eventSelection);
-        
-        /**
-         * \brief Checks whether the specified event is in the range
-         * 
-         * Returns true if the specified event is in the allowed range. Both lower and upper bounds
-         * are included in the range.
-         */
-        bool InRange(EventID const &eventID) const;
-        
-        /**
-         * \brief Performs the additional event selection
-         * 
-         * Performs the addtional offline event selection as specified by SetEventSelection method.
-         * It is useful, e.g., if triggers with different thresholds are used over the data-taking
-         * period. If SetEventSelection method has never been called, this function returns true
-         * for any event. Apart from providing a callable object via SetEventSelection, the user
-         * can implement the event selection in a derived class by overriding this virtual method.
-         */
-        virtual bool PassEventSelection(PECReader const &reader) const;
-        
-        /// Returns the trigger pattern used in data
-        std::string const &GetDataTriggerPattern() const;
-        
-        /// Returns the trigger pattern to be asked for in MC
-        std::string const &GetMCTriggerPattern() const;
-        
-        /// Returns the effective integrated luminosity, 1/pb
-        double GetLuminosity() const;
-    
-    private:
-        EventID firstEvent;  ///< The beginning of the EventID range (included in the range)
-        EventID lastEvent; ///< The end of the EventID range (included in the range)
-        /// Pattern for the name of the trigger used in data
-        std::string dataTriggerPattern;
-        double intLumi;  ///< Integrated luminosity recorded with this trigger in data, 1/pb
-        /// Pattern for the name of the trigger to be asked for in MC
-        std::string MCTriggerPattern;
-        /// An additional offline event selection
-        std::function<bool(PECReader const &)> eventSelection;
-        
-        //TODO: Add an object and configuration to access the trigger scale factors. Though the
-        //object should probably be stored in the TriggerSelectionInterface (or derieved) and it's
-        //common to all the ranges; to pick up the specific SF the two trigger masks can be used.
-};
+// Forward declarations
+class TTree;
 
 
 /**
@@ -149,50 +20,85 @@ class TriggerRange
  * \brief An abstract class to define interface for the trigger selection
  * 
  * The trigger selection is splitted into two steps represented by virtual methods PassTrigger and
- * GetWeight. When a new file is started to be processed, method NewFile must be called. The
- * interface tries to incorporate both the data and MC trigger selections, although it implies
- * some unnecessary complications. The concept might be changed in future.
+ * GetWeight. At the first step the decision is taken based on the event ID and information stored
+ * in the trigger tree. Normally, it would simply check if appropriate triggers accepted the event.
+ * At the second step trigger scale factors are incorporated, and an additional selection that
+ * exploits information on the whole event can be evaluated.
  * 
- * If several instances of class PECReader are used simultaneously, each must operate its own copy
- * of a class derived from TriggerSelectionInterface because it contains some information specific
- * for the current file under processing. In order to enable this feature, a derived class must
+ * When a new dataset is opened, an instanse of this class must be notified with the help of method
+ * UpdateTree. It is also given a pointer to the new trigger tree. The tree is not owned by the
+ * object (normally, it is owned by an instance of the PECReader class), but all operations on it
+ * must be carried in a class derived from this TriggerSelectionInterface. In particular, it implies
+ * setting of setting addresses for the tree's branches and reading the tree.
+ * 
+ * Although a trigger selection is expected to be described by a set of TriggerRange objects, which
+ * sets a tight connection between the two classes, it is not specified as a part of the interface
+ * to provide the user with more flexibility.
+ * 
+ * If several instances of class PECReader are used simultaneously, each must operate on its own
+ * copy of a class derived from TriggerSelectionInterface because it contains information specific
+ * for the current file under processing. In order to allow such behaviour, a derived class must
  * provide an implementation for method Clone.
  */
 class TriggerSelectionInterface
 {
     public:
-        /// Default constructor
-        TriggerSelectionInterface() = default;
+        /// Constructor with no arguments
+        TriggerSelectionInterface();
         
-        /// Default copy constructor
-        TriggerSelectionInterface(TriggerSelectionInterface const &) = default;
+        /// Copy constructor is deleted
+        TriggerSelectionInterface(TriggerSelectionInterface const &) = delete;
+        
+        /// Move constructor
+        TriggerSelectionInterface(TriggerSelectionInterface &&src);
         
         /// Virtual destructor
-        virtual ~TriggerSelectionInterface() = default;
+        virtual ~TriggerSelectionInterface();
         
-        /// Default assignment operator
-        TriggerSelectionInterface &operator=(TriggerSelectionInterface const &) = default;
+        /// Move assignment operator
+        TriggerSelectionInterface &operator=(TriggerSelectionInterface &&rhs);
+        
+        /// Assignment overator is deleted
+        TriggerSelectionInterface &operator=(TriggerSelectionInterface const &) = delete;
     
     public:
         /**
-         * \brief Should be called each time a new file is started
+         * \brief Notifies the object that the new trigger tree was read
          * 
-         * Default impementation is trivial
+         * The method should be called each time a new file is opened by the PECReader and the
+         * trigger tree is updated. An instanse of the TriggerSelectionInterface class may modify
+         * the tree provided in a call of this method but does not own it (i.e. it must not delete
+         * the tree). Apart from the pointer to the new tree, the method must be given a flag that
+         * specifies if the new dataset is real data or simulation.
+         * 
+         * Normally, implementation of this method in a derived class is expected to update the
+         * pointer to the tree, reset the tree counters, and set addresses of buffers to read the
+         * tree.
          */
-        virtual void NewFile(bool isData) const;
+        virtual void UpdateTree(TTree *triggerTree, bool isData) = 0;
         
         /**
-         * \brief Performs the first step of trigger selection
+         * \brief Reads the next event from the trigger tree
          * 
-         * The decision relies purely on the information stored in the event-ID and trigger trees.
-         * Normally, it is used to determine whether the rest of the event contect should be read
-         * from the file. This method should be called before PECReader::BuildAndSelectEvent.
+         * In case of real data the trigger selection can depend on the data-taking period and hence
+         * on the event ID. The ID of the event which is about to be read is known by an instance of
+         * the PECReader class and must be provided for this method in order to allow it to read
+         * only necessary part of the trigger tree. The method must return true if an event was
+         * read successfully and false if there are no more events in the tree.
          */
-        virtual bool PassTrigger(EventID const &eventID, TClonesArray const *names,
-         Bool_t const *fired) const = 0;
+        virtual bool ReadNextEvent(EventID const &eventID) = 0;
         
         /**
-         * \brief Performs the second step of the trigger selection and calculates weight
+         * \brief Performs the first step of trigger selection on the current event
+         * 
+         * The decision relies purely on the event ID and the information stored in the trigger
+         * tree. Normally, it is used to determine whether the rest of the event content should be
+         * read from the file. This method should be called before PECReader::BuildAndSelectEvent.
+         */
+        virtual bool PassTrigger() const = 0;
+        
+        /**
+         * \brief Performs the second step of the trigger selection and calculates event weight
          * 
          * Performs the additional event selection demanded by the TriggerRange object(s) and
          * calculates the event weight. Must be called after PECReader::BuildAndSelectEvent. The
@@ -204,11 +110,25 @@ class TriggerSelectionInterface
         /**
          * \brief Returns a copy of an instance of the class
          * 
-         * The method must return a properly initialized object, but it might ignore data members
+         * The method must return a properly initialised object, but it might ignore data members
          * that are specific to the current event or source file, i.e. it must duplicate the logic
          * and parameters of the processing algorithm, but not members referring to current state.
          * The method is only expected to be called before the first event is processed and the
          * first file is opened.
          */
         virtual TriggerSelectionInterface *Clone() const = 0;
+    
+    protected:
+        /**
+         * \brief Pointer to the tree with information on triggers
+         * 
+         * The tree is read by this but not owned. Therefore, it must not be deleted by this.
+         */
+        TTree *triggerTree;
+        
+        /// Total number of entries in the tree
+        unsigned long nEntriesTree;
+        
+        /// Index of the tree entry to be read next
+        unsigned long nextEntryTree;
 };

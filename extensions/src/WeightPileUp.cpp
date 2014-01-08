@@ -2,6 +2,7 @@
 
 #include <ROOTLock.hpp>
 #include <Dataset.hpp>
+#include <FileInPath.hpp>
 
 #include <cstdlib>
 #include <stdexcept>
@@ -14,17 +15,12 @@ WeightPileUp::WeightPileUp(string const &dataPUFileName, string const &mcPUFileN
  double systError):
     WeightPileUp(dataPUFileName, systError)
 {
-    // Get the install path
-    char const *installPath = getenv("PEC_FWK_INSTALL");
-    
-    if (not installPath)
-        throw runtime_error("WeightPileUp::WeightPileUp: Mandatory environment variable "
-         "PEC_FWK_INSTALL is not defined.");
+    FileInPath pathResolver;
     
     
     // Open file with MC-truth pile-up distributions
     ROOTLock::Lock();
-    mcPUFile.reset(new TFile((string(installPath) + "/data/PileUp/" + mcPUFileName).c_str()));
+    mcPUFile.reset(new TFile((pathResolver.Resolve("PileUp/", mcPUFileName)).c_str()));
     ROOTLock::Unlock();
 }
 
@@ -33,19 +29,14 @@ WeightPileUp::WeightPileUp(string const &dataPUFileName, double systError_):
     WeightPileUpInterface(),
     systError(systError_)
 {
-    // Get the install path
-    char const *installPath = getenv("PEC_FWK_INSTALL");
-    
-    if (not installPath)
-        throw runtime_error("WeightPileUp::WeightPileUp: Mandatory environment variable "
-         "PEC_FWK_INSTALL is not defined.");
+    FileInPath pathResolver;
     
     
     // ROOT objects are created below. Mark it as a critical block
     ROOTLock::Lock();
     
     // Read the target (real data) pile-up distribution
-    TFile dataPUFile((string(installPath) + "/data/PileUp/" + dataPUFileName).c_str());
+    TFile dataPUFile((pathResolver.Resolve("PileUp/", dataPUFileName)).c_str());
     dataPUHist.reset(dynamic_cast<TH1 *>(dataPUFile.Get("pileup")));
     
     // Make sure the histogram is not associated to a file

@@ -24,7 +24,6 @@
 #include <TTree.h>
 #include <TLorentzVector.h>
 #include <TVector2.h>
-#include <TClonesArray.h>
 
 #include <vector>
 #include <list>
@@ -90,14 +89,14 @@ class PECReader
         PECReader &operator=(PECReader const &) = delete;
         
         /// Destructor
-        ~PECReader();
+        ~PECReader() = default;
     
     public:
         /// Configures this from a configuration object
         void Configure(PECReaderConfig const &config);
         
         /// Sets the trigger selection
-        void SetTriggerSelection(TriggerSelectionInterface const *triggerSelection);
+        void SetTriggerSelection(TriggerSelectionInterface *triggerSelection);
         
         /// Sets event selection
         void SetEventSelection(EventSelectionInterface const *eventSelection);
@@ -274,7 +273,7 @@ class PECReader
         bool isInitialized;
         
         /// Pointer to an object to perform trigger selection
-        TriggerSelectionInterface const *triggerSelection;
+        TriggerSelectionInterface *triggerSelection;
         
         /// Pointer to an object to perform event selection
         EventSelectionInterface const *eventSelection;
@@ -323,39 +322,41 @@ class PECReader
         // Input buffers
         ULong64_t runNumber, lumiSection, eventNumber;
         
-        Int_t eleSize;
+        UChar_t eleSize;
         Float_t elePt[MAX_LEN];
         Float_t eleEta[MAX_LEN];
         Float_t elePhi[MAX_LEN];
         Float_t eleRelIso[MAX_LEN];
         Float_t eleDB[MAX_LEN];
+        Bool_t eleTriggerPreselection[MAX_LEN];
         Float_t eleMVAID[MAX_LEN];
         Bool_t elePassConversion[MAX_LEN];
         Bool_t eleQuality[MAX_LEN];
         Bool_t eleCharge[MAX_LEN];
         
-        Int_t muSize;
+        UChar_t muSize;
         Float_t muPt[MAX_LEN];
         Float_t muEta[MAX_LEN];
         Float_t muPhi[MAX_LEN];
         Float_t muRelIso[MAX_LEN];
         Float_t muDB[MAX_LEN];
-        Bool_t muQualityLoose[MAX_LEN];
         Bool_t muQualityTight[MAX_LEN];
         Bool_t muCharge[MAX_LEN];
         
-        Int_t jetSize;
+        UChar_t jetSize;
         Float_t jetPt[MAX_LEN];
         Float_t jetEta[MAX_LEN];
         Float_t jetPhi[MAX_LEN];
         Float_t jetMass[MAX_LEN];
         Float_t jetCSV[MAX_LEN];
         Float_t jetTCHP[MAX_LEN];
-        //Float_t jetTCHE[MAX_LEN];
-        //Float_t jetJP[MAX_LEN];
-        Int_t jetFlavour[MAX_LEN];
+        Char_t jetFlavour[MAX_LEN];
         Float_t jecUncertainty[MAX_LEN];
+        Float_t jerFactor[MAX_LEN];
+        Float_t jetCharge[MAX_LEN];
+        Float_t jetPullAngle[MAX_LEN];
         
+        /*
         Float_t softJetPt;
         Float_t softJetEta;
         Float_t softJetPhi;
@@ -366,20 +367,18 @@ class PECReader
         Float_t softJetPhiJECUnc;
         Float_t softJetMassJECUnc;
         Float_t softJetHtJECUnc;
+        */
         
-        Int_t metSize;
+        UChar_t metSize;
         Float_t metPt[MAX_LEN];
         Float_t metPhi[MAX_LEN];
         
-        Int_t processID;  // needed to split the inclusive W+jets
-        // W+HF classification. See enum SimpleEventClass in (*) for the explanations
-        //(*) https://svnweb.cern.ch/trac/singletop/browser/trunk/CMSSW/SingleTop/interface/HFClass.h
-        Int_t WHFClass;
+        Short_t processID;  // needed to split the inclusive W+jets
         
         // Buffers to read the hard interaction
-        Int_t hardPartSize;
-        Int_t hardPartPdgId[MAX_LEN];
-        Int_t hardPartFirstMother[MAX_LEN], hardPartLastMother[MAX_LEN];
+        UChar_t hardPartSize;
+        Char_t hardPartPdgId[MAX_LEN];
+        Char_t hardPartFirstMother[MAX_LEN], hardPartLastMother[MAX_LEN];
         Float_t hardPartPt[MAX_LEN];
         Float_t hardPartEta[MAX_LEN];
         Float_t hardPartPhi[MAX_LEN];
@@ -389,16 +388,11 @@ class PECReader
         // Pile-up truth information
         
         // Number of recontructed primary vertices
-        Int_t PVSize;
+        UChar_t pvSize;
         
         // "True" number of pile-up interactions (available in simulation only)
         Float_t puTrueNumInteractions;
         
-        
-        // Buffers to read a tree with trigger bits
-        Int_t triggerSize;
-        TClonesArray *triggerNames;
-        Bool_t hasFired[512];
         
         
         Int_t nWeight_PDF;

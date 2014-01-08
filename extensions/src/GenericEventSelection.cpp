@@ -30,8 +30,9 @@ bool GenericEventSelection::PassLeptonStep(vector<Lepton> const &tightLeptons,
     //pt than the nth threshold for this flavour. If there are more leptons than thresholds, all the
     //additional leptons must fail the softest threshold. But the method also vetoes the additional
     //loose leptons, therefore one can just reject an event which contains more leptons than there
-    //are thresholds specified. On the other hand, if the number of leptons is smaller than the
-    //number of thresholds, the event lacks tight leptons and must be rejected, too.
+    //are thresholds specified. This is beacause tight leptons are a strict subset of loose ones. On
+    //the other hand, if the number of leptons is smaller than the number of thresholds, the event
+    //lacks tight leptons and must be rejected, too.
     
     // Initialize the iterators for all the lepton flavours
     for (unsigned i = 0; i < 3; ++i)
@@ -45,7 +46,11 @@ bool GenericEventSelection::PassLeptonStep(vector<Lepton> const &tightLeptons,
         unsigned const flavourIndex = flavourMap.at(lep.GetFlavour());
         auto &thresholdIt = leptonThresholdIts.at(flavourIndex);
         
-        // Make sure we have not yet exhausted the allowed number of tight leptons of such flavour
+        // Make sure we have not yet exhausted the allowed number of tight leptons of such flavour.
+        //However, remember that PECReader fills the collection of tight leptons with the same pt
+        //treshold as for loose leptons. For this reason the condition below can be satisfied either
+        //because there are, indeed, too many high-pt leptons or because there are additional
+        //leptons that should be vetoed. In any case the event should be rejected
         if (thresholdIt == leptonPtThresholds.at(flavourIndex).cend())
             return false;
         

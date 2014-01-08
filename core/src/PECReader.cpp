@@ -26,8 +26,7 @@ PECReader::PECReader(Dataset const &dataset_):
     readHardParticles(false),
     bTagReweighter(nullptr),
     sourceFile(nullptr),
-    eventIDTree(nullptr), triggerTree(nullptr), generalTree(nullptr),
-    triggerNames(nullptr)
+    eventIDTree(nullptr), triggerTree(nullptr), generalTree(nullptr)
 {}
 
 
@@ -35,12 +34,6 @@ PECReader::PECReader(Dataset const &dataset, PECReaderConfig const &config):
     PECReader(dataset)
 {
     Configure(config);
-}
-
-
-PECReader::~PECReader()
-{
-    delete triggerNames;
 }
 
 
@@ -63,7 +56,7 @@ void PECReader::Configure(PECReaderConfig const &config)
 }
 
 
-void PECReader::SetTriggerSelection(TriggerSelectionInterface const *triggerSelection_)
+void PECReader::SetTriggerSelection(TriggerSelectionInterface *triggerSelection_)
 {
     triggerSelection = triggerSelection_;
 }
@@ -144,24 +137,21 @@ bool PECReader::NextEvent()
             return false;
         
         
-        // Read the event ID and trigger information
+        // Read the event ID
         eventIDTree->GetEntry(curEventTree);
-        triggerTree->GetEntry(curEventTree);
-        
         eventID.Set(runNumber, lumiSection, eventNumber);
         
-        // In case of MC disable the branch with the trigger names: it is needed only once
-        if (curEventTree == 0 and dataset.IsMC())
-            triggerTree->SetBranchStatus("names", false);
-
         
-        
-        // Check if the event meets the trigger selection
-        if (not triggerSelection or
-         not triggerSelection->PassTrigger(eventID, triggerNames, hasFired))
+        // Update the event in the trigger-selection object and check if it passes the selection
+        if (triggerSelection)
         {
-            ++curEventTree;
-            continue;
+            triggerSelection->ReadNextEvent(eventID);
+            
+            if (not triggerSelection->PassTrigger())
+            {
+                ++curEventTree;
+                continue;
+            }
         }
         
         
@@ -227,7 +217,7 @@ Candidate const &PECReader::GetNeutrino() const
 
 unsigned PECReader::GetNPrimaryVertices() const
 {
-    return PVSize;
+    return pvSize;
 }
 
 
@@ -285,7 +275,7 @@ void PECReader::Initialize()
     {
         if (not bTagReweighter)
             logger << "Warning in PECReader::Initialize: No object to propagate b-tagging scale " <<
-             "factots has been specified. Simulation will not be reweighted for this effect." <<
+             "factors has been specified. Simulation will not be reweighted for this effect." <<
              eom;
         
         if (not puReweighter)
@@ -293,15 +283,6 @@ void PECReader::Initialize()
              "pile-up has been specified. Simulation will not be reweighted for this effect." <<
              eom;
     }
-    
-    
-    // Create dynamically-allocated ROOT objects. Because of design of ROOT memory system, this
-    //block of code must be atomic
-    ROOTLock::Lock();
-    
-    triggerNames = new TClonesArray("TObjString");
-    
-    ROOTLock::Unlock();
     
     
     // Perform remaining initialization
@@ -328,9 +309,16 @@ void PECReader::OpenSourceFile()
     // Open the source file
     sourceFile = TFile::Open(sourceFileIt->name.c_str());
     
+    
     // Get the trees
     eventIDTree = dynamic_cast<TTree *>(sourceFile->Get("eventContent/EventID"));
-    triggerTree = dynamic_cast<TTree *>(sourceFile->Get("trigger/TriggerInfo"));
+    
+    if (triggerSelection)
+    {
+        triggerTree = dynamic_cast<TTree *>(sourceFile->Get("trigger/TriggerInfo"));
+        triggerSelection->UpdateTree(triggerTree, not dataset.IsMC());
+    }
+    
     generalTree = dynamic_cast<TTree *>(sourceFile->Get("eventContent/BasicInfo"));
     //generalTree->AddFriend("eventContent/IntegralProperties");
     generalTree->AddFriend("eventContent/BasicInfo");
@@ -371,16 +359,13 @@ void PECReader::OpenSourceFile()
     eventIDTree->SetBranchAddress("lumi", &lumiSection);
     eventIDTree->SetBranchAddress("event", &eventNumber);
     
-    triggerTree->SetBranchAddress("size", &triggerSize);
-    triggerTree->SetBranchAddress("names", &triggerNames);
-    triggerTree->SetBranchAddress("hasFired", hasFired);
-    
     generalTree->SetBranchAddress("eleSize", &eleSize);
     generalTree->SetBranchAddress("elePt", elePt);
     generalTree->SetBranchAddress("eleEta", eleEta);
     generalTree->SetBranchAddress("elePhi", elePhi);
     generalTree->SetBranchAddress("eleRelIso", eleRelIso);
     generalTree->SetBranchAddress("eleDB", eleDB);
+    generalTree->SetBranchAddress("eleTriggerPreselection", eleTriggerPreselection);
     generalTree->SetBranchAddress("eleMVAID", eleMVAID);
     generalTree->SetBranchAddress("elePassConversion", elePassConversion);
     generalTree->SetBranchAddress("eleSelectionA", eleQuality);
@@ -392,31 +377,21 @@ void PECReader::OpenSourceFile()
     generalTree->SetBranchAddress("muPhi", muPhi);
     generalTree->SetBranchAddress("muRelIso", muRelIso);
     generalTree->SetBranchAddress("muDB", muDB);
-    generalTree->SetBranchAddress("muSelectionA", muQualityLoose);
-    generalTree->SetBranchAddress("muSelectionB", muQualityTight);
+    generalTree->SetBranchAddress("muQualityTight", muQualityTight);
     generalTree->SetBranchAddress("muCharge", muCharge);
     
     generalTree->SetBranchAddress("jetSize", &jetSize);
+    generalTree->SetBranchAddress("jetPt", jetPt);
     generalTree->SetBranchAddress("jetEta", jetEta);
     generalTree->SetBranchAddress("jetPhi", jetPhi);
+    generalTree->SetBranchAddress("jetMass", jetMass);
     
     if (dataset.IsMC() and syst.type == SystTypeAlgo::JER)
     {
         if (syst.direction > 0)
-        {
-            generalTree->SetBranchAddress("jetPtJERUp", jetPt);
-            generalTree->SetBranchAddress("jetMassJERUp", jetMass);
-        }
+            generalTree->SetBranchAddress("jerFactorUp", jerFactor);
         else
-        {
-            generalTree->SetBranchAddress("jetPtJERDown", jetPt);
-            generalTree->SetBranchAddress("jetMassJERDown", jetMass);
-        }
-    }
-    else
-    {
-        generalTree->SetBranchAddress("jetPt", jetPt);
-        generalTree->SetBranchAddress("jetMass", jetMass);
+            generalTree->SetBranchAddress("jerFactorDown", jerFactor);
     }
     
     /*
@@ -448,14 +423,15 @@ void PECReader::OpenSourceFile()
     
     generalTree->SetBranchAddress("jetCSV", jetCSV);
     generalTree->SetBranchAddress("jetTCHP", jetTCHP);
-    //generalTree->SetBranchAddress("jetTCHE", jetTCHE);
-    //generalTree->SetBranchAddress("jetJP", jetJP);
+    
+    generalTree->SetBranchAddress("jetCharge", jetCharge);
+    generalTree->SetBranchAddress("jetPullAngle", jetPullAngle);
     
     generalTree->SetBranchAddress("metSize", &metSize);
     generalTree->SetBranchAddress("metPt", metPt);
     generalTree->SetBranchAddress("metPhi", metPhi);
     
-    generalTree->SetBranchAddress("PVSize", &PVSize);
+    generalTree->SetBranchAddress("pvSize", &pvSize);
     
     
     if (dataset.IsMC())
@@ -469,13 +445,6 @@ void PECReader::OpenSourceFile()
         {
             generalTree->SetBranchAddress("PDF.nVars", &nWeight_PDF);
             generalTree->SetBranchAddress("PDF.up", weight_PDFUp);
-            generalTree->SetBranchAddress("PDF.down", weight_PDFDown);
-            
-            if (WjetsMG)
-            {
-                generalTree->SetBranchAddress("WjetQ2Weights/Q2Weights.up", &weight_WjetsQ2Up);
-                generalTree->SetBranchAddress("WjetQ2Weights/Q2Weights.down", &weight_WjetsQ2Down);
-            }
         }
         */
         
@@ -492,14 +461,9 @@ void PECReader::OpenSourceFile()
             */
         }
         
-        /*
-        if (WjetsMG)
-            generalTree->SetBranchAddress("simpleClass", &WHFClass);
-        */
-        
         
         // Pile-up information
-        generalTree->SetBranchAddress("PUTrueNumInteractions", &puTrueNumInteractions);
+        generalTree->SetBranchAddress("puTrueNumInteractions", &puTrueNumInteractions);
     }
     
     if (dataset.IsMC() and readHardParticles)
@@ -513,11 +477,6 @@ void PECReader::OpenSourceFile()
         generalTree->SetBranchAddress("hardPartPhi", hardPartPhi);
         generalTree->SetBranchAddress("hardPartMass", hardPartMass);
     }
-    
-    
-    // Notify the trigger object that a new file has been opened
-    if (triggerSelection)
-        triggerSelection->NewFile(not dataset.IsMC());
 }
 
 
@@ -562,7 +521,7 @@ bool PECReader::BuildAndSelectEvent()
         p4.SetPtEtaPhiM(elePt[i], eleEta[i], elePhi[i], 0.511e-3);
         
         
-        if (p4.Pt() < 20. or fabs(p4.Eta()) > 2.5 or eleRelIso[i] > 0.15 or eleMVAID[i] < 0.)
+        if (p4.Pt() < 20. or fabs(p4.Eta()) > 2.5 or eleRelIso[i] > 0.15)
             continue;
         
         // A loose electron is found
@@ -574,8 +533,8 @@ bool PECReader::BuildAndSelectEvent()
         looseLeptons.push_back(lepton);
         
         
-        if (p4.Pt() < 20. or !eleQuality[i] or eleRelIso[i] > 0.1 or not elePassConversion[i]
-         or eleMVAID[i] < 0.5)
+        if (p4.Pt() < 20. or not eleQuality[i] or eleRelIso[i] > 0.1 or not elePassConversion[i]
+         or not eleTriggerPreselection[i] or eleMVAID[i] < 0.5)
         //^ The pt cut is the same as for the loose electrons
             continue;
         
@@ -591,7 +550,7 @@ bool PECReader::BuildAndSelectEvent()
         p4.SetPtEtaPhiM(muPt[i], muEta[i], muPhi[i], 0.105);
         
         
-        if (p4.Pt() < 10. or fabs(p4.Eta()) > 2.5 or !muQualityLoose[i] or muRelIso[i] > 0.2)
+        if (p4.Pt() < 10. or fabs(p4.Eta()) > 2.5 or muRelIso[i] > 0.2)
                 continue;
         
         // A loose muon is found
@@ -603,7 +562,7 @@ bool PECReader::BuildAndSelectEvent()
         looseLeptons.push_back(lepton);
         
         
-        if (p4.Pt() < 10. or fabs(p4.Eta()) > 2.1 or !muQualityTight[i] or fabs(muDB[i]) > 0.2 or
+        if (p4.Pt() < 10. or fabs(p4.Eta()) > 2.1 or not muQualityTight[i] or fabs(muDB[i]) > 0.2 or
          muRelIso[i] > 0.12)
         //^ The pt cut is the same as for loose muons
             continue;
@@ -624,17 +583,28 @@ bool PECReader::BuildAndSelectEvent()
         TLorentzVector p4;
         p4.SetPtEtaPhiM(jetPt[i], jetEta[i], jetPhi[i], jetMass[i]);
         
+        
+        // Vary jet four-momentum within JEC uncertainty
         if (syst.type == SystTypeAlgo::JEC)
             p4 *= 1. + syst.direction * jecUncertainty[i];
         
+        // Rescale jet four-momentum to account for JER systematical variation
+        if (syst.type == SystTypeAlgo::JER)
+            p4 *= jerFactor[i];
         
+        
+        // Reject too soft or too forward jets
         if (p4.Pt() < 20. or fabs(p4.Eta()) > 4.7)
             continue;
         
         
         Jet jet(p4);
+        
         jet.SetCSV(jetCSV[i]);
         jet.SetTCHP(jetTCHP[i]);
+        
+        jet.SetCharge(jetCharge[i]);
+        jet.SetPullAngle(jetPullAngle[i]);
         
         if (dataset.IsMC())
             jet.SetParentID(jetFlavour[i]);
@@ -658,19 +628,6 @@ bool PECReader::BuildAndSelectEvent()
     
     // Several versions of MET are stored in a PEC file
     unsigned metIndex = 1;  // index of a corrected MET that is not varied for some systematics
-    
-    // In 2012Alpha_v2 campaign in case of MC wrong MET is stored under index 1. Below, a hack is
-    //inserted to correct for it. In muon channel an event contains to loose electrons. Therefore,
-    //variations of MET due to electron energy scale reproduce the correct central value for MET.
-    //Similarly for electron channel
-    if (dataset.IsMC())
-    {
-        if (tightLeptons.front().GetFlavour() == Lepton::Flavour::Muon)
-        //^ I assume there is exactly one tight lepton
-            metIndex = 8;  // electron energy up
-        else
-            metIndex = 10;  // muon energy up
-    }
     
     switch (syst.type)
     {
@@ -792,12 +749,25 @@ void PECReader::ParseHardInteraction()
         hardParticles.emplace_back(p4, hardPartPdgId[i]);
         
         
-        for (int iMother: {hardPartFirstMother[i], hardPartLastMother[i]})
-        //^ Isn't C++11 just awesome? ;)
+        // Set pointers to mothers and daughters
+        int iMother = hardPartFirstMother[i];
+        
+        if (iMother >= 0 and iMother < hardPartSize)
+        {
+            hardParticles.at(i).AddMother(&hardParticles.at(iMother));
+            hardParticles.at(iMother).AddDaughter(&hardParticles.at(i));
+        }
+        
+        if (hardPartFirstMother[i] != hardPartLastMother[i])
+        //^ Second mother is added if only it is different from the first one
+        {
+            int iMother = hardPartLastMother[i];
+            
             if (iMother >= 0 and iMother < hardPartSize)
             {
                 hardParticles.at(i).AddMother(&hardParticles.at(iMother));
                 hardParticles.at(iMother).AddDaughter(&hardParticles.at(i));
             }
+        }
     }
 }

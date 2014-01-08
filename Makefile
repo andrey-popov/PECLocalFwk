@@ -1,12 +1,16 @@
 # Define some macros
 #MACROS = -D B_EFF_PATH=\"$(shell cd ..; pwd)/BTagEff/\"
 
+BOOSTDIR = /afs/cern.ch/sw/lcg/external/Boost/1.50.0_python2.7/x86_64-slc5-gcc46-opt
+BOOSTINCL = $(BOOSTDIR)/include/boost-1_50
+
 # Define the flags to control make
 CC = g++
-INCLUDE = -Icore/include -Iextensions/include -I$(shell root-config --incdir)
+INCLUDE = -Icore/include -Iextensions/include -I$(shell root-config --incdir) -I$(BOOSTINCL)
 OPFLAGS = -O2
 CFLAGS = -Wall -Wextra -fPIC -std=c++11 $(INCLUDE) $(OPFLAGS) $(MACROS)
 #LDFLAGS = $(shell root-config --libs) -lTreePlayer -lHistPainter
+#LDFLAGS = -L$(BOOSTDIR)/lib -lboost_filesystem-gcc46-mt-1_50
 SOURCES = $(shell ls core/src/ | grep .cpp) $(shell ls extensions/src/ | grep .cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 # See http://www.gnu.org/software/make/manual/make.html#Substitution-Refs

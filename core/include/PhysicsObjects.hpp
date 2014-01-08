@@ -138,6 +138,12 @@ class Jet: public Candidate
         /// Sets the parent's PDF ID
         void SetParentID(int pdgID);
         
+        /// Sets the electric charge
+        void SetCharge(double charge);
+        
+        /// Sets jet pull angle
+        void SetPullAngle(double pullAngle);
+        
         /// Gets the value of the CSV b-tagging discriminator
         double CSV() const;
         
@@ -149,10 +155,18 @@ class Jet: public Candidate
         
         /// Gets the parent's PDG ID
         int GetParentID() const;
+        
+        /// Gets the electric charge
+        double Charge() const;
+        
+        /// Gets the pull angle
+        double GetPullAngle() const;
     
     private:
         double CSVValue;   ///< CSV b-tagging discriminator
         double JPValue;    ///< JP b-tagging discriminator
         double TCHPValue;  ///< TCHP b-tagging discriminator
         int parentPDGID;  ///< PDG ID of the parent
+        double charge;  ///< Electric charge
+        double pullAngle;  ///< "Pull angle" (characterises the colour flow)
 };

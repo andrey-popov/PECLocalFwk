@@ -1,74 +1,38 @@
 #include <TriggerSelectionInterface.hpp>
 
 
-using namespace std;
-
-
-TriggerRange::TriggerRange(unsigned long firstRun, unsigned long lastRun,
- string const &dataTriggerPattern_, double intLumi_, string const &MCTriggerPattern_):
-    firstEvent(firstRun, true), lastEvent(lastRun, false),
-    dataTriggerPattern(dataTriggerPattern_), intLumi(intLumi_), MCTriggerPattern(MCTriggerPattern_)
+TriggerSelectionInterface::TriggerSelectionInterface():
+    triggerTree(nullptr),
+    nEntriesTree(0), nextEntryTree(0)
 {}
 
 
-void TriggerRange::SetRange(EventID const &firstEvent_, EventID const &lastEvent_)
+TriggerSelectionInterface::TriggerSelectionInterface(TriggerSelectionInterface &&src):
+    triggerTree(src.triggerTree),
+    nEntriesTree(src.nEntriesTree), nextEntryTree(src.nextEntryTree)
 {
-    firstEvent = firstEvent_;
-    lastEvent = lastEvent_;
+    src.triggerTree = nullptr;
+    src.nEntriesTree = 0;
+    src.nextEntryTree = 0;
 }
 
 
-void TriggerRange::SetDataTrigger(string const &pattern, double intLumi_)
-{
-    dataTriggerPattern = pattern;
-    intLumi = intLumi_;
-}
-
-
-void TriggerRange::SetMCTrigger(string const &pattern)
-{
-    MCTriggerPattern = pattern;
-}
-
-
-void TriggerRange::SetEventSelection(function<bool(PECReader const &)> eventSelection_)
-{
-    eventSelection = eventSelection_;
-}
-
-
-bool TriggerRange::InRange(EventID const &eventID) const
-{
-    return (firstEvent <= eventID and eventID <= lastEvent);
-}
-
-
-bool TriggerRange::PassEventSelection(PECReader const &reader) const
-{
-    if (eventSelection)  // i.e. there is a valid event selection defined
-        return eventSelection(reader);
-    else
-        return true;
-}
-
-
-string const &TriggerRange::GetDataTriggerPattern() const
-{
-    return dataTriggerPattern;
-}
-
-
-string const &TriggerRange::GetMCTriggerPattern() const
-{
-    return MCTriggerPattern;
-}
-
-
-double TriggerRange::GetLuminosity() const
-{
-    return intLumi;
-}
-
-
-void TriggerSelectionInterface::NewFile(bool) const
+TriggerSelectionInterface::~TriggerSelectionInterface()
 {}
+
+
+TriggerSelectionInterface &TriggerSelectionInterface::operator=(TriggerSelectionInterface &&rhs)
+{
+    if (this != &rhs)
+    {
+        triggerTree = rhs.triggerTree;
+        nEntriesTree = rhs.nEntriesTree;
+        nextEntryTree = rhs.nextEntryTree;
+        
+        rhs.triggerTree = nullptr;
+        rhs.nEntriesTree = 0;
+        rhs.nextEntryTree = 0;
+    }
+    
+    return *this;
+}
