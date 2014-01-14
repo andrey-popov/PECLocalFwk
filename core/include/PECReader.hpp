@@ -259,7 +259,13 @@ class PECReader
          */
         bool BuildAndSelectEvent();
         
-        /// Calculate event weights (including systematics)
+        /**
+         * \brief Calculate event weights (including systematics)
+         * 
+         * The method is called for both simulation and real data. However, only trigger weight is
+         * evaluated in the latter case; it is needed to allow an additional event selection via
+         * TriggerRange::PassEventSelection.
+         */
         void CalculateEventWeights();
         
         /// Stores particles from the hard interaction in hardParticles collection

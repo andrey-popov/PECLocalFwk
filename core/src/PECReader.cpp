@@ -678,10 +678,21 @@ bool PECReader::BuildAndSelectEvent()
 
 void PECReader::CalculateEventWeights()
 {
-    // Calculate different components of an event weight
+    // Calculate weight due to trigger selection. This is the only event weight that can make
+    //sense for real data (e.g. if there is an additional selection specified in a TriggerRange
+    //object). However, with real data this weight is either 0. or 1.
     double const weightTrigger = (triggerSelection) ? triggerSelection->GetWeight(*this) : 1.;
     
+    if (not dataset.IsMC())
+    {
+        // Don't forget to update the central weight
+        weightCentral = weightTrigger;
+        
+        return;
+    }
     
+    
+    // Reweighting for the pile-up
     WeightPileUpInterface::Weights weightPileUp;
     
     if (puReweighter)
@@ -690,6 +701,7 @@ void PECReader::CalculateEventWeights()
         weightPileUp.Set(1., 1., 1.);
     
     
+    // Reweighting for b-tagging
     double const weightBTagging =
      (bTagReweighter) ? bTagReweighter->CalcWeight(goodJets, WeightBTag::Variation::Central) : 1.;
     
