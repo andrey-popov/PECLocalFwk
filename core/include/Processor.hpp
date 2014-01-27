@@ -96,6 +96,14 @@ class Processor
         Plugin const *GetPlugin(std::string const &name) const;
         
         /**
+         * \brief Returns a pointer to plugin with given name
+         * 
+         * The behaviour is identical to GetPlugin, but it does not throw an exeption if the plugin
+         * is not found. Instead a null pointer is returned.
+         */
+        Plugin const *GetPluginQuiet(std::string const &name) const noexcept;
+        
+        /**
          * \brief Returns a pointer to plugin with given name. In addition checks that the plugin
          * is placed in the path before a plugin with name dependentName.
          * 
@@ -107,6 +115,16 @@ class Processor
          */
         Plugin const *GetPluginBefore(std::string const &name, std::string const &dependentName)
          const;
+        
+        /**
+         * \brief Returns a pointer to plugin with given name. In addition checks that the plugin
+         * is placed in the path before a plugin with name dependentName.
+         * 
+         * Behaviour is identical to GetPluginBefore, but it does not throw an exception if the
+         * requested plugin is not found. Instead the method returns a null pointer.
+         */
+        Plugin const *GetPluginBeforeQuiet(std::string const &name,
+         std::string const &dependentName) const noexcept;
     
     private:
         /// Retuns index in the path of a plugin with given name. Throws an exception if not found

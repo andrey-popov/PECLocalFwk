@@ -140,6 +140,19 @@ Plugin const *Processor::GetPlugin(string const &name) const
 }
 
 
+Plugin const *Processor::GetPluginQuiet(string const &name) const noexcept
+{
+    try
+    {
+        return GetPlugin(name);
+    }
+    catch (...)
+    {
+        return nullptr;
+    }
+}
+
+
 Plugin const *Processor::GetPluginBefore(string const &name, string const &dependentName) const
 {
     unsigned const indexInterest = GetPluginIndex(name);
@@ -150,6 +163,20 @@ Plugin const *Processor::GetPluginBefore(string const &name, string const &depen
          "dependent plugin.");
     
     return path.at(indexInterest).get();
+}
+
+
+Plugin const *Processor::GetPluginBeforeQuiet(string const &name, string const &dependentName) const
+ noexcept
+{
+    try
+    {
+        return GetPluginBefore(name, dependentName);
+    }
+    catch (...)
+    {
+        return nullptr;
+    }
 }
 
 
