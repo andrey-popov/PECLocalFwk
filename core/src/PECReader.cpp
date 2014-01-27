@@ -534,7 +534,7 @@ bool PECReader::BuildAndSelectEvent()
         
         
         if (p4.Pt() < 20. or not eleQuality[i] or eleRelIso[i] > 0.1 or not elePassConversion[i]
-         or not eleTriggerPreselection[i] or eleMVAID[i] < 0.5)
+         or not eleTriggerPreselection[i] or eleMVAID[i] < 0.9)
         //^ The pt cut is the same as for the loose electrons
             continue;
         
