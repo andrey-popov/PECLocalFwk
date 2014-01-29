@@ -309,6 +309,10 @@ void PECReader::OpenSourceFile()
     // Open the source file
     sourceFile = TFile::Open(sourceFileIt->name.c_str());
     
+    if (not sourceFile)
+        throw runtime_error(string("PECReader::OpenSourceFile: File \"") + sourceFileIt->name +
+         "\" does not exist or is not a valid ROOT file.");
+    
     
     // Get the trees
     eventIDTree = dynamic_cast<TTree *>(sourceFile->Get("eventContent/EventID"));
@@ -653,7 +657,7 @@ bool PECReader::BuildAndSelectEvent()
     // For unknown reason extremely rarely MET can be NaN. Check for it
     if (isnan(metPt[metIndex]) or isnan(metPhi[metIndex]))
     {
-        logger << "WARNING: MET is NaN in event #" << curEventTree << " in file \"" <<
+        logger << "Warning: MET is NaN in event #" << curEventTree << " in file \"" <<
          sourceFile->GetName() << "\" (ID " << runNumber << ":" << lumiSection << ":" <<
          eventNumber << "). The event is skipped." << eom;
         return false;
