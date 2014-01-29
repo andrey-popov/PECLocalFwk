@@ -123,7 +123,7 @@ void Processor::ProcessDataset(Dataset const &dataset)
         for (unsigned i = 1; i < path.size(); ++i)
         {
             if (not path.at(i)->ProcessEvent())
-                continue;
+                break;
         }
     }
     
