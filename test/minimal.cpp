@@ -27,40 +27,48 @@ int main()
     
     
     // Define datasets
-    string const filePrefix("/afs/cern.ch/user/a/aapopov/workspace/data/2012Alpha/");
+    string const filePrefix("/afs/cern.ch/user/a/aapopov/workspace/data/2012Bravo/");
     double const brWlnu = 3 * 0.1080;
     list<Dataset> datasets;
     
     // ttbar
     datasets.emplace_back(Dataset::Process::ttbar, Dataset::Generator::MadGraph,
      Dataset::ShowerGenerator::Pythia);
-    datasets.back().AddFile(filePrefix + "ttbar-semilep-mg_rev468_SQQ.root",
-     234. * brWlnu * (1. - brWlnu) * 2, 25274818);
-    datasets.back().AddFile(filePrefix + "ttbar-dilep-mg_rev468_Ple.root",
-     234. * brWlnu * brWlnu, 12119013);
+    datasets.back().AddFile(filePrefix + "ttbar-semilep-mg-p1_53X.02.01_VNz_p1.root",
+     234. * brWlnu * (1. - brWlnu) * 2, 24953451);
+    datasets.back().AddFile(filePrefix + "ttbar-semilep-mg-p1_53X.02.01_VNz_p2.root",
+     234. * brWlnu * (1. - brWlnu) * 2, 24953451);
+    datasets.back().AddFile(filePrefix + "ttbar-semilep-mg-p1_53X.02.01_VNz_p3.root",
+     234. * brWlnu * (1. - brWlnu) * 2, 24953451);
+    datasets.back().AddFile(filePrefix + "ttbar-semilep-mg-p1_53X.02.01_VNz_p4.root",
+     234. * brWlnu * (1. - brWlnu) * 2, 24953451);
+    datasets.back().AddFile(filePrefix + "ttbar-dilep-mg_53X.02.01_FFe_p1.root",
+     234. * brWlnu * brWlnu, 11991428);
+    datasets.back().AddFile(filePrefix + "ttbar-dilep-mg_53X.02.01_FFe_p2.root",
+     234. * brWlnu * brWlnu, 11991428);
     
     // t-channel single top
     datasets.emplace_back(Dataset::Process::ttchan, Dataset::Generator::POWHEG,
      Dataset::ShowerGenerator::Undefined);
-    datasets.back().AddFile(filePrefix + "t-tchan-pw_rev468_QJd.root", 56.4 * brWlnu, 3915598);
-    datasets.back().AddFile(filePrefix + "tbar-tchan-pw_rev468_koy.root", 30.7 * brWlnu, 1711403);
+    datasets.back().AddFile(filePrefix + "t-tchan-pw_53X.02.01_PIN.root ", 56.4 * brWlnu, 3915598);
+    datasets.back().AddFile(filePrefix + "tbar-tchan-pw_53X.02.01_VcT.root ", 30.7 * brWlnu, 1711403);
     //^ The SM x-sections are from https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat8TeV
     
     // tth
     datasets.emplace_back(Dataset::Process::tth, Dataset::Generator::Pythia,
      Dataset::ShowerGenerator::Undefined);
-    datasets.back().AddFile(filePrefix + "tth_rev468_swr.root", 0.1302, 995697);
+    datasets.back().AddFile(filePrefix + "tth_53X.02.01_bVJ.root", 0.1302, 995697);
     //^ The cross-section for tth is taken form https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt8TeV#ttH_Process
     
     // th with exotic coupling
     datasets.emplace_back(Dataset::Process::thqExotic, Dataset::Generator::MadGraph,
      Dataset::ShowerGenerator::Pythia);
-    datasets.back().AddFile(filePrefix + "tqh-nc-mg_rev468_fPc.root", 21.5e-3, 499971);
+    datasets.back().AddFile(filePrefix + "thq-nc-mg_53X.02.01_Wyg.root", 36.4e-3, 4847334);
     
      
     // Define the triggers
     list<TriggerRange> triggerRanges;
-    triggerRanges.emplace_back(190000, 210000, "HLT_IsoMu24_v", 20e3, "HLT_IsoMu24_v");
+    triggerRanges.emplace_back(0, -1, "IsoMu24_eta2p1", 19.7e3, "IsoMu24_eta2p1");
     
     TriggerSelection triggerSel(triggerRanges);
     

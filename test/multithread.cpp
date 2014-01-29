@@ -30,26 +30,27 @@ int main()
     
     
     // Define datasets
-    string const filePrefix("/afs/cern.ch/user/a/aapopov/workspace/data/2012Alpha/");
+    string const filePrefix("/afs/cern.ch/user/a/aapopov/workspace/data/2012Bravo/");
     double const brWlnu = 3 * 0.1080;
     list<Dataset> datasets;
     
     // t-channel single top
     datasets.emplace_back(Dataset::Process::ttchan, Dataset::Generator::POWHEG,
      Dataset::ShowerGenerator::Undefined);
-    datasets.back().AddFile(filePrefix + "t-tchan-pw_rev468_QJd.root", 56.4 * brWlnu, 3915598);
-    datasets.back().AddFile(filePrefix + "tbar-tchan-pw_rev468_koy.root", 30.7 * brWlnu, 1711403);
+    datasets.back().AddFile(filePrefix + "t-tchan-pw_53X.02.01_PIN.root ", 56.4 * brWlnu, 3915598);
+    datasets.back().AddFile(filePrefix + "tbar-tchan-pw_53X.02.01_VcT.root ", 30.7 * brWlnu, 1711403);
     //^ The SM x-sections are from https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat8TeV
     
-    // th with exotic coupling
-    datasets.emplace_back(Dataset::Process::thqExotic, Dataset::Generator::MadGraph,
-     Dataset::ShowerGenerator::Pythia);
-    datasets.back().AddFile(filePrefix + "tqh-nc-mg-v2_rev468_Goi.root", 34.1e-3, 499958);
+    // tth
+    datasets.emplace_back(Dataset::Process::tth, Dataset::Generator::Pythia,
+     Dataset::ShowerGenerator::Undefined);
+    datasets.back().AddFile(filePrefix + "tth_53X.02.01_bVJ.root", 0.1302, 995697);
+    //^ The cross-section for tth is taken form https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt8TeV#ttH_Process
     
      
     // Define the triggers
     list<TriggerRange> triggerRanges;
-    triggerRanges.emplace_back(190000, 210000, "HLT_IsoMu24_v", 20e3, "HLT_IsoMu24_v");
+    triggerRanges.emplace_back(0, -1, "IsoMu24_eta2p1", 19.7e3, "IsoMu24_eta2p1");
     
     TriggerSelection triggerSel(triggerRanges);
     
