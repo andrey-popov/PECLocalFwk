@@ -4,6 +4,7 @@
 
 #include <string>
 #include <sstream>
+#include <stdexcept>
 
 
 using namespace std;
@@ -26,7 +27,11 @@ string BuildPluginName(string const &baseName, unsigned nJets, double pt)
 JetPtFilterPlugin::JetPtFilterPlugin(unsigned minNumJets_, double ptThreshold_):
     Plugin(BuildPluginName("JetPtFilter", minNumJets_, ptThreshold_)),
     minNumJets(minNumJets_), ptThreshold(ptThreshold_)
-{}
+{
+    if (minNumJets == 0)
+        throw logic_error("JetPtFilterPlugin::JetPtFilterPlugin: Number of jets must be sctrictly "
+         "positive.");
+}
 
 
 Plugin *JetPtFilterPlugin::Clone() const
@@ -48,11 +53,11 @@ bool JetPtFilterPlugin::ProcessEvent()
     auto const &softJets = (*reader)->GetAdditionalJets();
     
     
-    if (minNumJets < jets.size())
-        return (jets.at(minNumJets).Pt() > ptThreshold);
+    if (minNumJets - 1 < jets.size())
+        return (jets.at(minNumJets - 1).Pt() > ptThreshold);
     
-    if (minNumJets < jets.size() + softJets.size())
-        return (softJets.at(minNumJets - jets.size()).Pt() > ptThreshold);
+    if (minNumJets - 1 < jets.size() + softJets.size())
+        return (softJets.at(minNumJets - 1 - jets.size()).Pt() > ptThreshold);
     
     
     // If control reaches this point, there are less than minNumJets jets in both collections
