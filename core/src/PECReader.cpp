@@ -353,7 +353,9 @@ void PECReader::OpenSourceFile()
     if (dataset.IsMC())
     {
         generalTree->AddFriend("eventContent/GeneratorInfo");
-        generalTree->AddFriend("genJets/GenJets");
+        
+        if (readGenJets)
+            generalTree->AddFriend("genJets/GenJets");
         
         /*
         // Determine name of the corresponding file with weights
@@ -489,13 +491,16 @@ void PECReader::OpenSourceFile()
         
         
         // Generator jets
-        generalTree->SetBranchAddress("genJets/GenJets.jetSize", &genJetSize);
-        generalTree->SetBranchAddress("genJets/GenJets.jetPt", &genJetPt);
-        generalTree->SetBranchAddress("genJets/GenJets.jetEta", &genJetEta);
-        generalTree->SetBranchAddress("genJets/GenJets.jetPhi", &genJetPhi);
-        generalTree->SetBranchAddress("genJets/GenJets.jetMass", &genJetMass);
-        //generalTree->SetBranchAddress("genJets/GenJets.bMult", &genJetBMult);
-        //generalTree->SetBranchAddress("genJets/GenJets.cMult", &genJetCMult);
+        if (readGenJets)
+        {
+            generalTree->SetBranchAddress("genJets/GenJets.jetSize", &genJetSize);
+            generalTree->SetBranchAddress("genJets/GenJets.jetPt", &genJetPt);
+            generalTree->SetBranchAddress("genJets/GenJets.jetEta", &genJetEta);
+            generalTree->SetBranchAddress("genJets/GenJets.jetPhi", &genJetPhi);
+            generalTree->SetBranchAddress("genJets/GenJets.jetMass", &genJetMass);
+            //generalTree->SetBranchAddress("genJets/GenJets.bMult", &genJetBMult);
+            //generalTree->SetBranchAddress("genJets/GenJets.cMult", &genJetCMult);
+        }
         
         
         // Pile-up information
