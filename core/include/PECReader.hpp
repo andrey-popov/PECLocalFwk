@@ -210,6 +210,9 @@ class PECReader
         
         /// Returns number of reconstructed primary vertices (size of "offlinePrimaryVertices")
         unsigned GetNPrimaryVertices() const;
+        
+        /// Returns average angular energy density (rho)
+        double GetRho() const;
             
         /**
          * \brief Returns central weight for the current event
@@ -420,6 +423,9 @@ class PECReader
         
         // "True" number of pile-up interactions (available in simulation only)
         Float_t puTrueNumInteractions;
+        
+        // Mean angular energy density
+        Float_t puRho;
         
         
         

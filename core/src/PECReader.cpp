@@ -231,6 +231,12 @@ unsigned PECReader::GetNPrimaryVertices() const
 }
 
 
+double PECReader::GetRho() const
+{
+    return puRho;
+}
+
+
 double PECReader::GetCentralWeight() const
 {
     return weightCentral;
@@ -460,6 +466,7 @@ void PECReader::OpenSourceFile()
     generalTree->SetBranchAddress("metPhi", metPhi);
     
     generalTree->SetBranchAddress("pvSize", &pvSize);
+    generalTree->SetBranchAddress("rho", &puRho);
     
     
     if (dataset.IsMC())
