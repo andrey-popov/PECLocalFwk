@@ -212,9 +212,9 @@ double BTagDatabase::GetScaleFactor(Jet const &jet, SFVar var /*= SFVar::Central
             pt = 20.;
             uncFactor = 2.;
         }
-        else if (pt > 800)
+        else if (pt > 800. or algo == BTagger::Algorithm::CSVSLV1 and pt > 400.)
         {
-            pt = 800;
+            pt = (algo == BTagger::Algorithm::CSVSLV1) ? 400. : 800.;
             uncFactor = 2.;
         }
         
@@ -233,6 +233,7 @@ double BTagDatabase::GetScaleFactor(Jet const &jet, SFVar var /*= SFVar::Central
         unsigned bin = 0;
         
         while (bin < 15 and ptMax[bin] < pt)
+        //^ Albeit there are less bins for CSVSLV1, the loop is fine since the pt has been corrected
             ++bin;
         
         
@@ -252,14 +253,14 @@ double BTagDatabase::GetScaleFactor(Jet const &jet, SFVar var /*= SFVar::Central
         double pt = jet.Pt();
         double const absEta = fabs(jet.Eta());
         
-        if (pt > 800. or (pt > 700. and absEta > mistagOuterRegion))
-        //^ The momentum is outside supported range; uncertainty should be doubled
+        if (pt > 1000. or (pt > 850. and absEta > mistagOuterRegion))
+        //^ The momentum is outside the supported range; uncertainty should be doubled
         {
             // Force the momentum to the range
             if (absEta > mistagOuterRegion)
-                pt = 700.;
+                pt = 850.;
             else
-                pt = 800.;
+                pt = 1000.;
             
             
             // Get the central scale factor
