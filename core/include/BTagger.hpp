@@ -31,9 +31,11 @@ class BTagger
         /// Supported b-tagging algorithms
         enum class Algorithm
         {
-            CSV,   ///< Combined secondary vertex
-            JP,    ///< Jet probability
-            TCHP   ///< Track counting high purity
+            CSV,     ///< Combined secondary vertex
+            JP,      ///< Jet probability
+            TCHP,    ///< Track counting high purity
+            CSVV1,   ///< Retrained CSV
+            CSVSLV1  ///< A version of CSV with additional information on soft leptons exploited
         };
         
         /// Supported working points for the b-tagging algorithms

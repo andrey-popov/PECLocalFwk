@@ -39,9 +39,14 @@ BTagger::BTagger(Algorithm algo_, WorkingPoint workingPoint_):
                 threshold = 3.41;
             else
                 throw runtime_error("BTagger::BTagger: Only tight working point is supported for "
-                 "TCHP b-tagging algorithm");
+                 "TCHP b-tagging algorithm.");
             
             break;
+        
+        case Algorithm::CSVV1:
+        case Algorithm::CSVSLV1:
+            throw logic_error("BTagger::BTagger: Algorithms CSVV1 and CSVSLV1 are not supported "
+             "yet.");
     }
     
     
@@ -59,6 +64,11 @@ BTagger::BTagger(Algorithm algo_, WorkingPoint workingPoint_):
         case Algorithm::TCHP:
             bTagMethod = &Jet::TCHP;
             break;
+        
+        case Algorithm::CSVV1:
+        case Algorithm::CSVSLV1:
+            throw logic_error("BTagger::BTagger: Algorithms CSVV1 and CSVSLV1 are not supported "
+             "yet.");
     }
 }
 
@@ -106,6 +116,14 @@ string BTagger::GetTextCode() const
         
         case Algorithm::TCHP:
             code += "TCHP";
+            break;
+        
+        case Algorithm::CSVV1:
+            code += "CSVV1";
+            break;
+        
+        case Algorithm::CSVSLV1:
+            code += "CSVSLV1";
             break;
     }
     

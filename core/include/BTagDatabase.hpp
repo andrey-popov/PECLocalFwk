@@ -23,10 +23,10 @@
  * \brief Provides an interface to access b-tagging efficiencies and scale factors
  * 
  * The class provides an access to b-tagging MC efficiencies and data/MC scale factors. The scale
- * factors are provided in [1] and are implemented via automatically generated code. The code was
+ * factors are taken from [1] and are implemented via automatically generated code. The code was
  * created with the help of script [2].
- * [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagPOG#2012_Data_and_MC_Moriond13_presc
- * [2] /afs/cern.ch/user/a/aapopov/workspace/tHq/2012Alpha/2013.04.15_BTagSF/generateSFCode.py
+ * [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagPOG#2012_Data_and_MC_EPS13_prescript?rev=181
+ * [2] /afs/cern.ch/user/a/aapopov/workspace/tHq/2012Bravo/2014.02.17_BTagSF/generateSFCode.py
  * 
  * The class is copyable.
  */
@@ -88,14 +88,20 @@ class BTagDatabase
         void SetEfficiencies();
         
         // The code below was generated automatically
+        double GetSFTagTCHPT(double pt) const;
         double GetSFTagCSVL(double pt) const;
         double GetSFTagCSVM(double pt) const;
         double GetSFTagCSVT(double pt) const;
-        double GetSFTagTCHPT(double pt) const;
-        double GetSFTagJPL(double pt) const;
-        double GetSFTagJPM(double pt) const;
-        double GetSFTagJPT(double pt) const;
-
+        double GetSFTagCSVV1L(double pt) const;
+        double GetSFTagCSVV1M(double pt) const;
+        double GetSFTagCSVV1T(double pt) const;
+        double GetSFTagCSVSLV1L(double pt) const;
+        double GetSFTagCSVSLV1M(double pt) const;
+        double GetSFTagCSVSLV1T(double pt) const;
+        
+        double GetSFMistagTCHPTMean(double pt, double absEta) const;
+        double GetSFMistagTCHPTMin(double pt, double absEta) const;
+        double GetSFMistagTCHPTMax(double pt, double absEta) const;
         double GetSFMistagCSVLMean(double pt, double absEta) const;
         double GetSFMistagCSVLMin(double pt, double absEta) const;
         double GetSFMistagCSVLMax(double pt, double absEta) const;
@@ -105,20 +111,26 @@ class BTagDatabase
         double GetSFMistagCSVTMean(double pt, double absEta) const;
         double GetSFMistagCSVTMin(double pt, double absEta) const;
         double GetSFMistagCSVTMax(double pt, double absEta) const;
-        double GetSFMistagTCHPTMean(double pt, double absEta) const;
-        double GetSFMistagTCHPTMin(double pt, double absEta) const;
-        double GetSFMistagTCHPTMax(double pt, double absEta) const;
-        double GetSFMistagJPLMean(double pt, double absEta) const;
-        double GetSFMistagJPLMin(double pt, double absEta) const;
-        double GetSFMistagJPLMax(double pt, double absEta) const;
-        double GetSFMistagJPMMean(double pt, double absEta) const;
-        double GetSFMistagJPMMin(double pt, double absEta) const;
-        double GetSFMistagJPMMax(double pt, double absEta) const;
-        double GetSFMistagJPTMean(double pt, double absEta) const;
-        double GetSFMistagJPTMin(double pt, double absEta) const;
-        double GetSFMistagJPTMax(double pt, double absEta) const;
+        double GetSFMistagCSVV1LMean(double pt, double absEta) const;
+        double GetSFMistagCSVV1LMin(double pt, double absEta) const;
+        double GetSFMistagCSVV1LMax(double pt, double absEta) const;
+        double GetSFMistagCSVV1MMean(double pt, double absEta) const;
+        double GetSFMistagCSVV1MMin(double pt, double absEta) const;
+        double GetSFMistagCSVV1MMax(double pt, double absEta) const;
+        double GetSFMistagCSVV1TMean(double pt, double absEta) const;
+        double GetSFMistagCSVV1TMin(double pt, double absEta) const;
+        double GetSFMistagCSVV1TMax(double pt, double absEta) const;
+        double GetSFMistagCSVSLV1LMean(double pt, double absEta) const;
+        double GetSFMistagCSVSLV1LMin(double pt, double absEta) const;
+        double GetSFMistagCSVSLV1LMax(double pt, double absEta) const;
+        double GetSFMistagCSVSLV1MMean(double pt, double absEta) const;
+        double GetSFMistagCSVSLV1MMin(double pt, double absEta) const;
+        double GetSFMistagCSVSLV1MMax(double pt, double absEta) const;
+        double GetSFMistagCSVSLV1TMean(double pt, double absEta) const;
+        double GetSFMistagCSVSLV1TMin(double pt, double absEta) const;
+        double GetSFMistagCSVSLV1TMax(double pt, double absEta) const;
         // End of automatically generated code
-      
+    
     private:
         BTagger::Algorithm const algo;  ///< Chosen b-tagging algorithm
         BTagger::WorkingPoint const workingPoint;  ///< Chosen b-tagging working point
