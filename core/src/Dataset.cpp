@@ -45,19 +45,21 @@ string Dataset::File::GetDirName() const noexcept
 
 
 Dataset::Dataset() noexcept:
-    process(Dataset::Process::Undefined),
+    processCodes({Dataset::Process::Undefined}),
     generator(Dataset::Generator::Undefined),
     showerGenerator(Dataset::ShowerGenerator::Undefined)
 {}
 
 
-Dataset::Dataset(Dataset::Process process_,
+Dataset::Dataset(list<Dataset::Process> const &processCodes_,
  Dataset::Generator generator_ /*= Dataset::Generator::Undefined*/,
  Dataset::ShowerGenerator showerGenerator_ /*= Dataset::ShowerGenerator::Undefined*/) noexcept:
-    process(process_),
+    processCodes(processCodes_),
     generator(generator_),
     showerGenerator(showerGenerator_)
 {
+    Process const process = processCodes.front();
+    
     if (process == Process::pp7TeV or process == Process::pp8TeV)
     {
         if (generator == Generator::Undefined)
@@ -67,6 +69,14 @@ Dataset::Dataset(Dataset::Process process_,
             showerGenerator = ShowerGenerator::Nature;
     }
 }
+
+
+Dataset::Dataset(Dataset::Process process,
+ Dataset::Generator generator /*= Dataset::Generator::Undefined*/,
+ Dataset::ShowerGenerator showerGenerator /*= Dataset::ShowerGenerator::Undefined*/) noexcept:
+    // Construction is delegated to the more general constructor
+    Dataset({process}, generator, showerGenerator)
+{}
 
 
 void Dataset::AddFile(string const &name, double xSec, unsigned long nEvents) noexcept
@@ -101,7 +111,7 @@ Dataset::ShowerGenerator Dataset::GetShowerGenerator() const
 
 Dataset::Process Dataset::GetProcess() const
 {
-    return process;
+    return processCodes.back();
 }
 
 
@@ -113,7 +123,7 @@ bool Dataset::IsMC() const
 
 Dataset Dataset::CopyParameters() const
 {
-    Dataset emptyDataset(process, generator, showerGenerator);
+    Dataset emptyDataset(processCodes, generator, showerGenerator);
     emptyDataset.flags = flags;
     
     return emptyDataset;
