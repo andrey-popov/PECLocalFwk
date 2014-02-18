@@ -144,7 +144,17 @@ public:
      * By default, generator and shower generator are set to Undefined. However, if the process
      * is real data, they are changed to Nature.
      */
-    Dataset(std::list<Process> const &processCodes, Generator generator = Generator::Undefined,
+    Dataset(std::list<Process> &&processCodes, Generator generator = Generator::Undefined,
+     ShowerGenerator showerGenerator = ShowerGenerator::Undefined) noexcept;
+    
+    /**
+     * \brief Constructor with parameters
+     * 
+     * A specialised version used when the list of process codes cannot be given as an rvalue.
+     * Internally, the construction is delegated to the first constructor with parameters. Refer to
+     * its documentation for details.
+     */
+    Dataset(std::list<Process> processCodes, Generator generator = Generator::Undefined,
      ShowerGenerator showerGenerator = ShowerGenerator::Undefined) noexcept;
     
     /**
@@ -152,7 +162,7 @@ public:
      * 
      * This version is intended for backward compatibility and for a bit of syntax sugar when a
      * dataset is assigned a single process code. Internally, the construction is delegated to the
-     * most general version declared above. Refer to its documentation for details.
+     * first constructor with parameters. Refer to its documentation for details.
      */
     Dataset(Process process, Generator generator = Generator::Undefined,
      ShowerGenerator showerGenerator = ShowerGenerator::Undefined) noexcept;
@@ -236,7 +246,8 @@ public:
     bool TestFlag(std::string const &flagName) const;
     
 private:
-    static std::list<Process> SortProcessCodes(std::list<Process> processCodes);
+    /// Orders process codes from most general to most specialised
+    static std::list<Process> SortProcessCodes(std::list<Process> &&processCodes);
     
 private:
     /// Source files

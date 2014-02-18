@@ -51,10 +51,10 @@ Dataset::Dataset() noexcept:
 {}
 
 
-Dataset::Dataset(list<Dataset::Process> const &processCodes_,
+Dataset::Dataset(list<Dataset::Process> &&processCodes_,
  Dataset::Generator generator_ /*= Dataset::Generator::Undefined*/,
  Dataset::ShowerGenerator showerGenerator_ /*= Dataset::ShowerGenerator::Undefined*/) noexcept:
-    processCodes(SortProcessCodes(processCodes_)),
+    processCodes(SortProcessCodes(move(processCodes_))),
     generator(generator_),
     showerGenerator(showerGenerator_)
 {
@@ -72,6 +72,14 @@ Dataset::Dataset(list<Dataset::Process> const &processCodes_,
             showerGenerator = ShowerGenerator::Nature;
     }
 }
+
+
+Dataset::Dataset(list<Dataset::Process> processCodes,
+ Dataset::Generator generator /*= Dataset::Generator::Undefined*/,
+ Dataset::ShowerGenerator showerGenerator /*= Dataset::ShowerGenerator::Undefined*/) noexcept:
+    // Construction is delegated to the more general constructor
+    Dataset(processCodes, generator, showerGenerator)
+{}
 
 
 Dataset::Dataset(Dataset::Process process,
@@ -176,7 +184,7 @@ bool Dataset::TestFlag(string const &flagName) const
 }
 
 
-list<Dataset::Process> Dataset::SortProcessCodes(list<Dataset::Process> processCodes)
+list<Dataset::Process> Dataset::SortProcessCodes(list<Dataset::Process> &&processCodes)
 {
     processCodes.sort([](Process code1, Process code2){return (int(code1) < int(code2));});
     
