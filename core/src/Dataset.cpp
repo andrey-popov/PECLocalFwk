@@ -82,6 +82,14 @@ Dataset::Dataset(Dataset::Process process,
 {}
 
 
+Dataset::Dataset(Dataset &&src) noexcept:
+    files(move(src.files)),
+    processCodes(move(src.processCodes)),
+    generator(src.generator), showerGenerator(src.showerGenerator),
+    flags(move(src.flags))
+{}
+
+
 void Dataset::AddFile(string const &name, double xSec, unsigned long nEvents) noexcept
 {
     files.emplace_back(name, xSec, nEvents);

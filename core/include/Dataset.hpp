@@ -130,7 +130,7 @@ public:
     };
 
 public:
-    /// Default constructor
+    /// Constructor with no parameters
     Dataset() noexcept;
     
     /**
@@ -156,6 +156,15 @@ public:
      */
     Dataset(Process process, Generator generator = Generator::Undefined,
      ShowerGenerator showerGenerator = ShowerGenerator::Undefined) noexcept;
+    
+    /// Default copy constructor
+    Dataset(Dataset const &) = default;
+    
+    /// Move constructor
+    Dataset(Dataset &&src) noexcept;
+    
+    /// Default assignment operator
+    Dataset &operator=(Dataset const &) = default;
 
 public:
     /**
