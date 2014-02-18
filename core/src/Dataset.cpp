@@ -54,7 +54,7 @@ Dataset::Dataset() noexcept:
 Dataset::Dataset(list<Dataset::Process> const &processCodes_,
  Dataset::Generator generator_ /*= Dataset::Generator::Undefined*/,
  Dataset::ShowerGenerator showerGenerator_ /*= Dataset::ShowerGenerator::Undefined*/) noexcept:
-    processCodes(processCodes_),
+    processCodes(SortProcessCodes(processCodes_)),
     generator(generator_),
     showerGenerator(showerGenerator_)
 {
@@ -173,4 +173,12 @@ void Dataset::UnsetFlag(string const &flagName)
 bool Dataset::TestFlag(string const &flagName) const
 {
     return (flags.count(flagName) > 0);
+}
+
+
+list<Dataset::Process> Dataset::SortProcessCodes(list<Dataset::Process> processCodes)
+{
+    processCodes.sort([](Process code1, Process code2){return (int(code1) < int(code2));});
+    
+    return processCodes;
 }

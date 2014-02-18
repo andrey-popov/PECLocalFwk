@@ -236,6 +236,9 @@ public:
     bool TestFlag(std::string const &flagName) const;
     
 private:
+    static std::list<Process> SortProcessCodes(std::list<Process> processCodes);
+    
+private:
     /// Source files
     std::list<File> files;
     
