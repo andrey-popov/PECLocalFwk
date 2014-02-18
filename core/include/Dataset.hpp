@@ -203,12 +203,18 @@ public:
     ShowerGenerator GetShowerGenerator() const;
     
     /**
-     * \brief Returns the most specialized process code
+     * \brief Returns the most specialised process code
      * 
      * Technically, the last process code is returned because the list is ordered from most general
      * to most specialised specification.
      */
     Process GetProcess() const;
+    
+    /// Return a list of all assigned process codes
+    std::list<Process> const &GetProcessCodes() const;
+    
+    /// Tests if the given process code is assigned to the dataset
+    bool TestProcess(Process code) const;
     
     /**
      * \brief Checks if the dataset corresponds to the simulation and not the real data

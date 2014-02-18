@@ -134,6 +134,23 @@ Dataset::Process Dataset::GetProcess() const
 }
 
 
+list<Dataset::Process> const &Dataset::GetProcessCodes() const
+{
+    return processCodes;
+}
+
+
+bool Dataset::TestProcess(Dataset::Process code) const
+{
+    for (Process const &c: processCodes)
+        if (c == code)
+            return true;
+    
+    // If the workflow reaches this point, the required process code has not been found
+    return false;
+}
+
+
 bool Dataset::IsMC() const
 {
     switch (processCodes.front())
