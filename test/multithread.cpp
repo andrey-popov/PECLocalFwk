@@ -35,14 +35,14 @@ int main()
     list<Dataset> datasets;
     
     // t-channel single top
-    datasets.emplace_back(Dataset::Process::ttchan, Dataset::Generator::POWHEG,
-     Dataset::ShowerGenerator::Undefined);
+    datasets.emplace_back(Dataset({Dataset::Process::SingleTop, Dataset::Process::ttchan},
+     Dataset::Generator::POWHEG, Dataset::ShowerGenerator::Undefined));
     datasets.back().AddFile(filePrefix + "t-tchan-pw_53X.02.01_PIN.root ", 56.4 * brWlnu, 3915598);
     datasets.back().AddFile(filePrefix + "tbar-tchan-pw_53X.02.01_VcT.root ", 30.7 * brWlnu, 1711403);
     //^ The SM x-sections are from https://twiki.cern.ch/twiki/bin/viewauth/CMS/StandardModelCrossSectionsat8TeV
     
     // tth
-    datasets.emplace_back(Dataset::Process::tth, Dataset::Generator::Pythia,
+    datasets.emplace_back(Dataset::Process::ttH, Dataset::Generator::Pythia,
      Dataset::ShowerGenerator::Undefined);
     datasets.back().AddFile(filePrefix + "tth_53X.02.01_bVJ.root", 0.1302, 995697);
     //^ The cross-section for tth is taken form https://twiki.cern.ch/twiki/bin/view/LHCPhysics/CERNYellowReportPageAt8TeV#ttH_Process

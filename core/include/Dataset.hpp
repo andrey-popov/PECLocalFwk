@@ -97,20 +97,36 @@ public:
     enum class Process
     {
         Undefined,
+        
+        ppData,       ///< Generic category for any real pp collisions
         pp7TeV,
         pp8TeV,
-        thqExotic,  ///< thq with kappa_t = -1
-        thqSM,      ///< Standard-Model thq (kappa_t = +1)
-        ttbar,
+        pp13TeV,
+        
+        tHq,          ///< tHq with any couplings
+        tHqExotic,    ///< tHq with kappa_t = -1
+        tHqSM,        ///< Standard-Model tHq (kappa_t = +1)
+        
+        ttbar,        ///< Generic category for any ttbar dataset
+        ttInclusive,  ///< Inclusive ttbar, i.e. the dataset contains any decays
+        ttSemilep,    ///< Exclusive semileptonic ttbar
+        ttDilep,
+        ttHad,        ///< Exclusive hadronic ttbar
+        
+        SingleTop,    ///< Generic category to describe any single-top process
         ttchan,
         tschan,
         ttWchan,
-        tth,
+        
+        ttH,
+        
+        EWK,          ///< Generic category for production of W and Z bosons
         Wjets,
-        Diboson,  ///< WW, WZ, or ZZ
+        Diboson,      ///< WW, WZ, or ZZ
         DrellYan,
+        
         QCD,
-        Photon  ///< Prompt-photon production
+        Photon        ///< Prompt-photon production
     };
 
 public:
@@ -178,8 +194,8 @@ public:
     /**
      * \brief Checks if the dataset corresponds to the simulation and not the real data
      * 
-     * Note that the discrimination is performed based on the value of generator, and if it is
-     * Undefined, then the method returns false.
+     * Note that the discrimination is performed based on the value of the first process code, and
+     * if it is undefined, then method returns true.
      */
     bool IsMC() const;
     

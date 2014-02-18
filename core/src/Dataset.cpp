@@ -45,9 +45,9 @@ string Dataset::File::GetDirName() const noexcept
 
 
 Dataset::Dataset() noexcept:
-    processCodes({Dataset::Process::Undefined}),
-    generator(Dataset::Generator::Undefined),
-    showerGenerator(Dataset::ShowerGenerator::Undefined)
+    processCodes({Process::Undefined}),
+    generator(Generator::Undefined),
+    showerGenerator(ShowerGenerator::Undefined)
 {}
 
 
@@ -60,7 +60,10 @@ Dataset::Dataset(list<Dataset::Process> const &processCodes_,
 {
     Process const process = processCodes.front();
     
-    if (process == Process::pp7TeV or process == Process::pp8TeV)
+    if (process == Process::ppData or process == Process::pp7TeV or process == Process::pp8TeV or
+     process == Process::pp13TeV)
+    //^ Codes pp*TeV are checked to recover from a potential user's error when (s)he does not set
+    //ppData. It also ensures backward compatibility
     {
         if (generator == Generator::Undefined)
             generator = Generator::Nature;
@@ -117,7 +120,20 @@ Dataset::Process Dataset::GetProcess() const
 
 bool Dataset::IsMC() const
 {
-    return (generator != Generator::Nature and generator != Generator::Undefined);
+    switch (processCodes.front())
+    {
+        case Process::ppData:
+        case Process::pp7TeV:
+        case Process::pp8TeV:
+        case Process::pp13TeV:
+        //^ User is expected to set ppData for any dataset with real data, but pp*TeV are checked as
+        //well to tolerate missing ppData. This check also ensures backward compatibility
+            return false;
+        
+        default:
+        //^ Note that Undefined goes here
+            return true;
+    }
 }
 
 
