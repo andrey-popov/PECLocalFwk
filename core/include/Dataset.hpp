@@ -2,7 +2,7 @@
  * \file Dataset.hpp
  * \author Andrey Popov
  * 
- * The module defines a class to store all the relevant information about a dataset.
+ * The module defines a class to descibe a dataset.
  */
 
 #pragma once
@@ -107,8 +107,14 @@ class Dataset
         /// Default constructor
         Dataset() noexcept;
         
-        /// Constructor with parameters
-        Dataset(Process process, Generator generator, ShowerGenerator showerGenerator) noexcept;
+        /**
+         * \brief Constructor with parameters
+         * 
+         * By default, generator and shower generator are set to Undefined. However, if the process
+         * is real data, they are changed to Nature.
+         */
+        Dataset(Process process, Generator generator = Generator::Undefined,
+         ShowerGenerator showerGenerator = ShowerGenerator::Undefined) noexcept;
     
     public:
         /**
@@ -143,6 +149,9 @@ class Dataset
         
         /**
          * \brief Checks if the dataset corresponds to the simulation and not the real data
+         * 
+         * Note that the discrimination is performed based on the value of generator, and if it is
+         * Undefined, then the method returns false.
          */
         bool IsMC() const;
         

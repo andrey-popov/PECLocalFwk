@@ -51,12 +51,22 @@ Dataset::Dataset() noexcept:
 {}
 
 
-Dataset::Dataset(Dataset::Process process_, Dataset::Generator generator_,
- Dataset::ShowerGenerator showerGenerator_) noexcept:
+Dataset::Dataset(Dataset::Process process_,
+ Dataset::Generator generator_ /*= Dataset::Generator::Undefined*/,
+ Dataset::ShowerGenerator showerGenerator_ /*= Dataset::ShowerGenerator::Undefined*/) noexcept:
     process(process_),
     generator(generator_),
     showerGenerator(showerGenerator_)
-{}
+{
+    if (process == Process::pp7TeV or process == Process::pp8TeV)
+    {
+        if (generator == Generator::Undefined)
+            generator = Generator::Nature;
+        
+        if (showerGenerator == ShowerGenerator::Undefined)
+            showerGenerator = ShowerGenerator::Nature;
+    }
+}
 
 
 void Dataset::AddFile(string const &name, double xSec, unsigned long nEvents) noexcept
