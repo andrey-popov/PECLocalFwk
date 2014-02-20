@@ -57,7 +57,7 @@
  * LoadPayload and then accessed using GetEfficiency.
  * 
  * The class provides valid copy and move constructors. It is not thread-safe; however, the ROOT
- * file and histograms with b-tagging efficiences can be shared among several threads.
+ * file and histograms with b-tagging efficiences are safe be shared among several threads.
  * 
  * Consult documentation on the base class to get additional details about overriden methods.
  */
