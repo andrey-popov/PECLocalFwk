@@ -30,7 +30,7 @@ public:
     /// Possible variations of scale factors
     enum class Variation
     {
-        Central,
+        Nominal,
         Up,
         Down
     };
@@ -65,14 +65,14 @@ public:
     
     /// Returns b-tagging scale factor for a given jet
     virtual double GetScaleFactor(BTagger::WorkingPoint wp, Jet const &jet,
-     Variation var = Variation::Central) const = 0;
+     Variation var = Variation::Nominal) const = 0;
     
     /**
      * \brief Returns b-tagging scale factor for a given jet using the default working point
      * 
      * The method is useful for prescriptions that support only one working point.
      */
-    double GetScaleFactor(Jet const &jet, Variation var = Variation::Central) const;
+    double GetScaleFactor(Jet const &jet, Variation var = Variation::Nominal) const;
     
     /// Sets the default working point
     void SetDefaultWorkingPoint(BTagger::WorkingPoint wp);

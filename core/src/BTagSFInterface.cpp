@@ -9,7 +9,7 @@ BTagSFInterface::BTagSFInterface():
 {}
 
 
-double BTagSFInterface::GetScaleFactor(Jet const &jet, Variation var /*= Variation::Central*/) const
+double BTagSFInterface::GetScaleFactor(Jet const &jet, Variation var /*= Variation::Nominal*/) const
 {
     return GetScaleFactor(defaultWP, jet, var);
 }
