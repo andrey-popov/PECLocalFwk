@@ -48,7 +48,7 @@ public:
     
 public:
     /**
-     * \brief Creates a deep copy of this
+     * \brief Creates a deep copy of *this
      * 
      * The method is intended to create a deep copy of an instance of a derived class. It is only
      * expected to be called before the first call to LoadPayload or GetEfficiency. Therefore, the
@@ -76,7 +76,7 @@ public:
      * 
      * The method is useful for prescriptions that support only one working point.
      */
-    virtual double GetEfficiency(Jet const &jet) const;
+    double GetEfficiency(Jet const &jet) const;
     
     /// Sets the default working point
     void SetDefaultWorkingPoint(BTagger::WorkingPoint wp);
