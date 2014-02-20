@@ -15,7 +15,8 @@
  * \brief An abstract base class to access scale factors for b-tagging efficiencies
  * 
  * The class defines an interface for a class to retrieve b-tagging scale factors. A derived class
- * must provide a meaningful implementation for the method GetScaleFactor.
+ * must provide a meaningful implementation for the method GetScaleFactor. The class is not expected
+ * to be used with forward jets failing the acceptance defined by the GetMaxPseudorapidity method.
  * 
  * Since it is common to operate with a single working point only, the class provides means to
  * specify default working point and a more convenient accessor to b-tagging scale factor which uses
@@ -63,7 +64,13 @@ public:
      */
     virtual BTagSFInterface *Clone() const = 0;
     
-    /// Returns b-tagging scale factor for a given jet
+    /**
+     * \brief Returns b-tagging scale factor for a given jet
+     * 
+     * User is not expected to calculate scale factors for jets that fail the pseudorapidity
+     * coverage defined by the method GetMaxPseudorapidity. Behaviour of the method is undefined
+     * otherwise.
+     */
     virtual double GetScaleFactor(BTagger::WorkingPoint wp, Jet const &jet,
      Variation var = Variation::Nominal) const = 0;
     
@@ -77,7 +84,18 @@ public:
     /// Sets the default working point
     void SetDefaultWorkingPoint(BTagger::WorkingPoint wp);
     
+    /**
+     * \brief Returns maximal jet pseudorapidity supported for b-tagging scale factors
+     * 
+     * No scale factors are expected to be available for jets with a larger absolute value of
+     * pseudorapidity.
+     */
+    static double GetMaxPseudorapidity();
+    
 private:
     /// Default working point for GetEfficiency(Jet const &)
     BTagger::WorkingPoint defaultWP;
+    
+    /// Maximal supported jet pseudorapidity
+    static double const maxPseudorapidity;
 };
