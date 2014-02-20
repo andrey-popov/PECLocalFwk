@@ -28,7 +28,7 @@ BTagEfficiencies::BTagEfficiencies(string const &fileName, string const &directo
 
 
 BTagEfficiencies::BTagEfficiencies(BTagEfficiencies const &src):
-    BTagEffInterface(),
+    BTagEffInterface(src),
     srcFile(src.srcFile),
     inFileDirectory(src.inFileDirectory),
     processLabels(src.processLabels),
@@ -39,7 +39,7 @@ BTagEfficiencies::BTagEfficiencies(BTagEfficiencies const &src):
 
 
 BTagEfficiencies::BTagEfficiencies(BTagEfficiencies &&src):
-    BTagEffInterface(),
+    BTagEffInterface(move(src)),
     srcFile(move(src.srcFile)),
     inFileDirectory(move(src.inFileDirectory)),
     processLabels(move(src.processLabels)),
@@ -51,6 +51,8 @@ BTagEfficiencies::BTagEfficiencies(BTagEfficiencies &&src):
 
 BTagEfficiencies &BTagEfficiencies::operator=(BTagEfficiencies const &rhs)
 {
+    BTagEffInterface::operator=(rhs);
+    
     srcFile = rhs.srcFile;
     inFileDirectory = rhs.inFileDirectory;
     processLabels = rhs.processLabels;
