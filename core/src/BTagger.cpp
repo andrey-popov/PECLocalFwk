@@ -63,6 +63,33 @@ BTagger::BTagger(Algorithm algo_, WorkingPoint defaultWP_ /*= WorkingPoint::Tigh
 }
 
 
+BTagger::BTagger(BTagger const &src):
+    algo(src.algo),
+    defaultWP(src.defaultWP),
+    thresholds(src.thresholds),
+    bTagMethod(src.bTagMethod)
+{}
+
+
+BTagger::BTagger(BTagger &&src):
+    algo(src.algo),
+    defaultWP(src.defaultWP),
+    thresholds(move(src.thresholds)),
+    bTagMethod(src.bTagMethod)
+{}
+
+
+BTagger &BTagger::operator=(BTagger const &rhs)
+{
+    algo = rhs.algo;
+    defaultWP = rhs.defaultWP;
+    thresholds = rhs.thresholds;
+    bTagMethod = rhs.bTagMethod;
+    
+    return *this;
+}
+
+
 bool BTagger::IsTagged(WorkingPoint wp, Jet const &jet) const
 {
     // First, check the jet pseudorapidity makes sense

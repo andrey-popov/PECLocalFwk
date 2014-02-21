@@ -25,8 +25,7 @@
  * It is recommended that b-tagging is performed by the means of this class only but never using
  * values of b-tagging discriminators provided by class Jet.
  * 
- * After an object is constructed, class data members are only read. Therefore, the class is thread-
- * safe.
+ * The class provides valid copy and move constructors and assignment operator. Is is thread-safe.
  */
 class BTagger
 {
@@ -57,8 +56,14 @@ public:
      */
     BTagger(Algorithm algo, WorkingPoint defaultWP = WorkingPoint::Tight);
     
-    /// Default copy constructor
-    BTagger(BTagger const &) = default;
+    /// Copy constructor
+    BTagger(BTagger const &src);
+    
+    /// Move constructor
+    BTagger(BTagger &&src);
+    
+    /// Assignment operator
+    BTagger &operator=(BTagger const &rhs);
 
 public:
     /**
