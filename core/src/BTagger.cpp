@@ -1,46 +1,36 @@
 #include <BTagger.hpp>
 
+#include <BTagSFInterface.hpp>
+
 #include <stdexcept>
+#include <sstream>
 
 
 using namespace std;
 
 
-BTagger::BTagger(Algorithm algo_, WorkingPoint workingPoint_):
-    algo(algo_), workingPoint(workingPoint_),
+BTagger::BTagger(Algorithm algo_, WorkingPoint defaultWP_ /*= WorkingPoint::Tight*/):
+    algo(algo_), defaultWP(defaultWP_),
     bTagMethod(nullptr)
 {
-    // Set the threshold [1]
+    // Set thresholds corresponding to official working points [1]
     //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/BTagPerformanceOP
     switch (algo)
     {
         case Algorithm::CSV:
-            if (workingPoint == WorkingPoint::Tight)
-                threshold = 0.898;
-            else if (workingPoint == WorkingPoint::Medium)
-                threshold = 0.679;
-            else
-                threshold = 0.244;
-            
+            thresholds[WorkingPoint::Tight] = 0.898;
+            thresholds[WorkingPoint::Medium] = 0.679;
+            thresholds[WorkingPoint::Loose] = 0.244;
             break;
         
         case Algorithm::JP:
-            if (workingPoint == WorkingPoint::Tight)
-                threshold = 0.790;
-            else if (workingPoint == WorkingPoint::Medium)
-                threshold = 0.545;
-            else
-                threshold = 0.275;
-            
+            thresholds[WorkingPoint::Tight] = 0.790;
+            thresholds[WorkingPoint::Medium] = 0.545;
+            thresholds[WorkingPoint::Loose] = 0.275;
             break;
         
         case Algorithm::TCHP:
-            if (workingPoint == WorkingPoint::Tight)
-                threshold = 3.41;
-            else
-                throw runtime_error("BTagger::BTagger: Only tight working point is supported for "
-                 "TCHP b-tagging algorithm.");
-            
+            thresholds[WorkingPoint::Tight] = 3.41;
             break;
         
         case Algorithm::CSVV1:
@@ -73,19 +63,47 @@ BTagger::BTagger(Algorithm algo_, WorkingPoint workingPoint_):
 }
 
 
-bool BTagger::IsTagged(Jet const &jet) const
+bool BTagger::IsTagged(WorkingPoint wp, Jet const &jet) const
 {
-    if (fabs(jet.Eta()) > 2.4)
+    // First, check the jet pseudorapidity makes sense
+    if (fabs(jet.Eta()) > BTagSFInterface::GetMaxPseudorapidity())
         // There is a very small number of tagged jets with |eta| just above 2.4
         return false;
-    else
-        return ((jet.*bTagMethod)() > threshold);
+    
+    
+    // Find the threshold for the given working point
+    auto thresholdIt = thresholds.find(wp);
+    
+    if (thresholdIt == thresholds.end())
+    {
+        ostringstream ost;
+        ost << "BTagger::IsTagged: Working point " << int(wp) << " is not supported for "
+         "b-tagger " << int(algo) << ".";
+        
+        throw runtime_error(ost.str());
+    }
+    
+    
+    // Compare discriminator value with the threshold
+    return ((jet.*bTagMethod)() > thresholdIt->second);
+}
+
+
+bool BTagger::IsTagged(Jet const &jet) const
+{
+    return IsTagged(defaultWP, jet);
+}
+
+
+bool BTagger::operator()(WorkingPoint wp, Jet const &jet) const
+{
+    return IsTagged(wp, jet);
 }
 
 
 bool BTagger::operator()(Jet const &jet) const
 {
-    return IsTagged(jet);
+    return IsTagged(defaultWP, jet);
 }
 
 
@@ -95,9 +113,15 @@ BTagger::Algorithm BTagger::GetAlgorithm() const
 }
 
 
+BTagger::WorkingPoint BTagger::GetDefaultWorkingPoint() const
+{
+    return defaultWP;
+}
+
+
 BTagger::WorkingPoint BTagger::GetWorkingPoint() const
 {
-    return workingPoint;
+    return defaultWP;
 }
 
 string BTagger::GetTextCode() const
@@ -127,7 +151,7 @@ string BTagger::GetTextCode() const
             break;
     }
     
-    switch (workingPoint)
+    switch (defaultWP)
     {
         case WorkingPoint::Tight:
             code += "T";
