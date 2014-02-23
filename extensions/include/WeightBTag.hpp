@@ -49,11 +49,27 @@ public:
     /**
      * \brief Constructor
      * 
-     * It calls the above constructor with the working point specified in bTagger.
+     * Version of the above constructor with references. The referenced objects are copied.
+     */
+    WeightBTag(std::shared_ptr<BTagger const> &bTagger, BTagger::WorkingPoint workingPoint,
+     BTagEffInterface &efficiencies, BTagSFInterface &scaleFactors);
+    
+    /**
+     * \brief Constructor
+     * 
+     * It calls the first version of constructor with the working point specified in bTagger.
      */
     WeightBTag(std::shared_ptr<BTagger const> &bTagger,
      std::unique_ptr<BTagEffInterface> &efficiencies,
      std::unique_ptr<BTagSFInterface> &scaleFactors);
+    
+    /**
+     * \brief Constructor
+     * 
+     * It calls the second version of constructor with the working point specified in bTagger.
+     */
+    WeightBTag(std::shared_ptr<BTagger const> &bTagger,
+     BTagEffInterface &efficiencies, BTagSFInterface &scaleFactors);
     
     /**
      * \brief Copy constructor

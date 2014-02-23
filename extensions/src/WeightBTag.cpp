@@ -12,8 +12,23 @@ WeightBTag::WeightBTag(shared_ptr<BTagger const> &bTagger_, BTagger::WorkingPoin
 {}
 
 
+WeightBTag::WeightBTag(shared_ptr<BTagger const> &bTagger_, BTagger::WorkingPoint workingPoint_,
+ BTagEffInterface &efficiencies_, BTagSFInterface &scaleFactors_):
+    WeightBTagInterface(),
+    bTagger(bTagger_),
+    efficiencies(efficiencies_.Clone()), scaleFactors(scaleFactors_.Clone()),
+    workingPoint(workingPoint_)
+{}
+
+
 WeightBTag::WeightBTag(shared_ptr<BTagger const> &bTagger_,
  unique_ptr<BTagEffInterface> &efficiencies_, unique_ptr<BTagSFInterface> &scaleFactors_):
+    WeightBTag(bTagger_, bTagger_->GetWorkingPoint(), efficiencies_, scaleFactors_)
+{}
+
+
+WeightBTag::WeightBTag(shared_ptr<BTagger const> &bTagger_,
+ BTagEffInterface &efficiencies_, BTagSFInterface &scaleFactors_):
     WeightBTag(bTagger_, bTagger_->GetWorkingPoint(), efficiencies_, scaleFactors_)
 {}
 
