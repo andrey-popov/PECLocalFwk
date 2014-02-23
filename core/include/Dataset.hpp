@@ -154,7 +154,7 @@ public:
      * Internally, the construction is delegated to the first constructor with parameters. Refer to
      * its documentation for details.
      */
-    Dataset(std::list<Process> processCodes, Generator generator = Generator::Undefined,
+    Dataset(std::list<Process> const &processCodes, Generator generator = Generator::Undefined,
      ShowerGenerator showerGenerator = ShowerGenerator::Undefined) noexcept;
     
     /**
@@ -254,6 +254,13 @@ public:
 private:
     /// Orders process codes from most general to most specialised
     static std::list<Process> SortProcessCodes(std::list<Process> &&processCodes);
+    
+    /**
+     * \brief Orders process codes from most general to most specialised
+     * 
+     * Internally it calls the above version with rvalue reference.
+     */
+    static std::list<Process> SortProcessCodes(std::list<Process> const &processCodes);
     
 private:
     /// Source files
