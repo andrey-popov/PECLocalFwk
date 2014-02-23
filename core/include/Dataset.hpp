@@ -151,8 +151,7 @@ public:
      * \brief Constructor with parameters
      * 
      * A specialised version used when the list of process codes cannot be given as an rvalue.
-     * Internally, the construction is delegated to the first constructor with parameters. Refer to
-     * its documentation for details.
+     * Refer to documentation of the first version of constructor for details.
      */
     Dataset(std::list<Process> const &processCodes, Generator generator = Generator::Undefined,
      ShowerGenerator showerGenerator = ShowerGenerator::Undefined) noexcept;
@@ -161,8 +160,8 @@ public:
      * \brief Constructor with parameters
      * 
      * This version is intended for backward compatibility and for a bit of syntax sugar when a
-     * dataset is assigned a single process code. Internally, the construction is delegated to the
-     * first constructor with parameters. Refer to its documentation for details.
+     * dataset is assigned a single process code. Refer to documentation of the first version of
+     * constructor for details.
      */
     Dataset(Process process, Generator generator = Generator::Undefined,
      ShowerGenerator showerGenerator = ShowerGenerator::Undefined) noexcept;
@@ -261,6 +260,14 @@ private:
      * Internally it calls the above version with rvalue reference.
      */
     static std::list<Process> SortProcessCodes(std::list<Process> const &processCodes);
+    
+    /**
+     * \brief Initialisation block called from each constructor
+     * 
+     * If generator of showerGenerator are undefined and the process is real data, sets the
+     * generator codes appropriately.
+     */
+    void Init();
     
 private:
     /// Source files

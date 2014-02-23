@@ -58,36 +58,30 @@ Dataset::Dataset(list<Dataset::Process> &&processCodes_,
     generator(generator_),
     showerGenerator(showerGenerator_)
 {
-    Process const process = processCodes.front();
-    
-    if (process == Process::ppData or process == Process::pp7TeV or process == Process::pp8TeV or
-     process == Process::pp13TeV)
-    //^ Codes pp*TeV are checked to recover from a potential user's error when (s)he does not set
-    //ppData. It also ensures backward compatibility
-    {
-        if (generator == Generator::Undefined)
-            generator = Generator::Nature;
-        
-        if (showerGenerator == ShowerGenerator::Undefined)
-            showerGenerator = ShowerGenerator::Nature;
-    }
+    Init();
 }
 
 
-Dataset::Dataset(list<Dataset::Process> const &processCodes,
- Dataset::Generator generator /*= Dataset::Generator::Undefined*/,
- Dataset::ShowerGenerator showerGenerator /*= Dataset::ShowerGenerator::Undefined*/) noexcept:
-    // Construction is delegated to the more general constructor
-    Dataset(SortProcessCodes(processCodes), generator, showerGenerator)
-{}
+Dataset::Dataset(list<Dataset::Process> const &processCodes_,
+ Dataset::Generator generator_ /*= Dataset::Generator::Undefined*/,
+ Dataset::ShowerGenerator showerGenerator_ /*= Dataset::ShowerGenerator::Undefined*/) noexcept:
+    processCodes(SortProcessCodes(processCodes_)),
+    generator(generator_),
+    showerGenerator(showerGenerator_)
+{
+    Init();
+}
 
 
 Dataset::Dataset(Dataset::Process process,
- Dataset::Generator generator /*= Dataset::Generator::Undefined*/,
- Dataset::ShowerGenerator showerGenerator /*= Dataset::ShowerGenerator::Undefined*/) noexcept:
-    // Construction is delegated to the more general constructor
-    Dataset({process}, generator, showerGenerator)
-{}
+ Dataset::Generator generator_ /*= Dataset::Generator::Undefined*/,
+ Dataset::ShowerGenerator showerGenerator_ /*= Dataset::ShowerGenerator::Undefined*/) noexcept:
+    processCodes({process}),
+    generator(generator_),
+    showerGenerator(showerGenerator_)
+{
+    Init();
+}
 
 
 Dataset::Dataset(Dataset &&src) noexcept:
@@ -215,4 +209,22 @@ list<Dataset::Process> Dataset::SortProcessCodes(list<Dataset::Process> const &o
     SortProcessCodes(move(processCodes));
     
     return processCodes;
+}
+
+
+void Dataset::Init()
+{
+    Process const process = processCodes.front();
+    
+    if (process == Process::ppData or process == Process::pp7TeV or process == Process::pp8TeV or
+     process == Process::pp13TeV)
+    //^ Codes pp*TeV are checked to recover from a potential user's error when (s)he does not set
+    //ppData. It also ensures backward compatibility
+    {
+        if (generator == Generator::Undefined)
+            generator = Generator::Nature;
+        
+        if (showerGenerator == ShowerGenerator::Undefined)
+            showerGenerator = ShowerGenerator::Nature;
+    }
 }
