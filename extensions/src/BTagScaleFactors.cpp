@@ -138,6 +138,10 @@ BTagScaleFactors &BTagScaleFactors::operator=(BTagScaleFactors const &rhs)
 }
 
 
+BTagScaleFactors::~BTagScaleFactors()
+{}
+
+
 BTagSFInterface *BTagScaleFactors::Clone() const
 {
     return new BTagScaleFactors(*this);

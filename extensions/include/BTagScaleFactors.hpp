@@ -58,6 +58,9 @@ public:
     /// Assignment operator
     BTagScaleFactors &operator=(BTagScaleFactors const &rhs);
     
+    /// Trivial virtual destructor
+    virtual ~BTagScaleFactors();
+    
 public:
     /// Returns a newly allocated copy of *this created with the copy constructor
     virtual BTagSFInterface *Clone() const;

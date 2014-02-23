@@ -6,6 +6,10 @@ BTagEffInterface::BTagEffInterface():
 {}
 
 
+BTagEffInterface::~BTagEffInterface()
+{}
+
+
 void BTagEffInterface::LoadPayload(Dataset const &)
 {}
 

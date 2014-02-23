@@ -40,8 +40,8 @@ class EventSelectionInterface
         /// Default copy constructor
         EventSelectionInterface(EventSelectionInterface const &) = default;
         
-        /// Default virtual destructor
-        virtual ~EventSelectionInterface() = default;
+        /// Trivial virtual destructor
+        virtual ~EventSelectionInterface();
     
     public:
         /**

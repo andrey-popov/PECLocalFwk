@@ -93,6 +93,9 @@ public:
      */
     BTagEfficiencies &operator=(BTagEfficiencies const &rhs);
     
+    /// Trivial virtual destructor
+    virtual ~BTagEfficiencies();
+    
 public:
     /**
      * \brief Specifies a text label to which the given process code should be mapped

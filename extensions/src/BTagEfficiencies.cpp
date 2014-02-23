@@ -64,6 +64,10 @@ BTagEfficiencies &BTagEfficiencies::operator=(BTagEfficiencies const &rhs)
 }
 
 
+BTagEfficiencies::~BTagEfficiencies()
+{}
+
+
 void BTagEfficiencies::SetProcessLabel(Dataset::Process code, string const &label)
 {
     // Try to find the given process code among already registered ones

@@ -46,6 +46,9 @@ public:
     /// Default assignment operator
     BTagEffInterface &operator=(BTagEffInterface const &) = default;
     
+    /// Trivial virtual destructor
+    virtual ~BTagEffInterface();
+    
 public:
     /**
      * \brief Creates a deep copy of *this
