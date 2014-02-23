@@ -4,16 +4,45 @@
 using namespace std;
 
 
-WeightBTag::WeightBTag(BTagger const *bTagger_, BTagEffInterface *efficiencies_,
- BTagSFInterface *scaleFactors_):
-    bTagger(bTagger_), efficiencies(efficiencies_), scaleFactors(scaleFactors_)
+WeightBTag::WeightBTag(shared_ptr<BTagger const> &bTagger_, BTagger::WorkingPoint workingPoint_,
+ unique_ptr<BTagEffInterface> &efficiencies_, unique_ptr<BTagSFInterface> &scaleFactors_):
+    WeightBTagInterface(),
+    bTagger(bTagger_), efficiencies(move(efficiencies_)), scaleFactors(move(scaleFactors_)),
+    workingPoint(workingPoint_)
+{}
+
+
+WeightBTag::WeightBTag(shared_ptr<BTagger const> &bTagger_,
+ unique_ptr<BTagEffInterface> &efficiencies_, unique_ptr<BTagSFInterface> &scaleFactors_):
+    WeightBTag(bTagger_, bTagger_->GetWorkingPoint(), efficiencies_, scaleFactors_)
+{}
+
+
+WeightBTag::WeightBTag(WeightBTag const &src):
+    WeightBTagInterface(src),
+    bTagger(src.bTagger),  // Points to the same object
+    efficiencies(src.efficiencies->Clone()),
+    scaleFactors(src.scaleFactors->Clone()),
+    workingPoint(src.workingPoint)
+{}
+
+
+WeightBTag::WeightBTag(WeightBTag &&src):
+    WeightBTagInterface(move(src)),
+    bTagger(move(src.bTagger)),
+    efficiencies(move(src.efficiencies)),
+    scaleFactors(move(src.scaleFactors)),
+    workingPoint(src.workingPoint)
+{}
+
+
+WeightBTag::~WeightBTag()
 {}
 
 
 WeightBTagInterface *WeightBTag::Clone() const
 {
-    // This is a placeholder!
-    return nullptr;
+    return new WeightBTag(*this);
 }
 
 
@@ -40,11 +69,11 @@ double WeightBTag::CalcWeight(vector<Jet> const &jets, Variation var /*=Variatio
         
         
         // Precalculate b-tagging efficiency and scale factor with the current jet
-        double const eff = efficiencies->GetEfficiency(jet);
-        double const sf = scaleFactors->GetScaleFactor(jet,
+        double const eff = efficiencies->GetEfficiency(workingPoint, jet);
+        double const sf = scaleFactors->GetScaleFactor(workingPoint, jet,
          TranslateVariation(var, jet.GetParentID()));
         
-        if (bTagger->IsTagged(jet))
+        if (bTagger->IsTagged(workingPoint, jet))
         {
             logProbMC += log(eff);
             logProbData += log(eff * sf);
