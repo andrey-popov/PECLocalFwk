@@ -2,10 +2,13 @@
 #include <Dataset.hpp>
 #include <PECReader.hpp>
 #include <BTagger.hpp>
-#include <BTagDatabase.hpp>
+#include <BTagEfficiencies.hpp>
+#include <BTagScaleFactors.hpp>
+#include <WeightBTag.hpp>
 #include <TriggerSelection.hpp>
 
 #include <iostream>
+#include <memory>
 
 
 using namespace std;
@@ -14,8 +17,8 @@ using namespace std;
 int main()
 {
     // Define the b-tagging objects
-    BTagger bTagger(BTagger::Algorithm::CSV, BTagger::WorkingPoint::Medium);
-    BTagDatabase bTagDatabase(bTagger);
+    shared_ptr<BTagger const> bTagger(
+     new BTagger(BTagger::Algorithm::CSV, BTagger::WorkingPoint::Tight));
     
     
     // Define the event selection
@@ -73,15 +76,29 @@ int main()
     TriggerSelection triggerSel(triggerRanges);
     
     
+    // Define reweighting for b-tagging
+    BTagEfficiencies bTagEff("BTagEff_2012Bravo_v1.0.root", "in4_jPt30/");
+    
+    // Set a mapping from process codes to names of histograms with b-tagging efficiencies
+    bTagEff.SetProcessLabel(Dataset::Process::ttSemilep, "ttbar-semilep");
+    bTagEff.SetProcessLabel(Dataset::Process::ttchan, "t-tchan");
+    bTagEff.SetProcessLabel(Dataset::Process::ttH, "ttH");
+    bTagEff.SetProcessLabel(Dataset::Process::tHq, "tHq-nc");
+    bTagEff.SetDefaultProcessLabel("ttbar-inc");
+    
+    BTagScaleFactors bTagSF(bTagger->GetAlgorithm());
+    WeightBTag bTagReweighter(bTagger, bTagEff, bTagSF);
+    
+    
     // Perform dataset-specific initialization
-    bTagDatabase.SetDataset(datasets.front());
+    bTagReweighter.LoadPayload(datasets.front());
     
     
     // Build an instance of PECReader
     PECReader reader(datasets.front());
     reader.SetTriggerSelection(&triggerSel);
     reader.SetEventSelection(&sel);
-    reader.SetBTaggingConfig(&bTagger, &bTagDatabase);
+    reader.SetBTagReweighter(&bTagReweighter);
     //reader.SetReadHardInteraction();
     reader.NextSourceFile();
     

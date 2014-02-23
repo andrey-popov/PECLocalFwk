@@ -2,13 +2,16 @@
 #include <Dataset.hpp>
 #include <PECReader.hpp>
 #include <BTagger.hpp>
-#include <BTagDatabase.hpp>
+#include <BTagEfficiencies.hpp>
+#include <BTagScaleFactors.hpp>
+#include <WeightBTag.hpp>
 #include <TriggerSelection.hpp>
 #include <WeightPileUp.hpp>
 #include <RunManager.hpp>
 #include <BasicKinematicsPlugin.hpp>
 
 #include <iostream>
+#include <memory>
 
 
 using namespace std;
@@ -17,8 +20,8 @@ using namespace std;
 int main()
 {
     // Define the b-tagging objects
-    BTagger bTagger(BTagger::Algorithm::CSV, BTagger::WorkingPoint::Medium);
-    BTagDatabase bTagDatabase(bTagger);
+    shared_ptr<BTagger const> bTagger(
+     new BTagger(BTagger::Algorithm::CSV, BTagger::WorkingPoint::Tight));
     
     
     // Define the event selection
@@ -55,6 +58,20 @@ int main()
     TriggerSelection triggerSel(triggerRanges);
     
     
+    // Define reweighting for b-tagging
+    BTagEfficiencies bTagEff("BTagEff_2012Bravo_v1.0.root", "in4_jPt30/");
+    
+    // Set a mapping from process codes to names of histograms with b-tagging efficiencies
+    bTagEff.SetProcessLabel(Dataset::Process::ttSemilep, "ttbar-semilep");
+    bTagEff.SetProcessLabel(Dataset::Process::ttchan, "t-tchan");
+    bTagEff.SetProcessLabel(Dataset::Process::ttH, "ttH");
+    bTagEff.SetProcessLabel(Dataset::Process::tHq, "tHq-nc");
+    bTagEff.SetDefaultProcessLabel("ttbar-inc");
+    
+    BTagScaleFactors bTagSF(bTagger->GetAlgorithm());
+    WeightBTag bTagReweighter(bTagger, bTagEff, bTagSF);
+    
+    
     // An object to reweight for pile-up
     WeightPileUp weigtPileUp("SingleMu2012ABCD_Alpha-v2_pixelLumi.pileupTruth_finebin.root", 0.06);
     
@@ -66,8 +83,8 @@ int main()
     auto &config = manager.GetPECReaderConfig();
     config.SetModule(&triggerSel);
     config.SetModule(&sel);
-    config.SetModule(&bTagger);
-    config.SetModule(&bTagDatabase);
+    config.SetModule(bTagger);
+    config.SetModule(&bTagReweighter);
     config.SetModule(&weigtPileUp);
     
     // Register a plugin
