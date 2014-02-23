@@ -7,7 +7,8 @@ using namespace std;
 
 
 PECReaderConfig::PECReaderConfig():
-    readHardInteraction(false)
+    readHardInteraction(false), readGenJets(false),
+    syst()
 {}
 
 
@@ -19,6 +20,7 @@ PECReaderConfig::PECReaderConfig(PECReaderConfig const &src):
     puReweighter((src.puReweighter) ? src.puReweighter->Clone() : nullptr),
     weightFilesLocation(src.weightFilesLocation),
     readHardInteraction(src.readHardInteraction),
+    readGenJets(src.readGenJets),
     syst(src.syst)
 {}
 
@@ -31,6 +33,7 @@ PECReaderConfig::PECReaderConfig(PECReaderConfig &&src):
     puReweighter(move(src.puReweighter)),
     weightFilesLocation(move(src.weightFilesLocation)),
     readHardInteraction(src.readHardInteraction),
+    readGenJets(src.readGenJets),
     syst(src.syst)
 {}
 
