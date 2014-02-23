@@ -1,6 +1,7 @@
 #include <BTagEfficiencies.hpp>
 
 #include <FileInPath.hpp>
+#include <ROOTLock.hpp>
 
 #include <algorithm>
 #include <sstream>
@@ -14,11 +15,16 @@ BTagEfficiencies::BTagEfficiencies(string const &fileName, string const &directo
     BTagEffInterface(),
     inFileDirectory(directory)
 {
+    // Guard creation of a ROOT file
+    ROOTLock::Lock();
+    
     // Resolve path to the source file and open it. If the file is missing, pathBuilder will throw
     //an exception
     FileInPath pathBuilder;
     TFile *fp = TFile::Open(pathBuilder.Resolve("BTag", fileName).c_str());
     srcFile.reset(fp);
+    
+    ROOTLock::Unlock();
     
     
     // Make sure the in-file directory path is either empty or terminates with a slash
@@ -158,7 +164,9 @@ void BTagEfficiencies::LoadPayload(Dataset const &dataset)
         string const wpCode(WorkingPointToText(wp));
         
         
-        // Read histograms for all jet flavours
+        // Read histograms for all jet flavours. This is not a thread-safe operation
+        ROOTLock::Lock();
+        
         shared_ptr<TH2> bHist(dynamic_cast<TH2 *>(srcFile->Get(
          (inFileDirectory + curProcessLabel + "_b_" + wpCode).c_str())));
         shared_ptr<TH2> cHist(dynamic_cast<TH2 *>(srcFile->Get(
@@ -167,6 +175,15 @@ void BTagEfficiencies::LoadPayload(Dataset const &dataset)
          (inFileDirectory + curProcessLabel + "_uds_" + wpCode).c_str())));
         shared_ptr<TH2> gHist(dynamic_cast<TH2 *>(srcFile->Get(
          (inFileDirectory + curProcessLabel + "_g_" + wpCode).c_str())));
+        
+        // Make sure the histograms are not associated with a file
+        for (auto const &p: {bHist, cHist, udsHist, gHist})
+        {
+            if (p)
+                p->SetDirectory(nullptr);
+        }
+        
+        ROOTLock::Unlock();
         
         
         // Add the histograms to the histogram map if the pointers are not null
@@ -191,7 +208,6 @@ void BTagEfficiencies::LoadPayload(Dataset const &dataset)
             //that pile-up jets usually obtain a flavour of either 0 or 21
         }
     }
-    
 }
 
 
