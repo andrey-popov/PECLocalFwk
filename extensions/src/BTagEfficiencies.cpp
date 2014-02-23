@@ -207,7 +207,7 @@ double BTagEfficiencies::GetEfficiency(BTagger::WorkingPoint wp, Jet const &jet)
     
     
     // Find bin that contains the jet
-    int const bin = histIt->second->FindFixBin(jet.Pt(), fabs(jet.Eta()));
+    int const bin = histIt->second->FindFixBin(jet.Pt(), jet.Eta());
     
         
     return histIt->second->GetBinContent(bin);

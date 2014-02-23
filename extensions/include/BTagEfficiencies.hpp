@@ -141,8 +141,8 @@ public:
      * 
      * The efficiency is read from a histogram selected according to jet flavour and requested
      * working point. Appropriate bin of the histogram is identified by jet transverse momentum and
-     * absolute value of pseudorapidity; overflow bins are expected to be filled in a meaningful
-     * way. If required histogram is not found, an exception is thrown.
+     * (signed) pseudorapidity; overflow bins are expected to be filled in a meaningful way. If
+     * required histogram is not found, an exception is thrown.
      */
     virtual double GetEfficiency(BTagger::WorkingPoint wp, Jet const &jet) const;
     
