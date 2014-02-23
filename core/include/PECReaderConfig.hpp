@@ -95,6 +95,16 @@ class PECReaderConfig
         void SetModule(BTagger const *bTagger);
         
         /**
+         * \brief Provides b-tagging object
+         * 
+         * The object is shared.
+         */
+        void SetBTagger(std::shared_ptr<BTagger const> &bTagger);
+        
+        /// A short-cut for SetBTagger
+        void SetModule(std::shared_ptr<BTagger const> &bTagger);
+        
+        /**
          * \brief Sets an object to perform reweighting due to b-tagging
          * 
          * Provided object is copied.

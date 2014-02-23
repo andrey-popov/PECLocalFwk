@@ -11,7 +11,8 @@ GenericEventSelection::JetTagBin::JetTagBin(unsigned nJets_, unsigned nTags_):
 {}
 
 
-GenericEventSelection::GenericEventSelection(double jetPtThreshold_, BTagger const &bTagger_):
+GenericEventSelection::GenericEventSelection(double jetPtThreshold_,
+ shared_ptr<BTagger const> const &bTagger_):
     EventSelectionInterface(),
     jetPtThreshold(jetPtThreshold_), bTagger(bTagger_)
 {
@@ -20,6 +21,23 @@ GenericEventSelection::GenericEventSelection(double jetPtThreshold_, BTagger con
     flavourMap[Lepton::Flavour::Muon] = 1;
     flavourMap[Lepton::Flavour::Tau] = 2;
 }
+
+
+GenericEventSelection::GenericEventSelection(double jetPtThreshold_,
+ shared_ptr<BTagger const> &&bTagger_):
+    EventSelectionInterface(),
+    jetPtThreshold(jetPtThreshold_), bTagger(bTagger_)
+{
+    // Fill the lepton-flavour map
+    flavourMap[Lepton::Flavour::Electron] = 0;
+    flavourMap[Lepton::Flavour::Muon] = 1;
+    flavourMap[Lepton::Flavour::Tau] = 2;
+}
+
+
+GenericEventSelection::GenericEventSelection(double jetPtThreshold_, BTagger const &bTagger_):
+    GenericEventSelection(jetPtThreshold_, shared_ptr<BTagger const>(new BTagger(bTagger_)))
+{}
 
 
 bool GenericEventSelection::PassLeptonStep(vector<Lepton> const &tightLeptons,
@@ -92,7 +110,7 @@ bool GenericEventSelection::PassJetStep(vector<Jet> const &jets) const
         {
             ++nJets;
             
-            if (bTagger(j))
+            if (bTagger->IsTagged(j))
                 ++nTags;
         }
     

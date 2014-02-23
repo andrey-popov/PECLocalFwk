@@ -13,6 +13,7 @@
 #include <list>
 #include <array>
 #include <map>
+#include <memory>
 
 
 /**
@@ -54,7 +55,17 @@ class GenericEventSelection: public EventSelectionInterface
          * 
          * Parameters are jet pt threshold and b-tagging object.
          */
-        GenericEventSelection(double jetPtThreshold_, BTagger const &bTagger_);
+        GenericEventSelection(double jetPtThreshold, std::shared_ptr<BTagger const> const &bTagger);
+        
+        /**
+         * \brief Constructor
+         * 
+         * Takes the same effect as the above version, but the given b-tagging object is copied.
+         */
+        GenericEventSelection(double jetPtThreshold, BTagger const &bTagger);
+        
+        /// Constructor
+        GenericEventSelection(double jetPtThreshold, std::shared_ptr<BTagger const> &&bTagger);
         
         /// Default copy constructor
         GenericEventSelection(GenericEventSelection const &) = default;
@@ -125,6 +136,6 @@ class GenericEventSelection: public EventSelectionInterface
         std::array<std::list<double>, 3> leptonPtThresholds;
         
         double jetPtThreshold;  ///< Minimum pt for analysis-level jets
-        BTagger const &bTagger;  ///< The b-tagging object
+        std::shared_ptr<BTagger const> bTagger;  ///< The b-tagging object
         std::list<JetTagBin> jetBins;  ///< List of allowed jet-tag bins
 };

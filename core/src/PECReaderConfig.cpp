@@ -65,9 +65,21 @@ void PECReaderConfig::SetBTagger(BTagger const *bTagger_)
 }
 
 
-void PECReaderConfig::SetModule(BTagger const *bTagger)
+void PECReaderConfig::SetModule(BTagger const *bTagger_)
 {
-    SetBTagger(bTagger);
+    SetBTagger(bTagger_);
+}
+
+
+void PECReaderConfig::SetBTagger(shared_ptr<BTagger const> &bTagger_)
+{
+    bTagger = bTagger_;
+}
+
+
+void PECReaderConfig::SetModule(shared_ptr<BTagger const> &bTagger_)
+{
+    SetBTagger(bTagger_);
 }
 
 
