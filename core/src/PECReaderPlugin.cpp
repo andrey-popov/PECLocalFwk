@@ -40,8 +40,8 @@ Plugin *PECReaderPlugin::Clone() const
 void PECReaderPlugin::BeginRun(Dataset const &dataset)
 {
     // Update configuration parameters for the current dataset
-    if (readerConfig->IsSetBTagDatabase())
-        readerConfig->GetBTagDatabase()->SetDataset(dataset);
+    if (readerConfig->IsSetBTagReweighter())
+        readerConfig->GetBTagReweighter()->LoadPayload(dataset);
     
     if (readerConfig->IsSetPileUpReweighter())
         readerConfig->GetPileUpReweighter()->SetDataset(dataset);

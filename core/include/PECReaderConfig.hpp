@@ -12,7 +12,7 @@
 #include <TriggerSelectionInterface.hpp>
 #include <EventSelectionInterface.hpp>
 #include <BTagger.hpp>
-#include <BTagDatabase.hpp>
+#include <WeightBTagInterface.hpp>
 #include <WeightPileUpInterface.hpp>
 #include <SystDefinition.hpp>
 
@@ -56,6 +56,9 @@ class PECReaderConfig
         /// Copy constructor
         PECReaderConfig(PECReaderConfig const &src);
         
+        /// Move contructor
+        PECReaderConfig(PECReaderConfig &&src);
+        
         /// Assignment operator is deleted
         PECReaderConfig &operator=(PECReaderConfig const &) = delete;
     
@@ -92,14 +95,14 @@ class PECReaderConfig
         void SetModule(BTagger const *bTagger);
         
         /**
-         * \brief Provides a handle to a database with b-tagging information
+         * \brief Sets an object to perform reweighting due to b-tagging
          * 
          * Provided object is copied.
          */
-        void SetBTagDatabase(BTagDatabase const *bTagDatabase);
+        void SetBTagReweighter(WeightBTagInterface const *bTagReweighter);
         
-        /// A short-cut for SetBTagDatabase
-        void SetModule(BTagDatabase const *bTagDatabase);
+        /// A short-cut for SetBTagReweighter
+        void SetModule(WeightBTagInterface const *bTagReweighter);
         
         /**
          * \brief Sets an object to reweight pile-up in simulation
@@ -150,14 +153,11 @@ class PECReaderConfig
         /// Consult documentation for SetBTagger for details
         BTagger const *GetBTagger() const;
         
-        /// Check if a valid b-tagging database object is set
-        bool IsSetBTagDatabase() const;
+        /// Check if a valid b-tagging reweighting object is set
+        bool IsSetBTagReweighter() const;
         
-        /// Consult documentation for SetBTagDatabase for details
-        BTagDatabase const *GetBTagDatabase() const;
-        
-        /// Consult documentation for SetBTagDatabase for details
-        BTagDatabase *GetBTagDatabase();
+        /// Consult documentation for SetBTagReweighter for details
+        WeightBTagInterface *GetBTagReweighter() const;
         
         /// Checks if a valid pile-up reweighting object is set
         bool IsSetPileUpReweighter() const;
@@ -199,7 +199,7 @@ class PECReaderConfig
         std::shared_ptr<BTagger const> bTagger;
         
         /// Database with b-tagging efficiencies and scale factors
-        std::unique_ptr<BTagDatabase> bTagDatabase;
+        std::unique_ptr<WeightBTagInterface> bTagReweighter;
         
         /// An object to reweight simulation over pile-up
         std::unique_ptr<WeightPileUpInterface> puReweighter;

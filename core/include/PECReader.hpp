@@ -16,7 +16,7 @@
 #include <GenParticle.hpp>
 #include <TriggerSelectionInterface.hpp>
 #include <EventSelectionInterface.hpp>
-#include <WeightBTag.hpp>
+#include <WeightBTagInterface.hpp>
 #include <WeightPileUpInterface.hpp>
 #include <SystDefinition.hpp>
 
@@ -106,7 +106,7 @@ class PECReader
          * 
          * This action has no effect on real data.
          */
-        void SetBTaggingConfig(BTagger const *bTagger, BTagDatabase const *bTagDatabase);
+        void SetBTagReweighter(WeightBTagInterface *bTagReweighter);
         
         /**
          * \brief Sets object to reweight simulation for pile-up
@@ -300,6 +300,9 @@ class PECReader
         /// Pointer to an object to perform event selection
         EventSelectionInterface const *eventSelection;
         
+        /// An object to reweight event for b-tagging scale factors
+        WeightBTagInterface *bTagReweighter;
+        
         /// Pointer to an object to perform pile-up reweighting (set for a simulation dataset only)
         WeightPileUpInterface const *puReweighter;
         
@@ -308,9 +311,6 @@ class PECReader
         
         /// Indicates whether generator-level jets should be read
         bool readGenJets;
-        
-        /// An object to reweight event for b-tagging scale factors
-        std::unique_ptr<WeightBTag const> bTagReweighter;
         
         
         /// Systematical variation

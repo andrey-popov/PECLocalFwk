@@ -22,9 +22,9 @@ using namespace logging;
 PECReader::PECReader(Dataset const &dataset_):
     dataset(dataset_),
     isInitialized(false),
-    triggerSelection(nullptr), eventSelection(nullptr), puReweighter(nullptr),
+    triggerSelection(nullptr), eventSelection(nullptr),
+    bTagReweighter(nullptr), puReweighter(nullptr),
     readHardParticles(false), readGenJets(false),
-    bTagReweighter(nullptr),
     sourceFile(nullptr),
     eventIDTree(nullptr), triggerTree(nullptr), generalTree(nullptr)
 {}
@@ -45,8 +45,8 @@ void PECReader::Configure(PECReaderConfig const &config)
     if (config.IsSetEventSelection())
         SetEventSelection(config.GetEventSelection());
     
-    if (config.IsSetBTagger() and config.IsSetBTagDatabase())
-        SetBTaggingConfig(config.GetBTagger(), config.GetBTagDatabase());
+    if (config.IsSetBTagReweighter())
+        SetBTagReweighter(config.GetBTagReweighter());
     
     if (config.IsSetPileUpReweighter())
         SetPileUpReweighter(config.GetPileUpReweighter());
@@ -69,9 +69,9 @@ void PECReader::SetEventSelection(EventSelectionInterface const *eventSelection_
 }
 
 
-void PECReader::SetBTaggingConfig(BTagger const *bTagger, BTagDatabase const *bTagDatabase)
+void PECReader::SetBTagReweighter(WeightBTagInterface *bTagReweighter_)
 {
-    bTagReweighter.reset(new WeightBTag(*bTagger, *bTagDatabase));
+    bTagReweighter = bTagReweighter_;
 }
 
 
@@ -751,7 +751,8 @@ void PECReader::CalculateEventWeights()
     
     // Reweighting for b-tagging
     double const weightBTagging =
-     (bTagReweighter) ? bTagReweighter->CalcWeight(goodJets, WeightBTag::Variation::Central) : 1.;
+     (bTagReweighter) ?
+     bTagReweighter->CalcWeight(goodJets, WeightBTagInterface::Variation::Nominal) : 1.;
     
     
     // Calculate the central weight
@@ -778,15 +779,15 @@ void PECReader::CalculateEventWeights()
         
         systWeightTagRate.emplace_back();
         systWeightTagRate.back().up = weightButBTagging *
-         bTagReweighter->CalcWeight(goodJets, WeightBTag::Variation::TagRateUp);
+         bTagReweighter->CalcWeight(goodJets, WeightBTagInterface::Variation::TagRateUp);
         systWeightTagRate.back().down = weightButBTagging *
-         bTagReweighter->CalcWeight(goodJets, WeightBTag::Variation::TagRateDown);
+         bTagReweighter->CalcWeight(goodJets, WeightBTagInterface::Variation::TagRateDown);
         
         systWeightMistagRate.emplace_back();
         systWeightMistagRate.back().up = weightButBTagging *
-         bTagReweighter->CalcWeight(goodJets, WeightBTag::Variation::MistagRateUp);
+         bTagReweighter->CalcWeight(goodJets, WeightBTagInterface::Variation::MistagRateUp);
         systWeightMistagRate.back().down = weightButBTagging *
-         bTagReweighter->CalcWeight(goodJets, WeightBTag::Variation::MistagRateDown);
+         bTagReweighter->CalcWeight(goodJets, WeightBTagInterface::Variation::MistagRateDown);
     }
 }
 

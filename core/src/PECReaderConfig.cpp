@@ -15,9 +15,21 @@ PECReaderConfig::PECReaderConfig(PECReaderConfig const &src):
     triggerSelection(src.triggerSelection->Clone()),
     eventSelection(src.eventSelection->Clone()),
     bTagger(src.bTagger),
-    bTagDatabase((src.bTagDatabase) ? new BTagDatabase(*src.bTagDatabase) : nullptr),
+    bTagReweighter((src.bTagReweighter) ? src.bTagReweighter->Clone() : nullptr),
     puReweighter((src.puReweighter) ? src.puReweighter->Clone() : nullptr),
     weightFilesLocation(src.weightFilesLocation),
+    readHardInteraction(src.readHardInteraction),
+    syst(src.syst)
+{}
+
+
+PECReaderConfig::PECReaderConfig(PECReaderConfig &&src):
+    triggerSelection(move(src.triggerSelection)),
+    eventSelection(move(src.eventSelection)),
+    bTagger(move(src.bTagger)),
+    bTagReweighter(move(src.bTagReweighter)),
+    puReweighter(move(src.puReweighter)),
+    weightFilesLocation(move(src.weightFilesLocation)),
     readHardInteraction(src.readHardInteraction),
     syst(src.syst)
 {}
@@ -59,15 +71,15 @@ void PECReaderConfig::SetModule(BTagger const *bTagger)
 }
 
 
-void PECReaderConfig::SetBTagDatabase(BTagDatabase const *bTagDatabase_)
+void PECReaderConfig::SetBTagReweighter(WeightBTagInterface const *bTagReweighter_)
 {
-    bTagDatabase.reset(new BTagDatabase(*bTagDatabase_));
+    bTagReweighter.reset(bTagReweighter_->Clone());
 }
 
 
-void PECReaderConfig::SetModule(BTagDatabase const *bTagDatabase)
+void PECReaderConfig::SetModule(WeightBTagInterface const *bTagReweighter_)
 {
-    SetBTagDatabase(bTagDatabase);
+    SetBTagReweighter(bTagReweighter_);
 }
 
 
@@ -77,9 +89,9 @@ void PECReaderConfig::SetPileUpReweighter(WeightPileUpInterface const *puReweigh
 }
 
 
-void PECReaderConfig::SetModule(WeightPileUpInterface const *puReweighter)
+void PECReaderConfig::SetModule(WeightPileUpInterface const *puReweighter_)
 {
-    SetPileUpReweighter(puReweighter);
+    SetPileUpReweighter(puReweighter_);
 }
 
 
@@ -159,29 +171,19 @@ BTagger const *PECReaderConfig::GetBTagger() const
 }
 
 
-bool PECReaderConfig::IsSetBTagDatabase() const
+bool PECReaderConfig::IsSetBTagReweighter() const
 {
-    return bool(bTagDatabase);
+    return bool(bTagReweighter);
 }
 
 
-BTagDatabase const *PECReaderConfig::GetBTagDatabase() const
+WeightBTagInterface *PECReaderConfig::GetBTagReweighter() const
 {
-    if (not bTagDatabase)
-        throw logic_error("PECReaderConfig::GetBTagDatabase: Accessing an undefined "
+    if (not bTagReweighter)
+        throw logic_error("PECReaderConfig::GetBTagReweighter: Accessing an undefined "
          "configuration parameter.");
     
-    return bTagDatabase.get();
-}
-
-
-BTagDatabase *PECReaderConfig::GetBTagDatabase()
-{
-    if (not bTagDatabase)
-        throw logic_error("PECReaderConfig::GetBTagDatabase: Accessing an undefined "
-         "configuration parameter.");
-    
-    return bTagDatabase.get();
+    return bTagReweighter.get();
 }
 
 
