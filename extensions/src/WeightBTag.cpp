@@ -42,7 +42,7 @@ WeightBTag::WeightBTag(WeightBTag const &src):
 {}
 
 
-WeightBTag::WeightBTag(WeightBTag &&src):
+WeightBTag::WeightBTag(WeightBTag &&src) noexcept:
     WeightBTagInterface(move(src)),
     bTagger(move(src.bTagger)),
     efficiencies(move(src.efficiencies)),
@@ -51,7 +51,7 @@ WeightBTag::WeightBTag(WeightBTag &&src):
 {}
 
 
-WeightBTag::~WeightBTag()
+WeightBTag::~WeightBTag() noexcept
 {}
 
 

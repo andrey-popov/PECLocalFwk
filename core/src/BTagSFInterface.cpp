@@ -8,12 +8,12 @@ using namespace std;
 double const BTagSFInterface::maxPseudorapidity = 2.4;
 
 
-BTagSFInterface::BTagSFInterface():
+BTagSFInterface::BTagSFInterface() noexcept:
     defaultWP(BTagger::WorkingPoint::Tight)
 {}
 
 
-BTagSFInterface::~BTagSFInterface()
+BTagSFInterface::~BTagSFInterface() noexcept
 {}
 
 

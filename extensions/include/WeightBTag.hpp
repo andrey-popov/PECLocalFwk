@@ -79,7 +79,7 @@ public:
     WeightBTag(WeightBTag const &src);
     
     /// Move constructor
-    WeightBTag(WeightBTag &&src);
+    WeightBTag(WeightBTag &&src) noexcept;
     
     /**
      * \brief Assignment operator is deleted
@@ -91,7 +91,7 @@ public:
     WeightBTag operator=(WeightBTag const &) = delete;
     
     /// Trivial virtual destructor
-    virtual ~WeightBTag();
+    virtual ~WeightBTag() noexcept;
 
 public:
     /// Wrapper for copy constructor

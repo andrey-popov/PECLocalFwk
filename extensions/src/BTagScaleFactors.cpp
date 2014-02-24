@@ -113,21 +113,21 @@ BTagScaleFactors::BTagScaleFactors(BTagger::Algorithm algo):
 }
 
 
-BTagScaleFactors::BTagScaleFactors(BTagScaleFactors const &src):
+BTagScaleFactors::BTagScaleFactors(BTagScaleFactors const &src) noexcept:
     BTagSFInterface(src),
     rawScaleFactors(src.rawScaleFactors),
     ptMaxTag(src.ptMaxTag)
 {}
 
 
-BTagScaleFactors::BTagScaleFactors(BTagScaleFactors &&src):
+BTagScaleFactors::BTagScaleFactors(BTagScaleFactors &&src) noexcept:
     BTagSFInterface(move(src)),
     rawScaleFactors(move(src.rawScaleFactors)),
     ptMaxTag(src.ptMaxTag)
 {}
 
 
-BTagScaleFactors &BTagScaleFactors::operator=(BTagScaleFactors const &rhs)
+BTagScaleFactors &BTagScaleFactors::operator=(BTagScaleFactors const &rhs) noexcept
 {
     BTagSFInterface::operator=(rhs);
     
@@ -138,7 +138,7 @@ BTagScaleFactors &BTagScaleFactors::operator=(BTagScaleFactors const &rhs)
 }
 
 
-BTagScaleFactors::~BTagScaleFactors()
+BTagScaleFactors::~BTagScaleFactors() noexcept
 {}
 
 

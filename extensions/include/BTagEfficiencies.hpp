@@ -84,7 +84,7 @@ public:
     BTagEfficiencies(BTagEfficiencies const &src);
     
     /// Move constructor
-    BTagEfficiencies(BTagEfficiencies &&src);
+    BTagEfficiencies(BTagEfficiencies &&src) noexcept;
     
     /**
      * \brief Assignment operator
@@ -94,7 +94,7 @@ public:
     BTagEfficiencies &operator=(BTagEfficiencies const &rhs);
     
     /// Trivial virtual destructor
-    virtual ~BTagEfficiencies();
+    virtual ~BTagEfficiencies() noexcept;
     
 public:
     /**

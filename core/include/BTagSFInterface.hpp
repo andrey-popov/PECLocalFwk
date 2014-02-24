@@ -42,7 +42,7 @@ public:
      * 
      * Sets the default working point to tight.
      */
-    BTagSFInterface();
+    BTagSFInterface() noexcept;
     
     /// Default copy constructor
     BTagSFInterface(BTagSFInterface const &) = default;
@@ -54,7 +54,7 @@ public:
     BTagSFInterface &operator=(BTagSFInterface const &) = default;
     
     /// Trivial virtual destructor
-    virtual ~BTagSFInterface();
+    virtual ~BTagSFInterface() noexcept;
     
 public:
     /**

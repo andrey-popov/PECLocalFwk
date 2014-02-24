@@ -50,16 +50,16 @@ public:
     BTagScaleFactors(BTagger::Algorithm algo);
     
     /// Copy constructor
-    BTagScaleFactors(BTagScaleFactors const &src);
+    BTagScaleFactors(BTagScaleFactors const &src) noexcept;
     
     /// Move constructor
-    BTagScaleFactors(BTagScaleFactors &&src);
+    BTagScaleFactors(BTagScaleFactors &&src) noexcept;
     
     /// Assignment operator
-    BTagScaleFactors &operator=(BTagScaleFactors const &rhs);
+    BTagScaleFactors &operator=(BTagScaleFactors const &rhs) noexcept;
     
     /// Trivial virtual destructor
-    virtual ~BTagScaleFactors();
+    virtual ~BTagScaleFactors() noexcept;
     
 public:
     /// Returns a newly allocated copy of *this created with the copy constructor
