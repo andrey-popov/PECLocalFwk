@@ -116,7 +116,8 @@ void FilterEventIDPlugin::BeginRun(Dataset const &dataset)
     // Lists of event IDs are provided on per-file basis. Since the plugin is not notified when
     //a new file in the current dataset is started, it makes sense only to filer atomic datasets
     if (dataset.GetFiles().size() not_eq 1)
-        throw logic_error("TTbarRecoPlugin::BeginRun: The plugin can filter atomic datasets only.");
+        throw logic_error("FilterEventIDPlugin::BeginRun: The plugin can filter atomic "
+         "datasets only.");
     
     
     // Save pointer to the reader plugin
