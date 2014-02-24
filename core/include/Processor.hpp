@@ -36,15 +36,18 @@
 class Processor
 {
     public:
+        /// Default constructor
+        Processor() noexcept;
+        
         /**
          * \brief Constructor
          * 
          * Constructor moves RunManager::readerConfig to this.
          */
-        Processor(RunManager &manager);
+        Processor(RunManager *manager);
         
         /// Move constructor
-        Processor(Processor &&src);
+        Processor(Processor &&src) noexcept;
         
         /**
          * \brief Copy constructor
@@ -59,7 +62,7 @@ class Processor
         Processor &operator=(Processor const &) = delete;
         
         /// Destructor
-        ~Processor();
+        ~Processor() noexcept;
     
     public:
         /**
@@ -131,8 +134,12 @@ class Processor
         unsigned GetPluginIndex(std::string const &name) const;
     
     private:
-        /// Reference to parent RunManager instance
-        RunManager &manager;
+        /**
+         * \brief Parent RunManager instance
+         * 
+         * The pointed-to object is not owned by this.
+         */
+        RunManager *manager;
         
         /**
          * \brief Pointers to registered plugins

@@ -62,7 +62,8 @@ void RunManager::ProcessImp(int nThreads)
     // Create processing objects. The first one is constructed from this, others are copy-
     //constructed from the first one
     vector<Processor> processors;
-    processors.emplace_back(*this);
+    processors.reserve(nThreads);
+    processors.emplace_back(this);
     
     for (auto &p: plugins)
         processors.front().RegisterPlugin(p.release());

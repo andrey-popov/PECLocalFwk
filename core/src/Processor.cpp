@@ -15,15 +15,20 @@ using namespace std;
 using namespace logging;
 
 
-Processor::Processor(RunManager &manager_):
+Processor::Processor() noexcept:
+    manager(nullptr)
+{}
+
+
+Processor::Processor(RunManager *manager_):
     manager(manager_)
 {
     // Create the reader plugin
-    RegisterPlugin(new PECReaderPlugin(move(manager.readerConfig)));
+    RegisterPlugin(new PECReaderPlugin(move(manager->readerConfig)));
 }
 
 
-Processor::Processor(Processor &&src):
+Processor::Processor(Processor &&src) noexcept:
     manager(src.manager),
     path(move(src.path)),
     nameMap(move(src.nameMap))
@@ -42,7 +47,7 @@ Processor::Processor(Processor const &src):
 }
 
 
-Processor::~Processor()
+Processor::~Processor() noexcept
 {
     // Destroy plugins in a reversed order
     for (auto pIt = path.rbegin(); pIt != path.rend(); ++pIt)
@@ -78,17 +83,17 @@ void Processor::operator()()
     while (true)
     {
         // Safely pop a dataset from the queue
-        manager.mutexDatasets.lock();
+        manager->mutexDatasets.lock();
         
-        if (manager.datasets.empty())  // no more datasets to process
+        if (manager->datasets.empty())  // no more datasets to process
         {
-            manager.mutexDatasets.unlock();
+            manager->mutexDatasets.unlock();
             return;
         }
         
-        Dataset dataset(manager.datasets.front());
-        manager.datasets.pop();
-        manager.mutexDatasets.unlock();
+        Dataset dataset(manager->datasets.front());
+        manager->datasets.pop();
+        manager->mutexDatasets.unlock();
         
         
         // Process the dataset
