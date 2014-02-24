@@ -44,7 +44,7 @@ BTagEfficiencies::BTagEfficiencies(BTagEfficiencies const &src):
 {}
 
 
-BTagEfficiencies::BTagEfficiencies(BTagEfficiencies &&src):
+BTagEfficiencies::BTagEfficiencies(BTagEfficiencies &&src) noexcept:
     BTagEffInterface(move(src)),
     srcFile(move(src.srcFile)),
     inFileDirectory(move(src.inFileDirectory)),
@@ -70,7 +70,7 @@ BTagEfficiencies &BTagEfficiencies::operator=(BTagEfficiencies const &rhs)
 }
 
 
-BTagEfficiencies::~BTagEfficiencies()
+BTagEfficiencies::~BTagEfficiencies() noexcept
 {}
 
 
