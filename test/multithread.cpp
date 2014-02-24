@@ -73,7 +73,8 @@ int main()
     
     
     // An object to reweight for pile-up
-    WeightPileUp weigtPileUp("SingleMu2012ABCD_Alpha-v2_pixelLumi.pileupTruth_finebin.root", 0.06);
+    WeightPileUp weigtPileUp("SingleMu2012ABCD_Bravo_v1.0_pixelLumi.pileupTruth_finebin.root",
+     0.06);
     
     
     // Construct the run manager
