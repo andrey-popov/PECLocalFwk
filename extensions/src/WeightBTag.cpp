@@ -69,10 +69,12 @@ void WeightBTag::LoadPayload(Dataset const &dataset)
 
 double WeightBTag::CalcWeight(vector<Jet> const &jets, Variation var /*=Variation::Nominal*/) const
 {
-    // Logarithms of probabilities that the given tag configuration takes place with data-like or
-    //MC-like b-tagging efficiencies. Since the probabilities for several jets will be multiplied,
-    //it is more robust to operate with logarithms
-    double logProbData = 0., logProbMC = 0.;
+    // The weight will be constructed following this recipe [1]. It will be calculated as a product
+    //of per-jet factors. These factors are of the order of 1, and for this reason it is fine to
+    //simply multiply them instead of calculating a sum of logarithms, which is more stable in case
+    //of small multipliers
+    //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/BTagSFMethods#1a_Event_reweighting_using_scale
+    double weight = 1.;
     
     
     // Loop over the jets
@@ -83,27 +85,29 @@ double WeightBTag::CalcWeight(vector<Jet> const &jets, Variation var /*=Variatio
             continue;
         
         
-        // Precalculate b-tagging efficiency and scale factor with the current jet
-        double const eff = efficiencies->GetEfficiency(workingPoint, jet);
+        // Precalculate b-tagging scale factor for the current jet
         double const sf = scaleFactors->GetScaleFactor(workingPoint, jet,
          TranslateVariation(var, jet.GetParentID()));
         
+        
+        // Update the weight
         if (bTagger->IsTagged(workingPoint, jet))
-        {
-            logProbMC += log(eff);
-            logProbData += log(eff * sf);
-        }
+            weight *= sf;
         else
         {
-            logProbMC += log(1. - eff);
-            logProbData += log(1. - eff * sf);
+            // Only in this case the b-tagging efficiency is needed. Calculate it
+            double const eff = efficiencies->GetEfficiency(workingPoint, jet);
+            
+            if (eff < 1.)
+                weight *= (1. - sf * eff) / (1. - eff);
+            //^ The above formula does not work if eff == 1. It should be a very rear event and is
+            //possible if only the efficiencies were measured after an event selection that does not
+            //enclose the event selection applied at the moment, or if efficiencies from a wrong
+            //dataset are applied. Nevertheless, an untagged jet with eff == 1. is ignored. This is
+            //an ad-hoc solution motivated only in the case of sf == 1.
         }
-        //^ It is worth noting that despite both the efficiencies and the scale factors can be zero
-        //(outside the tracker acceptance) the arguments of logarithms are always positive since
-        //a tagged jet has non-zero efficiency and scale factor
     }
     
     
-    // This is it. Much simpler than in previous version of the algorithm
-    return exp(logProbData - logProbMC);
+    return weight;
 }
