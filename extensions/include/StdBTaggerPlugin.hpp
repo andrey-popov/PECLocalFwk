@@ -5,6 +5,8 @@
  * Defines a class to wrap the standard b-tagging into a plugin.
  */
 
+#pragma once
+
 #include <BTaggerPlugin.hpp>
 
 #include <BTagger.hpp>

@@ -5,6 +5,8 @@
  * Defines an abstract base class for a plugin to perform b-tagging.
  */
 
+#pragma once
+
 #include <Plugin.hpp>
 
 #include <PhysicsObjects.hpp>

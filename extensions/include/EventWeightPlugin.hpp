@@ -5,6 +5,8 @@
  * Defines an abstract base class for a plugin to calculate event weight.
  */
 
+#pragma once
+
 #include <Plugin.hpp>
 
 #include <vector>
