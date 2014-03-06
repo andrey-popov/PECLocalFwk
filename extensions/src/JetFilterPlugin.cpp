@@ -63,16 +63,14 @@ void JetFilterPlugin::BeginRun(Dataset const &)
 bool JetFilterPlugin::ProcessEvent()
 {
     auto const &jets = (*reader)->GetJets();
-    auto const &softJets = (*reader)->GetAdditionalJets();
     
     
     // Count the number of jets that pass the selection
     unsigned nPassed = 0;
     
-    for (auto const &jetCollection: {jets, softJets})
-        for (Jet const &j: jetCollection)
-            if (selection(j))
-                ++nPassed;
+    for (Jet const &j: jets)
+        if (selection(j))
+            ++nPassed;
     
     
     return (nPassed >= minNumJets and nPassed <= maxNumJets);

@@ -19,7 +19,8 @@
  * \brief Filters events based on the number of jets that pass a generic selection
  * 
  * The plugin selects an event if it contains a desired number of jets that pass a selection. The
- * selection is specified with the help of std::function and, therefore, can be very general.
+ * selection is specified with the help of std::function and, therefore, can be very general. It
+ * checks only jets in the PECReader::GetJets collection.
  */
 class JetFilterPlugin: public Plugin
 {
