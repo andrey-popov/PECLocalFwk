@@ -68,19 +68,39 @@ public:
     virtual BTagSFInterface *Clone() const = 0;
     
     /**
-     * \brief Returns b-tagging scale factor for a given jet
+     * \brief Returns b-tagging scale factor for a given working point and given jet momentum and
+     * flavour.
      * 
      * User is not expected to calculate scale factors for jets that fail the pseudorapidity
      * coverage defined by the method GetMaxPseudorapidity. Behaviour of the method is undefined
-     * otherwise.
+     * otherwise. The flavour might be negative.
      */
-    virtual double GetScaleFactor(BTagger::WorkingPoint wp, Jet const &jet,
+    virtual double GetScaleFactor(BTagger::WorkingPoint wp, Candidate const &jet, int flavour,
      Variation var = Variation::Nominal) const = 0;
+    
+    /**
+     * \brief Returns b-tagging scale factor for a given jet
+     * 
+     * Internally calls the pure virtual method with the same name.
+     */
+    double GetScaleFactor(BTagger::WorkingPoint wp, Jet const &jet,
+     Variation var = Variation::Nominal) const;
+    
+    /**
+     * \brief Returns b-tagging scale factor for given jet momentum and flavour using the default
+     * working point
+     * 
+     * The method is useful for prescriptions that support only one working point. Internally calls
+     * the pure virtual method with the same name.
+     */
+    double GetScaleFactor(Candidate const &jet, int flavour, Variation var = Variation::Nominal)
+     const;
     
     /**
      * \brief Returns b-tagging scale factor for a given jet using the default working point
      * 
-     * The method is useful for prescriptions that support only one working point.
+     * The method is useful for prescriptions that support only one working point. Internally calls
+     * the pure virtual method with the same name.
      */
     double GetScaleFactor(Jet const &jet, Variation var = Variation::Nominal) const;
     

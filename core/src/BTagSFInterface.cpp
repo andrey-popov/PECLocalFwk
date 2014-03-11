@@ -17,9 +17,23 @@ BTagSFInterface::~BTagSFInterface() noexcept
 {}
 
 
+double BTagSFInterface::GetScaleFactor(BTagger::WorkingPoint wp, Jet const &jet,
+ Variation var /*= Variation::Nominal*/) const
+{
+    return GetScaleFactor(wp, jet, jet.GetParentID(), var);
+}
+
+
+double BTagSFInterface::GetScaleFactor(Candidate const &jet, int flavour,
+ Variation var /*= Variation::Nominal*/) const
+{
+    return GetScaleFactor(defaultWP, jet, flavour, var);
+}
+
+
 double BTagSFInterface::GetScaleFactor(Jet const &jet, Variation var /*= Variation::Nominal*/) const
 {
-    return GetScaleFactor(defaultWP, jet, var);
+    return GetScaleFactor(defaultWP, jet, jet.GetParentID(), var);
 }
 
 

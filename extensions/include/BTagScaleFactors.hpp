@@ -66,7 +66,8 @@ public:
     virtual BTagSFInterface *Clone() const;
     
     /**
-     * \brief Returns b-tagging scale factor for a given working point and a given jet
+     * \brief Returns b-tagging scale factor for a given working point and given jet momentum and
+     * flavour
      * 
      * The method constrains jet transverse momentum to the appropriate range described in [1] and
      * calls specific automatically generated methods to obtain the scale factor. If the scale
@@ -75,7 +76,7 @@ public:
      * an exception is thrown as well.
      * [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagPOG
      */
-    virtual double GetScaleFactor(BTagger::WorkingPoint wp, Jet const &jet,
+    virtual double GetScaleFactor(BTagger::WorkingPoint wp, Candidate const &jet, int flavour,
      Variation var = Variation::Nominal) const;
     
 private:

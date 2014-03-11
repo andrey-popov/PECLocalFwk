@@ -211,16 +211,17 @@ void BTagEfficiencies::LoadPayload(Dataset const &dataset)
 }
 
 
-double BTagEfficiencies::GetEfficiency(BTagger::WorkingPoint wp, Jet const &jet) const
+double BTagEfficiencies::GetEfficiency(BTagger::WorkingPoint wp, Candidate const &jet, int flavour)
+ const
 {
     // Find the appropriate efficiency histogram
-    auto histIt = effHists.find(make_pair(wp, abs(jet.GetParentID())));
+    auto histIt = effHists.find(make_pair(wp, abs(flavour)));
     
     if (histIt == effHists.end())
     {
         ostringstream ost;
         ost << "BTagEfficiencies::GetEfficiency: Failed to find an efficiency histogram for " <<
-         "working point " << int(wp) << " and jet flavour " << jet.GetParentID() << ".";
+         "working point " << int(wp) << " and jet flavour " << flavour << ".";
         
         throw runtime_error(ost.str());
     }

@@ -71,13 +71,36 @@ public:
      */
     virtual void LoadPayload(Dataset const &dataset);
     
-    /// Returns b-tagging efficiency for a given working point and a given jet
-    virtual double GetEfficiency(BTagger::WorkingPoint wp, Jet const &jet) const = 0;
+    /**
+     * \brief Returns b-tagging efficiency for a given working point and a given jet momentum and
+     * flavour
+     * 
+     * Jet flavour might be negative.
+     */
+    virtual double GetEfficiency(BTagger::WorkingPoint wp, Candidate const &jet, int flavour)
+     const = 0;
+    
+    /**
+     * \brief Returns b-tagging efficiency for a given working point and a given jet
+     * 
+     * Internally calls the pure virtual method with the same name.
+     */
+    double GetEfficiency(BTagger::WorkingPoint wp, Jet const &jet) const;
+    
+    /**
+     * \brief Returns b-tagging efficiency for a given jet momentum and flavour using the default
+     * working point
+     * 
+     * The method is useful for prescriptions that support only one working point. Internally calls
+     * the pure virtual method with the same name.
+     */
+    double GetEfficiency(Candidate const &jet, int flavour) const;
     
     /**
      * \brief Returns b-tagging efficiency for a given jet using the default working point
      * 
-     * The method is useful for prescriptions that support only one working point.
+     * The method is useful for prescriptions that support only one working point. Internally calls
+     * the pure virtual method with the same name.
      */
     double GetEfficiency(Jet const &jet) const;
     

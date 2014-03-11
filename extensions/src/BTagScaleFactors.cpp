@@ -148,7 +148,7 @@ BTagSFInterface *BTagScaleFactors::Clone() const
 }
 
 
-double BTagScaleFactors::GetScaleFactor(BTagger::WorkingPoint wp, Jet const &jet,
+double BTagScaleFactors::GetScaleFactor(BTagger::WorkingPoint wp, Candidate const &jet, int flavour,
  Variation var /*= Variation::Nominal*/) const
 {
     // Get pointers to the scale factor methods for the given working point
@@ -171,7 +171,7 @@ double BTagScaleFactors::GetScaleFactor(BTagger::WorkingPoint wp, Jet const &jet
     
     
     // Switch between heavy-flavour and light-flavour jets
-    unsigned const absFlavour = abs(jet.GetParentID());
+    unsigned const absFlavour = abs(flavour);
     
     if (absFlavour == 4 or absFlavour == 5)  // b- or c-quark jets
     {
