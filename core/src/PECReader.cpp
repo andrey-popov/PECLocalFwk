@@ -28,7 +28,7 @@ PECReader::PECReader(Dataset const &dataset_):
     isInitialized(false),
     triggerSelection(nullptr), eventSelection(nullptr),
     bTagReweighter(nullptr), puReweighter(nullptr),
-    readHardParticles(false), readGenJets(false),
+    readHardParticles(false), readGenJets(false), readPartonShower(false),
     sourceFile(nullptr),
     eventIDTree(nullptr), triggerTree(nullptr), generalTree(nullptr)
 {}
@@ -57,6 +57,7 @@ void PECReader::Configure(PECReaderConfig const &config)
     
     SetReadHardInteraction(config.GetReadHardInteraction());
     SetReadGenJets(config.GetReadGenJets());
+    SetReadPartonShower(config.GetReadPartonShower());
     SetSystematics(config.GetSystematics());
 }
 
@@ -94,6 +95,12 @@ void PECReader::SetReadHardInteraction(bool flag /*= true*/)
 void PECReader::SetReadGenJets(bool flag /*= true*/)
 {
     readGenJets = flag;
+}
+
+
+void PECReader::SetReadPartonShower(bool flag /*= true*/) noexcept
+{
+    readPartonShower = flag;
 }
 
 
@@ -183,6 +190,9 @@ bool PECReader::NextEvent()
                 
                 if (readGenJets and dataset.IsMC())
                     BuildGenJets();
+                
+                if (readPartonShower and dataset.IsMC())
+                    ReadPartonShower();
                 
                 break;
             }
@@ -283,11 +293,29 @@ vector<GenParticle> const &PECReader::GetHardGenParticles() const
 
 vector<GenJet> const &PECReader::GetGenJets() const
 {
+    if (not readGenJets)
+        throw runtime_error("PECReader::GetGenJets: In order to access generator-level jets, this "
+         "functionality must first be requested via PECReader::SetReadGenJets.");
+    
     if (not dataset.IsMC())
         throw runtime_error("PECReader::GetGenJets: Trying to get generatol-level jets in a "
          "real collision event.");
     
     return genJets;
+}
+
+
+vector<ShowerParton> const &PECReader::GetShowerPartons() const
+{
+    if (not readPartonShower)
+        throw runtime_error("PECReader::GetShowerPartons: In order to access partons from parton "
+         "shower, this functionality must first be requested via PECReader::SetReadPartonShower.");
+    
+    if (not dataset.IsMC())
+        throw runtime_error("PECReader::GetShowerPartons: Trying to read partons from parton "
+         "shower  for a real collision event.");
+    
+    return psPartons;
 }
 
 
@@ -854,3 +882,7 @@ void PECReader::BuildGenJets()
         //genJets.back().SetMultiplicities(genJetBMult[i], genJetCMult[i]);
     }
 }
+
+
+void PECReader::ReadPartonShower()
+{}

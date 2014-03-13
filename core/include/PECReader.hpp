@@ -127,6 +127,13 @@ public:
     void SetReadGenJets(bool flag = true);
     
     /**
+     * \brief Specifies whether information on parton shower should be read
+     * 
+     * This action has no effect on real data.
+     */
+    void SetReadPartonShower(bool flag = true) noexcept;
+    
+    /**
      * \brief Sets desired systematical variation
      * 
      * From the point of view of processing, there are two groups of sources of systematics.
@@ -237,6 +244,14 @@ public:
     
     /// Returns generator-level jets
     std::vector<GenJet> const &GetGenJets() const;
+    
+    /**
+     * \brief Returns partons from parton shower
+     * 
+     * Note that usually PEC samples keep only heavy-flavour partons if any. The method throws an
+     * exception if called for real data.
+     */
+    std::vector<ShowerParton> const &GetShowerPartons() const;
 
 private:
     /**
@@ -283,6 +298,9 @@ private:
     
     /// Stores generator-level jets in the dedicated vector
     void BuildGenJets();
+    
+    /// Reads information on parton shower and stores the partons in the dedicated vector
+    void ReadPartonShower();
 
 private:
     /// A copy of dataset to be processed
@@ -308,6 +326,9 @@ private:
     
     /// Indicates whether generator-level jets should be read
     bool readGenJets;
+    
+    /// Indicates whether information on parton shower should be read
+    bool readPartonShower;
     
     
     /// Systematical variation
@@ -459,4 +480,11 @@ private:
     
     /// The generator-level jets
     std::vector<GenJet> genJets;
+    
+    /**
+     * \brief Partons from parton shower
+     * 
+     * They are read if only readPartonShower flag is set to true.
+     */
+    std::vector<ShowerParton> psPartons;
 };

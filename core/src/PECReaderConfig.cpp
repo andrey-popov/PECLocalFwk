@@ -7,7 +7,7 @@ using namespace std;
 
 
 PECReaderConfig::PECReaderConfig():
-    readHardInteraction(false), readGenJets(false),
+    readHardInteraction(false), readGenJets(false), readPartonShower(false),
     syst()
 {}
 
@@ -21,6 +21,7 @@ PECReaderConfig::PECReaderConfig(PECReaderConfig const &src):
     weightFilesLocation(src.weightFilesLocation),
     readHardInteraction(src.readHardInteraction),
     readGenJets(src.readGenJets),
+    readPartonShower(src.readPartonShower),
     syst(src.syst)
 {}
 
@@ -34,6 +35,7 @@ PECReaderConfig::PECReaderConfig(PECReaderConfig &&src):
     weightFilesLocation(move(src.weightFilesLocation)),
     readHardInteraction(src.readHardInteraction),
     readGenJets(src.readGenJets),
+    readPartonShower(src.readPartonShower),
     syst(src.syst)
 {}
 
@@ -129,6 +131,12 @@ void PECReaderConfig::SetReadHardInteraction(bool readHardInteraction_)
 void PECReaderConfig::SetReadGenJets(bool readGenJets_)
 {
     readGenJets = readGenJets_;
+}
+
+
+void PECReaderConfig::SetReadPartonShower(bool readPartonShower_) noexcept
+{
+    readPartonShower = readPartonShower_;
 }
 
 
@@ -253,6 +261,12 @@ bool PECReaderConfig::GetReadHardInteraction() const
 bool PECReaderConfig::GetReadGenJets() const
 {
     return readGenJets;
+}
+
+
+bool PECReaderConfig::GetReadPartonShower() const noexcept
+{
+    return readPartonShower;
 }
 
 

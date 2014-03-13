@@ -141,6 +141,13 @@ class PECReaderConfig
          */
         void SetReadGenJets(bool readGenJets);
         
+        /**
+         * \brief Specifies whether information on parton shower should be read
+         * 
+         * This setting is ignored for real data.
+         */
+        void SetReadPartonShower(bool readPartonShower) noexcept;
+        
         /// Specifies desired systematical variation
         void SetSystematics(SystVariation const &syst);
         
@@ -190,6 +197,9 @@ class PECReaderConfig
         /// Consult documentation for SetReadGenJets for details
         bool GetReadGenJets() const;
         
+        /// Consult documentation for SetReadPartonShower for details
+        bool GetReadPartonShower() const noexcept;
+        
         /// Consult documentation for SetSystematics for details
         SystVariation const &GetSystematics() const;
     
@@ -231,6 +241,13 @@ class PECReaderConfig
          * This setting is ignored in case of real data.
          */
         bool readGenJets;
+        
+        /**
+         * \brief Specifies whether information about parton shower should be read
+         * 
+         * This setting is ignored in case of real data.
+         */
+        bool readPartonShower;
         
         /// Requested systematical variation
         SystVariation syst;
