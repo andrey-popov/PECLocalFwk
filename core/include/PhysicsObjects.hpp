@@ -16,43 +16,43 @@
  */
 class Candidate
 {
-    public:
-        /// Default constructor
-        Candidate();
-        
-        /// Constructor from a 4-momentum
-        Candidate(TLorentzVector const &p4_);
+public:
+    /// Default constructor
+    Candidate() noexcept;
     
-    public:
-        /// Sets the 4-momentum
-        void SetP4(TLorentzVector const &p4_);
-        
-        /// Sets the 4-momentum
-        void SetPtEtaPhiM(double pt, double eta, double phi, double mass);
-        
-        /// Sets the 4-momentum
-        void SetPxPyPzE(double px, double py, double pz, double E);
-        
-        /// The 4-momentum
-        TLorentzVector const &P4() const;
-        
-        /// Transverse momentum
-        double Pt() const;
-        
-        /// Pseudorapidity
-        double Eta() const;
-        
-        /// Azimuthal angle
-        double Phi() const;
-        
-        /// Mass
-        double M() const;
-        
-        /// Ordering operator
-        bool operator<(Candidate const &rhs) const;
+    /// Constructor from a 4-momentum
+    Candidate(TLorentzVector const &p4_) noexcept;
+
+public:
+    /// Sets the 4-momentum
+    void SetP4(TLorentzVector const &p4_) noexcept;
     
-    private:
-        TLorentzVector p4;  ///< The 4-momentum
+    /// Sets the 4-momentum
+    void SetPtEtaPhiM(double pt, double eta, double phi, double mass) noexcept;
+    
+    /// Sets the 4-momentum
+    void SetPxPyPzE(double px, double py, double pz, double E) noexcept;
+    
+    /// The 4-momentum
+    TLorentzVector const &P4() const noexcept;
+    
+    /// Transverse momentum
+    double Pt() const noexcept;
+    
+    /// Pseudorapidity
+    double Eta() const noexcept;
+    
+    /// Azimuthal angle
+    double Phi() const noexcept;
+    
+    /// Mass
+    double M() const noexcept;
+    
+    /// Ordering operator
+    bool operator<(Candidate const &rhs) const noexcept;
+
+private:
+    TLorentzVector p4;  ///< The 4-momentum
 };
 
 
@@ -62,50 +62,50 @@ class Candidate
  */
 class Lepton: public Candidate
 {
-    public:
-        /// Flavour of the lepton
-        enum class Flavour
-        {
-            Unknown,
-            Electron,
-            Muon,
-            Tau
-        };
+public:
+    /// Flavour of the lepton
+    enum class Flavour
+    {
+        Unknown,
+        Electron,
+        Muon,
+        Tau
+    };
+
+public:
+    /// Default constructor
+    Lepton() noexcept;
     
-    public:
-        /// Default constructor
-        Lepton();
-        
-        /// Constructor with the flavour and the 4-momentum
-        Lepton(Flavour flavour_, TLorentzVector const &p4);
+    /// Constructor with the flavour and the 4-momentum
+    Lepton(Flavour flavour_, TLorentzVector const &p4) noexcept;
+
+public:
+    /// Sets the relative isolation
+    void SetRelIso(double relIso_) noexcept;
     
-    public:
-        /// Sets the relative isolation
-        void SetRelIso(double relIso_);
-        
-        /// Sets the impact-parameter
-        void SetDB(double dB_);
-        
-        /// Sets the electric charge
-        void SetCharge(int charge_);
-        
-        /// Gets the flavour
-        Flavour GetFlavour() const;
-        
-        /// Gets the relative isolation
-        double RelIso() const;
-        
-        /// Gets the impact parameter
-        double DB() const;
-        
-        /// Gets the electric charge
-        int Charge() const;
+    /// Sets the impact-parameter
+    void SetDB(double dB_) noexcept;
     
-    private:
-        Flavour flavour;  ///< The flavour
-        double relIso;  ///< The relative isolation
-        double dB;  ///< The impact parameter of the associated track
-        int charge;  ///< The electric charge
+    /// Sets the electric charge
+    void SetCharge(int charge_) noexcept;
+    
+    /// Gets the flavour
+    Flavour GetFlavour() const noexcept;
+    
+    /// Gets the relative isolation
+    double RelIso() const noexcept;
+    
+    /// Gets the impact parameter
+    double DB() const noexcept;
+    
+    /// Gets the electric charge
+    int Charge() const noexcept;
+
+private:
+    Flavour flavour;  ///< The flavour
+    double relIso;  ///< The relative isolation
+    double dB;  ///< The impact parameter of the associated track
+    int charge;  ///< The electric charge
 };
 
 
@@ -115,60 +115,60 @@ class Lepton: public Candidate
  */
 class Jet: public Candidate
 {
-    public:
-        /// Default constructor
-        Jet();
-        
-        /// Constuctor with the 4-momentum
-        Jet(TLorentzVector const &p4);
+public:
+    /// Default constructor
+    Jet() noexcept;
     
-    public:
-        /// Sets the values of the b-tagging discriminators
-        void SetBTags(double CSV, double JP, double TCHP);
-        
-        /// Sets the value of the CSV b-tagging discriminator
-        void SetCSV(double CSV);
-        
-        /// Sets the value of the JP b-tagging discriminator
-        void SetJP(double JP);
-        
-        /// Sets the value of the TCHP b-tagging discriminator
-        void SetTCHP(double TCHP);
-        
-        /// Sets the parent's PDF ID
-        void SetParentID(int pdgID);
-        
-        /// Sets the electric charge
-        void SetCharge(double charge);
-        
-        /// Sets jet pull angle
-        void SetPullAngle(double pullAngle);
-        
-        /// Gets the value of the CSV b-tagging discriminator
-        double CSV() const;
-        
-        /// Gets the value of the JP b-tagging discriminator
-        double JP() const;
-        
-        /// Gets the value of the TCHP b-tagging discriminator
-        double TCHP() const;
-        
-        /// Gets the parent's PDG ID
-        int GetParentID() const;
-        
-        /// Gets the electric charge
-        double Charge() const;
-        
-        /// Gets the pull angle
-        double GetPullAngle() const;
+    /// Constuctor with the 4-momentum
+    Jet(TLorentzVector const &p4) noexcept;
+
+public:
+    /// Sets the values of the b-tagging discriminators
+    void SetBTags(double CSV, double JP, double TCHP) noexcept;
     
-    private:
-        double CSVValue;   ///< CSV b-tagging discriminator
-        double JPValue;    ///< JP b-tagging discriminator
-        double TCHPValue;  ///< TCHP b-tagging discriminator
-        int parentPDGID;  ///< PDG ID of the parent
-        double charge;  ///< Electric charge
-        double pullAngle;  ///< "Pull angle" (characterises the colour flow)
+    /// Sets the value of the CSV b-tagging discriminator
+    void SetCSV(double CSV) noexcept;
+    
+    /// Sets the value of the JP b-tagging discriminator
+    void SetJP(double JP) noexcept;
+    
+    /// Sets the value of the TCHP b-tagging discriminator
+    void SetTCHP(double TCHP) noexcept;
+    
+    /// Sets the parent's PDF ID
+    void SetParentID(int pdgID) noexcept;
+    
+    /// Sets the electric charge
+    void SetCharge(double charge) noexcept;
+    
+    /// Sets jet pull angle
+    void SetPullAngle(double pullAngle) noexcept;
+    
+    /// Gets the value of the CSV b-tagging discriminator
+    double CSV() const noexcept;
+    
+    /// Gets the value of the JP b-tagging discriminator
+    double JP() const noexcept;
+    
+    /// Gets the value of the TCHP b-tagging discriminator
+    double TCHP() const noexcept;
+    
+    /// Gets the parent's PDG ID
+    int GetParentID() const noexcept;
+    
+    /// Gets the electric charge
+    double Charge() const noexcept;
+    
+    /// Gets the pull angle
+    double GetPullAngle() const noexcept;
+
+private:
+    double CSVValue;   ///< CSV b-tagging discriminator
+    double JPValue;    ///< JP b-tagging discriminator
+    double TCHPValue;  ///< TCHP b-tagging discriminator
+    int parentPDGID;  ///< PDG ID of the parent
+    double charge;  ///< Electric charge
+    double pullAngle;  ///< "Pull angle" (characterises the colour flow)
 };
 
 
@@ -178,29 +178,29 @@ class Jet: public Candidate
  */
 class GenJet: public Candidate
 {
-    public:
-        /// Default constructor
-        GenJet();
-        
-        /// Constructor from a four-momentum
-        GenJet(TLorentzVector const &p4);
+public:
+    /// Default constructor
+    GenJet() noexcept;
     
-    public:
-        /// Sets multipliticy of b and c quarks with status 2 near the jet
-        void SetMultiplicities(unsigned bMult, unsigned cMult);
-        
-        /// Returns multiplicity of b quarks
-        unsigned GetBMultiplicity() const;
-        
-        /// Returns multiplicity of c quarks
-        unsigned GetCMultiplicity() const;
+    /// Constructor from a four-momentum
+    GenJet(TLorentzVector const &p4) noexcept;
+
+public:
+    /// Sets multipliticy of b and c quarks with status 2 near the jet
+    void SetMultiplicities(unsigned bMult, unsigned cMult) noexcept;
     
-    private:
-        /// Number of b quarks with status 2 near the jet
-        unsigned bMult;
-        
-        /// Number of c quarks with status 2 near the jet
-        unsigned cMult;
+    /// Returns multiplicity of b quarks
+    unsigned GetBMultiplicity() const noexcept;
+    
+    /// Returns multiplicity of c quarks
+    unsigned GetCMultiplicity() const noexcept;
+
+private:
+    /// Number of b quarks with status 2 near the jet
+    unsigned bMult;
+    
+    /// Number of c quarks with status 2 near the jet
+    unsigned cMult;
 };
 
 
