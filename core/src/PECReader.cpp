@@ -19,6 +19,10 @@ using namespace std;
 using namespace logging;
 
 
+// Definition of a static data member
+unsigned const PECReader::maxSize;
+
+
 PECReader::PECReader(Dataset const &dataset_):
     dataset(dataset_),
     isInitialized(false),

@@ -31,9 +31,6 @@
 #include <memory>
 
 
-#define MAX_LEN 64
-
-
 /**
  * \class PECReader
  * \brief Class to read files in PlainEventContent (PEC) format
@@ -336,6 +333,7 @@ private:
     /// Iterator to the current Dataset::File object
     std::list<Dataset::File>::const_iterator sourceFileIt;
     
+    
     TFile *sourceFile;  ///< The current source file
     TTree *eventIDTree;  ///< The tree with the event ID information
     TTree *triggerTree;  ///< The tree with the trigger information
@@ -344,42 +342,45 @@ private:
     unsigned long curEventTree;  ///< The index of the current event in the trees
     EventID eventID;  ///< An aggregate to store the event ID
     
+    /// Maximal length to allocate buffers to read trees
+    static unsigned const maxSize = 64;
+    
     // Input buffers
     ULong64_t runNumber, lumiSection, eventNumber;
     
     UChar_t eleSize;
-    Float_t elePt[MAX_LEN];
-    Float_t eleEta[MAX_LEN];
-    Float_t elePhi[MAX_LEN];
-    Float_t eleRelIso[MAX_LEN];
-    Float_t eleDB[MAX_LEN];
-    Bool_t eleTriggerPreselection[MAX_LEN];
-    Float_t eleMVAID[MAX_LEN];
-    Bool_t elePassConversion[MAX_LEN];
-    Bool_t eleQuality[MAX_LEN];
-    Bool_t eleCharge[MAX_LEN];
+    Float_t elePt[maxSize];
+    Float_t eleEta[maxSize];
+    Float_t elePhi[maxSize];
+    Float_t eleRelIso[maxSize];
+    Float_t eleDB[maxSize];
+    Bool_t eleTriggerPreselection[maxSize];
+    Float_t eleMVAID[maxSize];
+    Bool_t elePassConversion[maxSize];
+    Bool_t eleQuality[maxSize];
+    Bool_t eleCharge[maxSize];
     
     UChar_t muSize;
-    Float_t muPt[MAX_LEN];
-    Float_t muEta[MAX_LEN];
-    Float_t muPhi[MAX_LEN];
-    Float_t muRelIso[MAX_LEN];
-    Float_t muDB[MAX_LEN];
-    Bool_t muQualityTight[MAX_LEN];
-    Bool_t muCharge[MAX_LEN];
+    Float_t muPt[maxSize];
+    Float_t muEta[maxSize];
+    Float_t muPhi[maxSize];
+    Float_t muRelIso[maxSize];
+    Float_t muDB[maxSize];
+    Bool_t muQualityTight[maxSize];
+    Bool_t muCharge[maxSize];
     
     UChar_t jetSize;
-    Float_t jetPt[MAX_LEN];
-    Float_t jetEta[MAX_LEN];
-    Float_t jetPhi[MAX_LEN];
-    Float_t jetMass[MAX_LEN];
-    Float_t jetCSV[MAX_LEN];
-    Float_t jetTCHP[MAX_LEN];
-    Char_t jetFlavour[MAX_LEN];
-    Float_t jecUncertainty[MAX_LEN];
-    Float_t jerFactor[MAX_LEN];
-    Float_t jetCharge[MAX_LEN];
-    Float_t jetPullAngle[MAX_LEN];
+    Float_t jetPt[maxSize];
+    Float_t jetEta[maxSize];
+    Float_t jetPhi[maxSize];
+    Float_t jetMass[maxSize];
+    Float_t jetCSV[maxSize];
+    Float_t jetTCHP[maxSize];
+    Char_t jetFlavour[maxSize];
+    Float_t jecUncertainty[maxSize];
+    Float_t jerFactor[maxSize];
+    Float_t jetCharge[maxSize];
+    Float_t jetPullAngle[maxSize];
     
     /*
     Float_t softJetPt;
@@ -395,25 +396,25 @@ private:
     */
     
     UChar_t metSize;
-    Float_t metPt[MAX_LEN];
-    Float_t metPhi[MAX_LEN];
+    Float_t metPt[maxSize];
+    Float_t metPhi[maxSize];
     
     Short_t processID;  // needed to split the inclusive W+jets
     
     // Buffers to read the hard interaction
     UChar_t hardPartSize;
-    Char_t hardPartPdgId[MAX_LEN];
-    Char_t hardPartFirstMother[MAX_LEN], hardPartLastMother[MAX_LEN];
-    Float_t hardPartPt[MAX_LEN];
-    Float_t hardPartEta[MAX_LEN];
-    Float_t hardPartPhi[MAX_LEN];
-    Float_t hardPartMass[MAX_LEN];
+    Char_t hardPartPdgId[maxSize];
+    Char_t hardPartFirstMother[maxSize], hardPartLastMother[maxSize];
+    Float_t hardPartPt[maxSize];
+    Float_t hardPartEta[maxSize];
+    Float_t hardPartPhi[maxSize];
+    Float_t hardPartMass[maxSize];
     
     
     // Buffers to read generator jets
     UChar_t genJetSize;
-    Float_t genJetPt[MAX_LEN], genJetEta[MAX_LEN], genJetPhi[MAX_LEN], genJetMass[MAX_LEN];
-    //UChar_t genJetBMult[MAX_LEN], genJetCMult[MAX_LEN];
+    Float_t genJetPt[maxSize], genJetEta[maxSize], genJetPhi[maxSize], genJetMass[maxSize];
+    //UChar_t genJetBMult[maxSize], genJetCMult[maxSize];
     
     
     // Pile-up truth information
@@ -430,7 +431,7 @@ private:
     
     
     Int_t nWeight_PDF;
-    Float_t weight_PDFUp[MAX_LEN], weight_PDFDown[MAX_LEN];
+    Float_t weight_PDFUp[maxSize], weight_PDFDown[maxSize];
     
     
     // The compact event description
