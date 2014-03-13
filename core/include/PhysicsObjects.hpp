@@ -202,3 +202,39 @@ class GenJet: public Candidate
         /// Number of c quarks with status 2 near the jet
         unsigned cMult;
 };
+
+
+/**
+ * \class ShowerParton
+ * \brief Describes a parton in parton shower
+ */
+class ShowerParton: public Candidate
+{
+public:
+    /// Describe the origin of the parton
+    enum class Origin
+    {
+        Unknown,  ///< Not specified
+        ISR,      ///< Can be traced down to initial lines
+        FSR,      ///< Can be traced down to final lines
+        Proton    ///< An immediate daughter of a beam particle
+    };
+    
+public:
+    /// Constructor with no parameters
+    ShowerParton() noexcept;
+    
+    /// Constructor from a four-momentum and a code of origin
+    ShowerParton(TLorentzVector const &p4, Origin origin = Origin::Unknown) noexcept;
+    
+public:
+    /// Sets the origin
+    void SetOrigin(Origin origin) noexcept;
+    
+    /// Returns the origin
+    Origin GetOrigin() const noexcept;
+    
+private:
+    /// Origin of the parton
+    Origin origin;
+};

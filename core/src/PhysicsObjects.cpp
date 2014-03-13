@@ -258,3 +258,29 @@ unsigned GenJet::GetCMultiplicity() const
 {
     return cMult;
 }
+
+
+// Methods of the ShowerParton class
+ShowerParton::ShowerParton() noexcept:
+    Candidate(),
+    origin(Origin::Unknown)
+{}
+
+
+ShowerParton::ShowerParton(TLorentzVector const &p4_, Origin origin_ /*= Origin::Unknown*/)
+ noexcept:
+    Candidate(p4_),
+    origin(origin_)
+{}
+
+
+void ShowerParton::SetOrigin(Origin origin_) noexcept
+{
+    origin = origin_;
+}
+
+
+ShowerParton::Origin ShowerParton::GetOrigin() const noexcept
+{
+    return origin;
+}
