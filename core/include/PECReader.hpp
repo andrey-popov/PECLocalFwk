@@ -355,7 +355,7 @@ private:
     std::list<Dataset::File>::const_iterator sourceFileIt;
     
     
-    TFile *sourceFile;  ///< The current source file
+    TFile *sourceFile;   ///< The current source file
     TTree *eventIDTree;  ///< The tree with the event ID information
     TTree *triggerTree;  ///< The tree with the trigger information
     TTree *generalTree;  ///< The tree with all the information but triggers and event ID
@@ -436,6 +436,21 @@ private:
     UChar_t genJetSize;
     Float_t genJetPt[maxSize], genJetEta[maxSize], genJetPhi[maxSize], genJetMass[maxSize];
     //UChar_t genJetBMult[maxSize], genJetCMult[maxSize];
+    
+    
+    // Buffers for information on parton shower. Consult documentation for [1] for details
+    //[1] https://github.com/andrey-popov/single-top/blob/master/plugins/PartonShowerOutcome.h
+    // Number of partons stored
+    UChar_t psSize;
+    
+    // PDG ID of partons
+    Short_t psPdgId[maxSize];
+    
+    // Origin of partons
+    UChar_t psOrigin[maxSize];
+    
+    /// Three-momentum of partons
+    Float_t psPt[maxSize], psEta[maxSize], psPhi[maxSize];
     
     
     // Pile-up truth information

@@ -395,6 +395,9 @@ void PECReader::OpenSourceFile()
         if (readGenJets)
             generalTree->AddFriend("genJets/GenJets");
         
+        if (readPartonShower)
+            generalTree->AddFriend("heavyFlavours/PartonShowerInfo");
+        
         /*
         // Determine name of the corresponding file with weights
         string weightsFileName;
@@ -539,6 +542,18 @@ void PECReader::OpenSourceFile()
             generalTree->SetBranchAddress("genJets/GenJets.jetMass", &genJetMass);
             //generalTree->SetBranchAddress("genJets/GenJets.bMult", &genJetBMult);
             //generalTree->SetBranchAddress("genJets/GenJets.cMult", &genJetCMult);
+        }
+        
+        
+        // Partons from parton shower
+        if (readPartonShower)
+        {
+            generalTree->SetBranchAddress("psSize", &psSize);
+            generalTree->SetBranchAddress("psPdgId", psPdgId);
+            generalTree->SetBranchAddress("psOrigin", psOrigin);
+            generalTree->SetBranchAddress("psPt", psPt);
+            generalTree->SetBranchAddress("psEta", psEta);
+            generalTree->SetBranchAddress("psPhi", psPhi);
         }
         
         
@@ -885,4 +900,24 @@ void PECReader::BuildGenJets()
 
 
 void PECReader::ReadPartonShower()
-{}
+{
+    // Reset the vector
+    psPartons.clear();
+    
+    
+    // Loop over the buffers and fill the vector
+    for (unsigned i = 0; i < psSize; ++i)
+    {
+        ShowerParton::Origin origin = ShowerParton::Origin::Unknown;
+        
+        if (psOrigin[i] == 1)
+            origin = ShowerParton::Origin::ISR;
+        else if (psOrigin[i] == 2)
+            origin = ShowerParton::Origin::FSR;
+        else if (psOrigin[i] == 3)
+            origin = ShowerParton::Origin::Proton;
+        
+        
+        psPartons.emplace_back(psPt[i], psEta[i], psPhi[i], psPdgId[i], origin);
+    }
+}
