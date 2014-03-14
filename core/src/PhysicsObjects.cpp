@@ -263,15 +263,24 @@ unsigned GenJet::GetCMultiplicity() const noexcept
 // Methods of the ShowerParton class
 ShowerParton::ShowerParton() noexcept:
     Candidate(),
-    origin(Origin::Unknown)
+    pdgId(0), origin(Origin::Unknown)
 {}
 
 
-ShowerParton::ShowerParton(TLorentzVector const &p4_, Origin origin_ /*= Origin::Unknown*/)
- noexcept:
+ShowerParton::ShowerParton(TLorentzVector const &p4_, int pdgId_,
+ Origin origin_ /*= Origin::Unknown*/) noexcept:
     Candidate(p4_),
-    origin(origin_)
+    pdgId(pdgId_), origin(origin_)
 {}
+
+
+ShowerParton::ShowerParton(double pt, double eta, double phi, int pdgId_,
+ Origin origin_ /*= Origin::Unknown*/) noexcept:
+    Candidate(),
+    pdgId(pdgId_), origin(origin_)
+{
+    SetPtEtaPhiM(pt, eta, phi, GuessMass(pdgId));
+}
 
 
 void ShowerParton::SetOrigin(Origin origin_) noexcept
@@ -283,4 +292,45 @@ void ShowerParton::SetOrigin(Origin origin_) noexcept
 ShowerParton::Origin ShowerParton::GetOrigin() const noexcept
 {
     return origin;
+}
+
+
+void ShowerParton::SetPdgId(int pdgId_) noexcept
+{
+    pdgId = pdgId_;
+}
+
+
+int ShowerParton::GetPdgId() const noexcept
+{
+    return pdgId;
+}
+
+
+double ShowerParton::GuessMass(int pdgId) noexcept
+{
+    // Masses for s, c, b are set to values used in Pythia in Summer12 datasets
+    switch (abs(pdgId))
+    {
+        case 6:
+            return 172.5;
+        
+        case 5:
+            return 4.8;
+        
+        case 4:
+            return 1.5;
+        
+        case 3:
+            return 0.5;
+        
+        case 2:
+            return 0.;
+        
+        case 1:
+            return 0.;
+        
+        default:
+            return 0.;
+    }
 }

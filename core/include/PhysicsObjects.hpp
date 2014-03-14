@@ -224,10 +224,25 @@ public:
     /// Constructor with no parameters
     ShowerParton() noexcept;
     
-    /// Constructor from a four-momentum and a code of origin
-    ShowerParton(TLorentzVector const &p4, Origin origin = Origin::Unknown) noexcept;
+    /// Constructor from a four-momentum, PDG ID, and a code of origin
+    ShowerParton(TLorentzVector const &p4, int pdgId, Origin origin = Origin::Unknown) noexcept;
+    
+    /**
+     * \brief Constructor from three-momentum, PDG ID, and a code of origin
+     * 
+     * The mass needed to build the four-momentum is calculated from the PDG ID using the GuessMass
+     * method.
+     */
+    ShowerParton(double pt, double eta, double phi, int pdgId, Origin origin = Origin::Unknown)
+     noexcept;
     
 public:
+    /// Sets PDG ID of the parton
+    void SetPdgId(int pdgId) noexcept;
+    
+    /// Returns PDG ID of the parton
+    int GetPdgId() const noexcept;
+    
     /// Sets the origin
     void SetOrigin(Origin origin) noexcept;
     
@@ -235,6 +250,17 @@ public:
     Origin GetOrigin() const noexcept;
     
 private:
+    /**
+     * \brief Tries to return mass of a particle with the given PDG ID
+     * 
+     * For particles other that quarks sets the mass to zero.
+     */
+    static double GuessMass(int pdgId) noexcept;
+    
+private:
+    /// PDG ID of the parton
+    int pdgId;
+    
     /// Origin of the parton
     Origin origin;
 };
