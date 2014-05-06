@@ -215,8 +215,15 @@ public:
     /// Returns number of reconstructed primary vertices (size of "offlinePrimaryVertices")
     unsigned GetNPrimaryVertices() const;
     
-    /// Returns average angular energy density (rho)
+    /// Returns average angular pt density (rho)
     double GetRho() const;
+    
+    /**
+     * \brief Returns the true number of pile-up interactions
+     * 
+     * Return value is undefined when called for real data.
+     */
+    double GetTrueNumPUInteractions() const;
         
     /**
      * \brief Returns central weight for the current event

@@ -251,6 +251,12 @@ double PECReader::GetRho() const
 }
 
 
+double PECReader::GetTrueNumPUInteractions() const
+{
+    return (dataset.IsMC()) ? puTrueNumInteractions : -1.;
+}
+
+
 double PECReader::GetCentralWeight() const
 {
     return weightCentral;
