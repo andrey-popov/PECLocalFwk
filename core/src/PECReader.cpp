@@ -691,7 +691,12 @@ bool PECReader::BuildAndSelectEvent()
         TLorentzVector p4;
         p4.SetPtEtaPhiM(jetRawPt[i], jetRawEta[i], jetRawPhi[i], jetRawMass[i]);
         
-        p4 *= jecFactor[i] * jerFactor[i];
+        double corrFactor = jecFactor[i];
+        
+        if (dataset.IsMC())
+            corrFactor *= jerFactor[i];
+        
+        p4 *= corrFactor;
         
         
         // Vary jet four-momentum within JEC uncertainty
@@ -705,7 +710,7 @@ bool PECReader::BuildAndSelectEvent()
         
         
         Jet jet;
-        jet.SetCorrectedP4(p4, 1. / (jecFactor[i] * jerFactor[i]));
+        jet.SetCorrectedP4(p4, 1. / corrFactor);
         
         jet.SetCSV(jetCSV[i]);
         jet.SetTCHP(jetTCHP[i]);
