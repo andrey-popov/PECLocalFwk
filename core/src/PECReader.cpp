@@ -456,17 +456,23 @@ void PECReader::OpenSourceFile()
     generalTree->SetBranchAddress("muCharge", muCharge);
     
     generalTree->SetBranchAddress("jetSize", &jetSize);
-    generalTree->SetBranchAddress("jetPt", jetPt);
-    generalTree->SetBranchAddress("jetEta", jetEta);
-    generalTree->SetBranchAddress("jetPhi", jetPhi);
-    generalTree->SetBranchAddress("jetMass", jetMass);
+    generalTree->SetBranchAddress("jetRawPt", jetRawPt);
+    generalTree->SetBranchAddress("jetRawEta", jetRawEta);
+    generalTree->SetBranchAddress("jetRawPhi", jetRawPhi);
+    generalTree->SetBranchAddress("jetRawMass", jetRawMass);
+    generalTree->SetBranchAddress("jecFactor", jecFactor);
     
     if (dataset.IsMC() and syst.type == SystTypeAlgo::JER)
     {
-        if (syst.direction > 0)
-            generalTree->SetBranchAddress("jerFactorUp", jerFactor);
+        if (syst.type != SystTypeAlgo::JER)
+            generalTree->SetBranchAddress("jerFactorCentral", jerFactor);
         else
-            generalTree->SetBranchAddress("jerFactorDown", jerFactor);
+        {
+            if (syst.direction > 0)
+                generalTree->SetBranchAddress("jerFactorUp", jerFactor);
+            else
+                generalTree->SetBranchAddress("jerFactorDown", jerFactor);
+        }
     }
     
     /*
@@ -682,16 +688,14 @@ bool PECReader::BuildAndSelectEvent()
     for (int i = 0; i < jetSize; ++i)
     {
         TLorentzVector p4;
-        p4.SetPtEtaPhiM(jetPt[i], jetEta[i], jetPhi[i], jetMass[i]);
+        p4.SetPtEtaPhiM(jetRawPt[i], jetRawEta[i], jetRawPhi[i], jetRawMass[i]);
+        
+        p4 *= jecFactor[i] * jerFactor[i];
         
         
         // Vary jet four-momentum within JEC uncertainty
         if (syst.type == SystTypeAlgo::JEC)
             p4 *= 1. + syst.direction * jecUncertainty[i];
-        
-        // Rescale jet four-momentum to account for JER systematical variation
-        if (syst.type == SystTypeAlgo::JER)
-            p4 *= jerFactor[i];
         
         
         // Reject too soft or too forward jets
@@ -699,7 +703,8 @@ bool PECReader::BuildAndSelectEvent()
             continue;
         
         
-        Jet jet(p4);
+        Jet jet;
+        jet.SetCorrectedP4(p4, 1. / (jecFactor[i] * jerFactor[i]));
         
         jet.SetCSV(jetCSV[i]);
         jet.SetTCHP(jetTCHP[i]);

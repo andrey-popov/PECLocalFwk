@@ -130,6 +130,7 @@ int Lepton::Charge() const noexcept
 // Methods of class Jet
 Jet::Jet() noexcept:
     Candidate(),
+    rawMomentumSF(0.),
     CSVValue(-numeric_limits<double>::infinity()),
     JPValue(-numeric_limits<double>::infinity()),
     TCHPValue(-numeric_limits<double>::infinity()),
@@ -138,14 +139,33 @@ Jet::Jet() noexcept:
 {}
 
 
-Jet::Jet(TLorentzVector const &p4) noexcept:
-    Candidate(p4),
+Jet::Jet(TLorentzVector const &correctedP4) noexcept:
+    Candidate(correctedP4),
+    rawMomentumSF(0.),
     CSVValue(-numeric_limits<double>::infinity()),
     JPValue(-numeric_limits<double>::infinity()),
     TCHPValue(-numeric_limits<double>::infinity()),
     parentPDGID(0),
     charge(-10.), pullAngle(-10.)
 {}
+
+
+Jet::Jet(TLorentzVector const &rawP4, double corrSF) noexcept:
+    Candidate(rawP4 * corrSF),
+    rawMomentumSF(1. / corrSF),
+    CSVValue(-numeric_limits<double>::infinity()),
+    JPValue(-numeric_limits<double>::infinity()),
+    TCHPValue(-numeric_limits<double>::infinity()),
+    parentPDGID(0),
+    charge(-10.), pullAngle(-10.)
+{}
+
+
+void Jet::SetCorrectedP4(TLorentzVector const &correctedP4, double rawMomentumSF_) noexcept
+{
+    SetP4(correctedP4);
+    rawMomentumSF = rawMomentumSF_;
+}
 
 
 void Jet::SetBTags(double CSV, double JP, double TCHP) noexcept
@@ -189,6 +209,12 @@ void Jet::SetCharge(double charge_) noexcept
 void Jet::SetPullAngle(double pullAngle_) noexcept
 {
     pullAngle = pullAngle_;
+}
+
+
+TLorentzVector Jet::RawP4() const noexcept
+{
+    return P4() * rawMomentumSF;
 }
 
 

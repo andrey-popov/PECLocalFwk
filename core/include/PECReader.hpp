@@ -398,15 +398,16 @@ private:
     Bool_t muCharge[maxSize];
     
     UChar_t jetSize;
-    Float_t jetPt[maxSize];
-    Float_t jetEta[maxSize];
-    Float_t jetPhi[maxSize];
-    Float_t jetMass[maxSize];
+    Float_t jetRawPt[maxSize];
+    Float_t jetRawEta[maxSize];
+    Float_t jetRawPhi[maxSize];
+    Float_t jetRawMass[maxSize];
+    Float_t jecFactor[maxSize];
+    Float_t jerFactor[maxSize];
     Float_t jetCSV[maxSize];
     Float_t jetTCHP[maxSize];
     Char_t jetFlavour[maxSize];
     Float_t jecUncertainty[maxSize];
-    Float_t jerFactor[maxSize];
     Float_t jetCharge[maxSize];
     Float_t jetPullAngle[maxSize];
     

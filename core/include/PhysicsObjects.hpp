@@ -112,6 +112,9 @@ private:
 /**
  * \class Jet
  * \brief Represents a jet
+ * 
+ * The four-momentum inherited from the base class is fully corrected. An object stores also a
+ * scale factor to reproduce raw momentum.
  */
 class Jet: public Candidate
 {
@@ -119,10 +122,26 @@ public:
     /// Default constructor
     Jet() noexcept;
     
-    /// Constuctor with the 4-momentum
-    Jet(TLorentzVector const &p4) noexcept;
+    /// Constuctor from the fully-corrected four-momentum
+    Jet(TLorentzVector const &correcteP4) noexcept;
+    
+    /**
+     * \brief Constructor from the raw four-momentum and total correction scale factor
+     * 
+     * The scale factor includes full JEC and, in case of simulation, JER. A fully-corrected
+     * momentum is calculated as rawP4 * corrSF.
+     */
+    Jet(TLorentzVector const &rawP4, double corrSF) noexcept;
 
 public:
+    /**
+     * \brief Sets jet corrected and raw momentum
+     * 
+     * The first argument is a fully-corrected four-momentum. The second argument is a scale factor
+     * to calculate the raw momentum from it.
+     */
+    void SetCorrectedP4(TLorentzVector const &correctedP4, double rawMomentumSF) noexcept;
+    
     /// Sets the values of the b-tagging discriminators
     void SetBTags(double CSV, double JP, double TCHP) noexcept;
     
@@ -144,6 +163,9 @@ public:
     /// Sets jet pull angle
     void SetPullAngle(double pullAngle) noexcept;
     
+    /// Returns raw momentum
+    TLorentzVector RawP4() const noexcept;
+    
     /// Gets the value of the CSV b-tagging discriminator
     double CSV() const noexcept;
     
@@ -163,6 +185,9 @@ public:
     double GetPullAngle() const noexcept;
 
 private:
+    /// A scale factor to build raw four-momentum
+    double rawMomentumSF;
+    
     double CSVValue;   ///< CSV b-tagging discriminator
     double JPValue;    ///< JP b-tagging discriminator
     double TCHPValue;  ///< TCHP b-tagging discriminator
