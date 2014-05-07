@@ -135,7 +135,8 @@ Jet::Jet() noexcept:
     JPValue(-numeric_limits<double>::infinity()),
     TCHPValue(-numeric_limits<double>::infinity()),
     parentPDGID(0),
-    charge(-10.), pullAngle(-10.)
+    charge(-10.), pullAngle(-10.),
+    rawPileUpID(0)
 {}
 
 
@@ -146,7 +147,8 @@ Jet::Jet(TLorentzVector const &correctedP4) noexcept:
     JPValue(-numeric_limits<double>::infinity()),
     TCHPValue(-numeric_limits<double>::infinity()),
     parentPDGID(0),
-    charge(-10.), pullAngle(-10.)
+    charge(-10.), pullAngle(-10.),
+    rawPileUpID(0)
 {}
 
 
@@ -157,7 +159,8 @@ Jet::Jet(TLorentzVector const &rawP4, double corrSF) noexcept:
     JPValue(-numeric_limits<double>::infinity()),
     TCHPValue(-numeric_limits<double>::infinity()),
     parentPDGID(0),
-    charge(-10.), pullAngle(-10.)
+    charge(-10.), pullAngle(-10.),
+    rawPileUpID(0)
 {}
 
 
@@ -212,6 +215,12 @@ void Jet::SetPullAngle(double pullAngle_) noexcept
 }
 
 
+void Jet::SetRawPileUpID(unsigned rawPileUpID_) noexcept
+{
+    rawPileUpID = rawPileUpID_;
+}
+
+
 TLorentzVector Jet::RawP4() const noexcept
 {
     return P4() * rawMomentumSF;
@@ -251,6 +260,12 @@ double Jet::Charge() const noexcept
 double Jet::GetPullAngle() const noexcept
 {
     return pullAngle;
+}
+
+
+unsigned Jet::GetRawPileUpID() const noexcept
+{
+    return rawPileUpID;
 }
 
 

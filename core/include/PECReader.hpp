@@ -410,6 +410,7 @@ private:
     Float_t jecUncertainty[maxSize];
     Float_t jetCharge[maxSize];
     Float_t jetPullAngle[maxSize];
+    UChar_t jetPileUpID[maxSize];
     
     /*
     Float_t softJetPt;

@@ -507,6 +507,7 @@ void PECReader::OpenSourceFile()
     
     generalTree->SetBranchAddress("jetCharge", jetCharge);
     generalTree->SetBranchAddress("jetPullAngle", jetPullAngle);
+    generalTree->SetBranchAddress("jetPileUpID", jetPileUpID);
     
     generalTree->SetBranchAddress("metSize", &metSize);
     generalTree->SetBranchAddress("metPt", metPt);
@@ -711,6 +712,7 @@ bool PECReader::BuildAndSelectEvent()
         
         jet.SetCharge(jetCharge[i]);
         jet.SetPullAngle(jetPullAngle[i]);
+        jet.SetRawPileUpID(jetPileUpID[i]);
         
         if (dataset.IsMC())
             jet.SetParentID(jetFlavour[i]);

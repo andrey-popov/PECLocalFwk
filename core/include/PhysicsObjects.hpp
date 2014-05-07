@@ -163,6 +163,9 @@ public:
     /// Sets jet pull angle
     void SetPullAngle(double pullAngle) noexcept;
     
+    /// Sets bitmask with results of pile-up ID
+    void SetRawPileUpID(unsigned rawPileUpID) noexcept;
+    
     /// Returns raw momentum
     TLorentzVector RawP4() const noexcept;
     
@@ -183,6 +186,9 @@ public:
     
     /// Gets the pull angle
     double GetPullAngle() const noexcept;
+    
+    /// Returns a bitmask with results of jet pile-up ID
+    unsigned GetRawPileUpID() const noexcept;
 
 private:
     /// A scale factor to build raw four-momentum
@@ -194,6 +200,7 @@ private:
     int parentPDGID;  ///< PDG ID of the parent
     double charge;  ///< Electric charge
     double pullAngle;  ///< "Pull angle" (characterises the colour flow)
+    unsigned rawPileUpID;  ///< Bit mask with results of jet pile-up ID
 };
 
 
