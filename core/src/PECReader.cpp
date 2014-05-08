@@ -462,7 +462,7 @@ void PECReader::OpenSourceFile()
     generalTree->SetBranchAddress("jetRawMass", jetRawMass);
     generalTree->SetBranchAddress("jecFactor", jecFactor);
     
-    if (dataset.IsMC() and syst.type == SystTypeAlgo::JER)
+    if (dataset.IsMC())
     {
         if (syst.type != SystTypeAlgo::JER)
             generalTree->SetBranchAddress("jerFactorCentral", jerFactor);
