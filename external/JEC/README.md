@@ -1,0 +1,1 @@
+This subpackage provides an access to jet energy corrections and their uncertainties. It has been forked from [this](https://github.com/miquork/jecsys) repository, `CondFormats/JetMETObjects/`. The version is master@a53835e88a1015178d4e4fa9c4ee845aa00aaa40.
