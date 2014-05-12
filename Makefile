@@ -51,7 +51,7 @@ vpath %.o $(OBJPATH)
 
 
 # The default rule
-all: libpecfwk.a libpecfwk.so
+all: libpecfwk.a libpecfwk.so unpack
 
 
 libpecfwk.a: $(OBJECTS)
@@ -74,6 +74,11 @@ $(OBJPATH)/%.o: %.cpp
 	@ mkdir -p $(OBJPATH)
 	@ $(CC) $(CFLAGS) -c $< -o $@
 # '$<' is expanded to the first dependency
+
+
+unpack:
+	@ if [ `ls data/JERC/ | grep AK5PFchs.txt | wc -l` -eq 0 ]; \
+	 then tar -xzf data/JERC/Summer13_V5_AK5PFchs.tar.gz -C data/JERC/; fi
 
 
 clean:
