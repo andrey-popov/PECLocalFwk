@@ -15,6 +15,12 @@
 #include <cmath>
 #include <iterator>
 
+
+using std::cout;
+using std::endl;
+using std::flush;
+
+
 //------------------------------------------------------------------------ 
 //--- JetCorrectorParameters::Definitions constructor --------------------
 //--- takes specific arguments for the member variables ------------------

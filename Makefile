@@ -28,20 +28,21 @@ BOOST_LIB = $(BOOST_ROOT)/lib
 
 # Define the flags to control make
 CC = g++
-INCLUDE = -Icore/include -Iextensions/include -I$(shell root-config --incdir) -I$(BOOST_INCLUDE)
+INCLUDE = -I./ -Icore/include -Iextensions/include -I$(shell root-config --incdir) -I$(BOOST_INCLUDE)
 OPFLAGS = -O2
 CFLAGS = -Wall -Wextra -fPIC -std=c++11 $(INCLUDE) $(OPFLAGS)
 #LDFLAGS = $(shell root-config --libs) -lTreePlayer -lHistPainter \
 # -L$(BOOST_LIB) -lboost_filesystem$(BOOST_LIB_POSTFIX) $(PEC_FWK_INSTALL)/lib/libpecfwk.a \
 # -Wl,-rpath=$(BOOST_LIB)
-SOURCES = $(shell ls core/src/ | grep .cpp) $(shell ls extensions/src/ | grep .cpp)
+SOURCES = $(shell ls core/src/ | grep .cpp) $(shell ls extensions/src/ | grep .cpp) \
+ $(shell ls external/JEC/src | grep .cpp)
 OBJECTS = $(SOURCES:.cpp=.o)
 # See http://www.gnu.org/software/make/manual/make.html#Substitution-Refs
 
 # Define the search paths for the targets and dependencies. See
 # http://www.gnu.org/software/make/manual/make.html#Directory-Search
 vpath %.hpp core/include:extensions/include
-vpath %.cpp core/src:extensions/src
+vpath %.cpp core/src:extensions/src:external/JEC/src
 
 # Define the phony targets
 .PHONY: clean
