@@ -221,6 +221,12 @@ void Jet::SetRawPileUpID(unsigned rawPileUpID_) noexcept
 }
 
 
+void Jet::SetArea(double area_) noexcept
+{
+    area = area_;
+}
+
+
 TLorentzVector Jet::RawP4() const noexcept
 {
     return P4() * rawMomentumSF;
@@ -266,6 +272,12 @@ double Jet::GetPullAngle() const noexcept
 unsigned Jet::GetRawPileUpID() const noexcept
 {
     return rawPileUpID;
+}
+
+
+double Jet::Area() const noexcept
+{
+    return area;
 }
 
 

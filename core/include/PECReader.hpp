@@ -411,6 +411,7 @@ private:
     Float_t jetCharge[maxSize];
     Float_t jetPullAngle[maxSize];
     UChar_t jetPileUpID[maxSize];
+    Float_t jetArea[maxSize];
     
     /*
     Float_t softJetPt;

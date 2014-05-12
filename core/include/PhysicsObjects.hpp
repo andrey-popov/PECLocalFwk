@@ -166,6 +166,9 @@ public:
     /// Sets bitmask with results of pile-up ID
     void SetRawPileUpID(unsigned rawPileUpID) noexcept;
     
+    /// Sets jet area
+    void SetArea(double area) noexcept;
+    
     /// Returns raw momentum
     TLorentzVector RawP4() const noexcept;
     
@@ -189,6 +192,9 @@ public:
     
     /// Returns a bitmask with results of jet pile-up ID
     unsigned GetRawPileUpID() const noexcept;
+    
+    /// Returns jet area
+    double Area() const noexcept;
 
 private:
     /// A scale factor to build raw four-momentum
@@ -201,6 +207,9 @@ private:
     double charge;  ///< Electric charge
     double pullAngle;  ///< "Pull angle" (characterises the colour flow)
     unsigned rawPileUpID;  ///< Bit mask with results of jet pile-up ID
+    
+    /// Jet area
+    double area;
 };
 
 
