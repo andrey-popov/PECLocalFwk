@@ -52,6 +52,9 @@ public:
     /// Mass
     double M() const noexcept;
     
+    /// Energy
+    double E() const noexcept;
+    
     /// Ordering operator
     bool operator<(Candidate const &rhs) const noexcept;
 

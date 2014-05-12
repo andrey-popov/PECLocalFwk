@@ -64,6 +64,12 @@ double Candidate::M() const noexcept
 }
 
 
+double Candidate::E() const noexcept
+{
+    return p4.E();
+}
+
+
 bool Candidate::operator<(Candidate const &rhs) const noexcept
 {
     return (p4.Pt() < rhs.p4.Pt());
