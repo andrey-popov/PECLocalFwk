@@ -176,28 +176,40 @@ bool PECReader::NextEvent()
         // Read the rest of event
         generalTree->GetEntry(curEventTree);
         
-        
         ++curEventTree;
         
-        if (BuildAndSelectEvent())  // an appropriate event has been read
-        {
-            CalculateEventWeights();
-            
-            if (weightCentral not_eq 0.)
-            {
-                if (readHardParticles)
-                    ParseHardInteraction();
-                
-                if (readGenJets and dataset.IsMC())
-                    BuildGenJets();
-                
-                if (readPartonShower and dataset.IsMC())
-                    ReadPartonShower();
-                
-                break;
-            }
-        }
+        
+        // Read generator-level jets. Should be done at this moment, because JER smearing for RECO
+        //jets depends on the generator-level jets
+        if (readGenJets and dataset.IsMC())
+            BuildGenJets();
+        
+        
+        // Read RECO objets and continue to the next event if the current one fails the selection
+        if (not BuildAndSelectEvent())
+            continue;
+        
+        
+        // Calculate event weights and make sure the event still passes the selection
+        CalculateEventWeights();
+        
+        if (weightCentral == 0.)
+            continue;
+        
+        
+        // Read remaining pieces of information
+        if (readHardParticles)
+            ParseHardInteraction();
+        
+        if (readPartonShower and dataset.IsMC())
+            ReadPartonShower();
+        
+        
+        // If the workflow has reached this point, the event passes the full selection. Break the
+        //loop
+        break;
     }
+    
     
     return true;
 }
@@ -710,6 +722,7 @@ bool PECReader::BuildAndSelectEvent()
             continue;
         
         
+        // Build the jet object
         Jet jet;
         jet.SetCorrectedP4(p4, 1. / corrFactor);
         
@@ -724,6 +737,36 @@ bool PECReader::BuildAndSelectEvent()
         if (dataset.IsMC())
             jet.SetParentID(jetFlavour[i]);
         
+        
+        // Perform a matching with generator-level jets. Use the definition from JME-13-005
+        if (dataset.IsMC() and readGenJets)
+        {
+            GenJet const *matchedJet = nullptr;
+            double minDRSq = 0.25 * 0.25;
+            //^ If the distance is larger than this initial one, the GEN jet will be ignored
+            
+            for (GenJet const &genJet: genJets)
+            {
+                if (genJet.Pt() < 8.)
+                    continue;
+                
+                // Use squared DelraR not to compute the square root, which is not needed here
+                double const dRSq = pow(jet.Eta() - genJet.Eta(), 2) +
+                 pow(TVector2::Phi_mpi_pi(jet.Phi() - genJet.Phi()), 2);
+                
+                if (dRSq < minDRSq)
+                {
+                    matchedJet = &genJet;
+                    minDRSq = dRSq;
+                }
+            }
+            
+            
+            jet.SetMatchedGenJet(matchedJet);
+        }
+        
+        
+        // Add the jet to the collection
         if (not eventSelection or eventSelection->IsAnalysisJet(jet))
             goodJets.push_back(jet);
         else

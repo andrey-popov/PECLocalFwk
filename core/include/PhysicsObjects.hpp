@@ -10,6 +10,10 @@
 #include <TLorentzVector.h>
 
 
+// Forward declarations
+class GenJet;
+
+
 /**
  * \class Candidate
  * \brief Represents a general object with a 4-momentum
@@ -169,6 +173,9 @@ public:
     /// Sets jet area
     void SetArea(double area) noexcept;
     
+    /// Sets matched generator-level jet
+    void SetMatchedGenJet(GenJet const *matchedJet) noexcept;
+    
     /// Returns raw momentum
     TLorentzVector RawP4() const noexcept;
     
@@ -195,6 +202,13 @@ public:
     
     /// Returns jet area
     double Area() const noexcept;
+    
+    /**
+     * \brief Returns matched generator-level jet (if applicable)
+     * 
+     * If no jet is matched or generator-level jets are not available, returns a null pointer.
+     */
+    GenJet const *MatchedGenJet() const noexcept;
 
 private:
     /// A scale factor to build raw four-momentum
@@ -210,6 +224,9 @@ private:
     
     /// Jet area
     double area;
+    
+    /// Pointer to matched generator-level jet
+    GenJet const *matchedGenJet;
 };
 
 

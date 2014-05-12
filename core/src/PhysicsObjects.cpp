@@ -136,7 +136,8 @@ Jet::Jet() noexcept:
     TCHPValue(-numeric_limits<double>::infinity()),
     parentPDGID(0),
     charge(-10.), pullAngle(-10.),
-    rawPileUpID(0)
+    rawPileUpID(0),
+    matchedGenJet(nullptr)
 {}
 
 
@@ -148,7 +149,8 @@ Jet::Jet(TLorentzVector const &correctedP4) noexcept:
     TCHPValue(-numeric_limits<double>::infinity()),
     parentPDGID(0),
     charge(-10.), pullAngle(-10.),
-    rawPileUpID(0)
+    rawPileUpID(0),
+    matchedGenJet(nullptr)
 {}
 
 
@@ -160,7 +162,8 @@ Jet::Jet(TLorentzVector const &rawP4, double corrSF) noexcept:
     TCHPValue(-numeric_limits<double>::infinity()),
     parentPDGID(0),
     charge(-10.), pullAngle(-10.),
-    rawPileUpID(0)
+    rawPileUpID(0),
+    matchedGenJet(nullptr)
 {}
 
 
@@ -227,6 +230,12 @@ void Jet::SetArea(double area_) noexcept
 }
 
 
+void Jet::SetMatchedGenJet(GenJet const *matchedJet) noexcept
+{
+    matchedGenJet = matchedJet;
+}
+
+
 TLorentzVector Jet::RawP4() const noexcept
 {
     return P4() * rawMomentumSF;
@@ -278,6 +287,12 @@ unsigned Jet::GetRawPileUpID() const noexcept
 double Jet::Area() const noexcept
 {
     return area;
+}
+
+
+GenJet const *Jet::MatchedGenJet() const noexcept
+{
+    return matchedGenJet;
 }
 
 
