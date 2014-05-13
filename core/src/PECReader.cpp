@@ -750,7 +750,8 @@ bool PECReader::BuildAndSelectEvent()
         
         
         // Apply JEC and smear the jet for JER
-        jercCorrector->Correct(jet, puRho, syst);
+        if (jercCorrector)
+            jercCorrector->Correct(jet, puRho, syst);
         
         
         // Reject too soft or too forward jets
