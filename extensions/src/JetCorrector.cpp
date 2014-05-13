@@ -1,6 +1,7 @@
 #include <JetCorrector.hpp>
 
 #include <FileInPath.hpp>
+#include <ROOTLock.hpp>
 
 #include <external/JEC/include/JetCorrectorParameters.hpp>
 
@@ -52,8 +53,11 @@ void JetCorrector::Init()
     FileInPath pathResolver;
     
     
-    // Create an object to perform jet energy corrections. Code follows an example in [1]
+    // Create an object to perform jet energy corrections. Code follows an example in [1]. The block
+    //is locked because the classes to deal with JEC construct some ROOT entities
     //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCorFWLite
+    ROOTLock::Lock();
+    
     vector<JetCorrectorParameters> jecParameters;
     
     for (string const &dataFile: dataFilesJEC)
@@ -67,6 +71,8 @@ void JetCorrector::Init()
     if (dataFileJECUncertainty.length() > 0)
         jecUncertaintyAccessor.reset(
          new JetCorrectionUncertainty(pathResolver.Resolve(dataFileJECUncertainty)));
+    
+    ROOTLock::Unlock();
     
     
     // Create an object to evaluate JER scale factor
