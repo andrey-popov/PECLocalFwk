@@ -409,12 +409,9 @@ private:
     Float_t jetRawEta[maxSize];
     Float_t jetRawPhi[maxSize];
     Float_t jetRawMass[maxSize];
-    Float_t jecFactor[maxSize];
-    Float_t jerFactor[maxSize];
     Float_t jetCSV[maxSize];
     Float_t jetTCHP[maxSize];
     Char_t jetFlavour[maxSize];
-    Float_t jecUncertainty[maxSize];
     Float_t jetCharge[maxSize];
     Float_t jetPullAngle[maxSize];
     UChar_t jetPileUpID[maxSize];

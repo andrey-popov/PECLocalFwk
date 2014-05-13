@@ -488,20 +488,6 @@ void PECReader::OpenSourceFile()
     generalTree->SetBranchAddress("jetRawEta", jetRawEta);
     generalTree->SetBranchAddress("jetRawPhi", jetRawPhi);
     generalTree->SetBranchAddress("jetRawMass", jetRawMass);
-    generalTree->SetBranchAddress("jecFactor", jecFactor);
-    
-    if (dataset.IsMC())
-    {
-        if (syst.type != SystTypeAlgo::JER)
-            generalTree->SetBranchAddress("jerFactorCentral", jerFactor);
-        else
-        {
-            if (syst.direction > 0)
-                generalTree->SetBranchAddress("jerFactorUp", jerFactor);
-            else
-                generalTree->SetBranchAddress("jerFactorDown", jerFactor);
-        }
-    }
     
     /*
     generalTree->SetBranchAddress("softJetPt", &softJetPt);
@@ -562,8 +548,6 @@ void PECReader::OpenSourceFile()
         
         if (syst.type == SystTypeAlgo::JEC)
         {
-            generalTree->SetBranchAddress("jecUncertainty", jecUncertainty);
-            
             /*
             generalTree->SetBranchAddress("softJetPtJECUnc", &softJetPtJECUnc);
             generalTree->SetBranchAddress("softJetEtaJECUnc", &softJetEtaJECUnc);
@@ -720,22 +704,10 @@ bool PECReader::BuildAndSelectEvent()
         TLorentzVector p4;
         p4.SetPtEtaPhiM(jetRawPt[i], jetRawEta[i], jetRawPhi[i], jetRawMass[i]);
         
-        double corrFactor = jecFactor[i];
-        
-        if (dataset.IsMC())
-            corrFactor *= jerFactor[i];
-        
-        p4 *= corrFactor;
-        
-        
-        // Vary jet four-momentum within JEC uncertainty
-        if (syst.type == SystTypeAlgo::JEC)
-            p4 *= 1. + syst.direction * jecUncertainty[i];
-        
         
         // Build the jet object
         Jet jet;
-        jet.SetCorrectedP4(p4, 1. / corrFactor);
+        jet.SetCorrectedP4(p4, 1.);  // the momentum will be corrected below
         
         jet.SetCSV(jetCSV[i]);
         jet.SetTCHP(jetTCHP[i]);
