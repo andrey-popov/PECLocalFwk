@@ -816,13 +816,22 @@ bool PECReader::BuildAndSelectEvent()
     
     
     // Reconstruct the neutrino with the leading tight lepton
-    double const nuPz =
-     Nu4Momentum(tightLeptons.front().P4(), metPt[metIndex], metPhi[metIndex]).Pz();
-    double const nuEnergy = sqrt(metPt[metIndex] * metPt[metIndex] + nuPz * nuPz);
-    neutrino.SetPtEtaPhiM(metPt[metIndex], 0.5 * log((nuEnergy + nuPz) / (nuEnergy - nuPz)),
-     metPhi[metIndex], 0.);
+    if (tightLeptons.size() > 0)
+    {
+        double const nuPz =
+         Nu4Momentum(tightLeptons.front().P4(), metPt[metIndex], metPhi[metIndex]).Pz();
+        double const nuEnergy = sqrt(metPt[metIndex] * metPt[metIndex] + nuPz * nuPz);
+        neutrino.SetPtEtaPhiM(metPt[metIndex], 0.5 * log((nuEnergy + nuPz) / (nuEnergy - nuPz)),
+         metPhi[metIndex], 0.);
+    }
+    else
+    {
+        // If there are no leptons, cannot reconstruct z component of neutrino's momentum. Put a
+        //reasonable placeholder
+        neutrino.SetPtEtaPhiM(metPt[metIndex], 0., metPhi[metIndex], 0.);
+    }
     
-        
+    
     return true;
 }
 
