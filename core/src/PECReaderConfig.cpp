@@ -13,8 +13,8 @@ PECReaderConfig::PECReaderConfig():
 
 
 PECReaderConfig::PECReaderConfig(PECReaderConfig const &src):
-    triggerSelection(src.triggerSelection->Clone()),
-    eventSelection(src.eventSelection->Clone()),
+    triggerSelection((src.triggerSelection) ? src.triggerSelection->Clone() : nullptr),
+    eventSelection((src.eventSelection) ? src.eventSelection->Clone() : nullptr),
     bTagger(src.bTagger),
     bTagReweighter((src.bTagReweighter) ? src.bTagReweighter->Clone() : nullptr),
     puReweighter((src.puReweighter) ? src.puReweighter->Clone() : nullptr),
