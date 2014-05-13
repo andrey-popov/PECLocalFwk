@@ -55,14 +55,14 @@ double JetResolutionFactor::GetFactor(TLorentzVector const &correctedP4, GenJet 
     
     // Make sure the jet lies within the range of histogram. Unfortunately, under/overflow bins are
     //not filled properly
-    if (corrPt < jerHist->GetXaxis()->GetXmin() or corrPt >= jerHist->GetXaxis()->GetXmax() or
-     absEta < jerHist->GetYaxis()->GetXmin() or absEta >= jerHist->GetYaxis()->GetXmax())
+    if (absEta < jerHist->GetXaxis()->GetXmin() or absEta >= jerHist->GetXaxis()->GetXmax() or
+     corrPt < jerHist->GetYaxis()->GetXmin() or corrPt >= jerHist->GetYaxis()->GetXmax())
         // Do not smear jets in under/overflow bins
         return 1.;
     
     
     // Extract the smear factor from the histogram
-    int const bin = jerHist->GetBin(corrPt, absEta);
+    int const bin = jerHist->FindFixBin(absEta, corrPt);
     double smearFactor = jerHist->GetBinContent(bin);
     
     if (syst != SystVariation::Nominal)
