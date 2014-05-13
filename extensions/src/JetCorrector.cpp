@@ -107,9 +107,17 @@ void JetCorrector::Correct(Jet &jet, double rho, SystVariation syst /*= SystVari
     }
     
     
-    // Evaluate JER smearing
-    double jerFactor = 1.;  // a placeholder
+    // Correct the jet for JEC
+    jet.SetCorrectedP4(rawP4 * jecFactor, 1. / jecFactor);
     
+    
+    // A sanity check before JER smearing
+    if (not jerAccessor and syst.type == SystTypeAlgo::JER and syst.direction != 0)
+        throw logic_error("JetCorrector::Correct: Trying to evaluate JER systematics while "
+         "data file with parameters for JER has not been provided.");
+    
+    
+    // Evaluate JER smearing
     if (jerAccessor)
     {
         JetResolutionFactor::SystVariation jerSyst = JetResolutionFactor::SystVariation::Nominal;
@@ -123,17 +131,9 @@ void JetCorrector::Correct(Jet &jet, double rho, SystVariation syst /*= SystVari
         }
         
         
-        jerFactor = jerAccessor->GetFactor(rawP4 * jecFactor, jet.MatchedGenJet(), jerSyst);
+        double const jerFactor = jerAccessor->GetFactor(jet, jerSyst);
+        
+        double const factor = jecFactor * jerFactor;
+        jet.SetCorrectedP4(rawP4 * factor, 1. / factor);
     }
-    
-    
-    // A sanity check
-    if (not jerAccessor and syst.type == SystTypeAlgo::JER and syst.direction != 0)
-        throw logic_error("JetCorrector::Correct: Trying to evaluate JER systematics while "
-         "data file with parameters for JER has not been provided.");
-    
-    
-    // Update jet four-momentum
-    double const factor = jecFactor * jerFactor;
-    jet.SetCorrectedP4(rawP4 * factor, 1. / factor);
 }

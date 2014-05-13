@@ -59,10 +59,10 @@ public:
      * \brief Computes a scale factor to account for JER smearing
      * 
      * The scale factor can be calculated if only given jet contains a generator-level match,
-     * otherwise a unit scale factor is returned. JEC must be applied to the given four-momentum.
+     * otherwise a unit scale factor is returned. JEC must be applied to the given jet, and it must
+     * contain a valid raw momentum as well.
      */
-    double GetFactor(TLorentzVector const &correctedP4, GenJet const *matchedJet,
-     SystVariation syst = SystVariation::Nominal) const noexcept;
+    double GetFactor(Jet const &jet, SystVariation syst = SystVariation::Nominal) const noexcept;
     
 private:
     /// Name of the ROOT file containing a histogram with JER factors
