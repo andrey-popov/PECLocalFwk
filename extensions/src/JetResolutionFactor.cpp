@@ -38,19 +38,19 @@ JetResolutionFactor::JetResolutionFactor(JetResolutionFactor const &src) noexcep
 }
 
 
-double JetResolutionFactor::GetFactor(Jet const &jet, SystVar syst /*= SystVar::Nominal*/)
- const noexcept
+double JetResolutionFactor::GetFactor(TLorentzVector const &correctedP4, GenJet const *matchedJet,
+ SystVariation syst /*= SystVariation::Nominal*/) const noexcept
 {
     // Do not smear the jet if it does not have a generator-level match
-    if (not jet.MatchedGenJet())
+    if (not matchedJet)
         return 1.;
     
     
     // Apart from that, the smearing factor is calculated as in SmearedJetProducerT [1]
     //[1] https://github.com/cms-sw/cmssw/blob/CMSSW_5_3_X/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h
     
-    double const corrPt = jet.Pt();
-    double const absEta = fabs(jet.Eta());
+    double const corrPt = correctedP4.Pt();
+    double const absEta = fabs(correctedP4.Eta());
     
     
     // Make sure the jet lies within the range of histogram. Unfortunately, under/overflow bins are
@@ -65,7 +65,7 @@ double JetResolutionFactor::GetFactor(Jet const &jet, SystVar syst /*= SystVar::
     int const bin = jerHist->GetBin(corrPt, absEta);
     double smearFactor = jerHist->GetBinContent(bin);
     
-    if (syst != SystVar::Nominal)
+    if (syst != SystVariation::Nominal)
     {
         double const smearFactorErr = jerHist->GetBinError(bin);
         
@@ -75,7 +75,7 @@ double JetResolutionFactor::GetFactor(Jet const &jet, SystVar syst /*= SystVar::
     
     // Calculate the scale factor for jet momentum
     double const scaleFactor = 1. +
-     (smearFactor - 1.) * (jet.E() - jet.MatchedGenJet()->E()) / jet.E();
+     (smearFactor - 1.) * (correctedP4.E() - matchedJet->E()) / correctedP4.E();
     
     return scaleFactor;
 }

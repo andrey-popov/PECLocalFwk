@@ -14,28 +14,35 @@ JetCorrector::JetCorrector() noexcept
 {}
 
 
-JetCorrector::JetCorrector(vector<string> const &srcFilesJEC_, string const &srcFileJECUncertainty_)
- noexcept:
-    srcFilesJEC(srcFilesJEC_),
-    srcFileJECUncertainty(srcFileJECUncertainty_)
+JetCorrector::JetCorrector(vector<string> const &dataFilesJEC_,
+ string const &dataFileJECUncertainty_ /*= ""*/, string const &dataFileJER_ /*= ""*/) noexcept:
+    dataFilesJEC(dataFilesJEC_),
+    dataFileJECUncertainty(dataFileJECUncertainty_),
+    dataFileJER(dataFileJER_)
 {}
 
 
 JetCorrectorInterface *JetCorrector::Clone() const noexcept
 {
-    return new JetCorrector(srcFilesJEC, srcFileJECUncertainty);
+    return new JetCorrector(dataFilesJEC, dataFileJECUncertainty, dataFileJER);
 }
 
 
-void JetCorrector::AddJECLevel(std::string const &srcFile) noexcept
+void JetCorrector::AddJECLevel(std::string const &dataFile) noexcept
 {
-    srcFilesJEC.push_back(srcFile);
+    dataFilesJEC.push_back(dataFile);
 }
 
 
-void JetCorrector::SetJECUncertainty(std::string const &srcFile) noexcept
+void JetCorrector::SetJECUncertainty(std::string const &dataFile) noexcept
 {
-    srcFileJECUncertainty = srcFile;
+    dataFileJECUncertainty = dataFile;
+}
+
+
+void JetCorrector::SetJERFile(string const &dataFile) noexcept
+{
+    dataFileJER = dataFile;
 }
 
 
@@ -49,34 +56,40 @@ void JetCorrector::Init()
     //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCorFWLite
     vector<JetCorrectorParameters> jecParameters;
     
-    for (string const &srcFile: srcFilesJEC)
-        jecParameters.emplace_back(pathResolver.Resolve(srcFile));
+    for (string const &dataFile: dataFilesJEC)
+        jecParameters.emplace_back(pathResolver.Resolve(dataFile));
     
     jetEnergyCorrector.reset(new FactorizedJetCorrector(jecParameters));
     
     
     // Create an object to evaluate JEC uncertainties if requested. Follows an example in [1]
     //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetCorUncertainties
-    if (srcFileJECUncertainty.length() > 0)
+    if (dataFileJECUncertainty.length() > 0)
         jecUncertaintyAccessor.reset(
-         new JetCorrectionUncertainty(pathResolver.Resolve(srcFileJECUncertainty)));
+         new JetCorrectionUncertainty(pathResolver.Resolve(dataFileJECUncertainty)));
+    
+    
+    // Create an object to evaluate JER scale factor
+    if (dataFileJER.length() > 0)
+        jerAccessor.reset(new JetResolutionFactor(dataFileJER));
 }
 
 
 void JetCorrector::Correct(Jet &jet, double rho, SystVariation syst /*= SystVariation()*/)
 {
+    TLorentzVector const &rawP4 = jet.RawP4();
+    
+    
     // Evaluate the total jet energy correction
-    jetEnergyCorrector->setJetEta(jet.Eta());
-    jetEnergyCorrector->setJetPt(jet.Pt());
+    jetEnergyCorrector->setJetEta(rawP4.Eta());
+    jetEnergyCorrector->setJetPt(rawP4.Pt());
     jetEnergyCorrector->setJetA(jet.Area());
     jetEnergyCorrector->setRho(rho);
     
-    double const jecFactor = jetEnergyCorrector->getCorrection();
+    double jecFactor = jetEnergyCorrector->getCorrection();
     
     
-    // Calculate JEC uncertainty
-    double jecUncertainty = 0.;
-    
+    // Evaluate systematical variation for JEC
     if (syst.type == SystTypeAlgo::JEC)
     {
         // First a sanity check
@@ -84,18 +97,43 @@ void JetCorrector::Correct(Jet &jet, double rho, SystVariation syst /*= SystVari
             throw logic_error("JetCorrector::Correct: Trying to evaluate JEC systematics while "
              "JEC uncertainties have not been set up.");
         
-        jecUncertaintyAccessor->setJetEta(jet.Eta());
-        jecUncertaintyAccessor->setJetPt(jet.Pt() * jecFactor);  // use corrected pt
         
-        jecUncertainty = jecUncertaintyAccessor->getUncertainty(true);
+        jecUncertaintyAccessor->setJetEta(rawP4.Eta());
+        jecUncertaintyAccessor->setJetPt(rawP4.Pt() * jecFactor);  // use corrected pt
+        
+        double const jecUncertainty = jecUncertaintyAccessor->getUncertainty(true);
+        
+        jecFactor *= (1. + syst.direction * jecUncertainty);
     }
     
     
     // Evaluate JER smearing
     double jerFactor = 1.;  // a placeholder
     
+    if (jerAccessor)
+    {
+        JetResolutionFactor::SystVariation jerSyst = JetResolutionFactor::SystVariation::Nominal;
+        
+        if (syst.type == SystTypeAlgo::JER)
+        {
+            if (syst.direction > 0)
+                jerSyst = JetResolutionFactor::SystVariation::Up;
+            else if (syst.direction < 0)
+                jerSyst = JetResolutionFactor::SystVariation::Down;
+        }
+        
+        
+        jerFactor = jerAccessor->GetFactor(rawP4 * jecFactor, jet.MatchedGenJet(), jerSyst);
+    }
+    
+    
+    // A sanity check
+    if (not jerAccessor and syst.type == SystTypeAlgo::JER and syst.direction != 0)
+        throw logic_error("JetCorrector::Correct: Trying to evaluate JER systematics while "
+         "data file with parameters for JER has not been provided.");
+    
     
     // Update jet four-momentum
-    double const factor = jecFactor * (1. + syst.direction * jecUncertainty) * jerFactor;
-    jet.SetCorrectedP4(jet.P4() * factor, 1. / factor);
+    double const factor = jecFactor * jerFactor;
+    jet.SetCorrectedP4(rawP4 * factor, 1. / factor);
 }

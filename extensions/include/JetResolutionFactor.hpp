@@ -20,9 +20,8 @@
  * \brief A class to perform JER smearing
  * 
  * The JER smearing is performed according to the deterministic method in [1]. Its implementation
- * reproduces one in [2]. However, only jets with a generator-level match are smeared. The class
- * relies on the default matching performed in PECReader (which most likely follows the definition
- * from JME-13-005), and it might differ from [2].
+ * reproduces one in [2]. However, only jets with a generator-level match are smeared. The data file
+ * with JER smearing parameters must follow the same format as in [2].
  * [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetResolution
  * [2] https://github.com/cms-sw/cmssw/blob/CMSSW_5_3_X/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h
  */
@@ -34,7 +33,7 @@ public:
      * 
      * The implementation relies on the numeric values.
      */
-    enum class SystVar: int
+    enum class SystVariation: int
     {
         Nominal = 0,
         Up = +1,
@@ -60,9 +59,10 @@ public:
      * \brief Computes a scale factor to account for JER smearing
      * 
      * The scale factor can be calculated if only given jet contains a generator-level match,
-     * otherwise a unit scale factor is returned. The jet must be corrected for JEC.
+     * otherwise a unit scale factor is returned. JEC must be applied to the given four-momentum.
      */
-    double GetFactor(Jet const &jet, SystVar syst = SystVar::Nominal) const noexcept;
+    double GetFactor(TLorentzVector const &correctedP4, GenJet const *matchedJet,
+     SystVariation syst = SystVariation::Nominal) const noexcept;
     
 private:
     /// Name of the ROOT file containing a histogram with JER factors
