@@ -14,6 +14,7 @@
 #include <BTagger.hpp>
 #include <WeightBTagInterface.hpp>
 #include <WeightPileUpInterface.hpp>
+#include <JetCorrectorInterface.hpp>
 #include <SystDefinition.hpp>
 
 #include <memory>
@@ -124,6 +125,16 @@ class PECReaderConfig
         /// A short-cut for SetPileUpReweighter
         void SetModule(WeightPileUpInterface const *puReweighter);
         
+        /**
+         * \brief Sets an object to apply JEC and perform JER smearing
+         * 
+         * Provided object is copied.
+         */
+        void SetJERCCorrector(JetCorrectorInterface const *jercCorrector);
+        
+        /// A short-cut for SetJERCCorrector
+        void SetModule(JetCorrectorInterface const *jercCorrector);
+        
         /// Sets path to directory containing weight files
         void SetWeightFilesLocation(std::string const &weightFilesLocation);
         
@@ -185,6 +196,12 @@ class PECReaderConfig
         /// Consult documentation for SetPileUpReweigter for details
         WeightPileUpInterface *GetPileUpReweighter();
         
+        /// Check if a valid object to apply JEC and JER is set
+        bool IsSetJERCCorrector() const;
+        
+        /// Consult documentation for IsSetJERCCorrector for details
+        JetCorrectorInterface *GetJERCCorrector() const;
+        
         /// Checks if a valid path to directory with weight files is set
         bool IsSetWeightFilesLocation() const;
         
@@ -223,6 +240,9 @@ class PECReaderConfig
         
         /// An object to reweight simulation over pile-up
         std::unique_ptr<WeightPileUpInterface> puReweighter;
+        
+        /// An object to apply JEC and perform JER smearing
+        std::unique_ptr<JetCorrectorInterface> jercCorrector;
         
         /// Directory that contains weight files. The string ends with a slash
         std::string weightFilesLocation;

@@ -55,6 +55,9 @@ void PECReader::Configure(PECReaderConfig const &config)
     if (config.IsSetPileUpReweighter())
         SetPileUpReweighter(config.GetPileUpReweighter());
     
+    if (config.IsSetJERCCorrector())
+        SetJERCCorrector(config.GetJERCCorrector());
+    
     SetReadHardInteraction(config.GetReadHardInteraction());
     SetReadGenJets(config.GetReadGenJets());
     SetReadPartonShower(config.GetReadPartonShower());
@@ -83,6 +86,12 @@ void PECReader::SetBTagReweighter(WeightBTagInterface *bTagReweighter_)
 void PECReader::SetPileUpReweighter(WeightPileUpInterface const *puReweighter_)
 {
     puReweighter = puReweighter_;
+}
+
+
+void PECReader::SetJERCCorrector(JetCorrectorInterface *jercCorrector_)
+{
+    jercCorrector = jercCorrector_;
 }
 
 
@@ -347,6 +356,10 @@ void PECReader::Initialize()
     if (not eventSelection)
         logger << "Warning in PECReader::Initialize: No event selection has been specified." << eom;
     
+    if (not jercCorrector)
+        logger << "Warning in PECReader::Initialize: No JEC or JER smearing have been " <<
+         "specified. Jets will not be corrected." << eom;
+    
     if (dataset.IsMC())
     {
         if (not bTagReweighter)
@@ -363,6 +376,9 @@ void PECReader::Initialize()
     
     // Perform remaining initialization
     sourceFileIt = dataset.GetFiles().begin();
+    
+    if (jercCorrector)
+        jercCorrector->Init();
     
     
     // Indicate that initialization has been performed
@@ -717,11 +733,6 @@ bool PECReader::BuildAndSelectEvent()
             p4 *= 1. + syst.direction * jecUncertainty[i];
         
         
-        // Reject too soft or too forward jets
-        if (p4.Pt() < 20. or fabs(p4.Eta()) > 4.7)
-            continue;
-        
-        
         // Build the jet object
         Jet jet;
         jet.SetCorrectedP4(p4, 1. / corrFactor);
@@ -764,6 +775,15 @@ bool PECReader::BuildAndSelectEvent()
             
             jet.SetMatchedGenJet(matchedJet);
         }
+        
+        
+        // Apply JEC and smear the jet for JER
+        jercCorrector->Correct(jet, puRho, syst);
+        
+        
+        // Reject too soft or too forward jets
+        if (p4.Pt() < 20. or fabs(p4.Eta()) > 4.7)
+            continue;
         
         
         // Add the jet to the collection

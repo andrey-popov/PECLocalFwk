@@ -18,6 +18,7 @@ PECReaderConfig::PECReaderConfig(PECReaderConfig const &src):
     bTagger(src.bTagger),
     bTagReweighter((src.bTagReweighter) ? src.bTagReweighter->Clone() : nullptr),
     puReweighter((src.puReweighter) ? src.puReweighter->Clone() : nullptr),
+    jercCorrector((src.jercCorrector) ? src.jercCorrector->Clone() : nullptr),
     weightFilesLocation(src.weightFilesLocation),
     readHardInteraction(src.readHardInteraction),
     readGenJets(src.readGenJets),
@@ -32,6 +33,7 @@ PECReaderConfig::PECReaderConfig(PECReaderConfig &&src):
     bTagger(move(src.bTagger)),
     bTagReweighter(move(src.bTagReweighter)),
     puReweighter(move(src.puReweighter)),
+    jercCorrector(move(src.jercCorrector)),
     weightFilesLocation(move(src.weightFilesLocation)),
     readHardInteraction(src.readHardInteraction),
     readGenJets(src.readGenJets),
@@ -109,6 +111,18 @@ void PECReaderConfig::SetPileUpReweighter(WeightPileUpInterface const *puReweigh
 void PECReaderConfig::SetModule(WeightPileUpInterface const *puReweighter_)
 {
     SetPileUpReweighter(puReweighter_);
+}
+
+
+void PECReaderConfig::SetJERCCorrector(JetCorrectorInterface const *jercCorrector_)
+{
+    jercCorrector.reset(jercCorrector_->Clone());
+}
+
+
+void PECReaderConfig::SetModule(JetCorrectorInterface const *jercCorrector_)
+{
+    SetJERCCorrector(jercCorrector_);
 }
 
 
@@ -233,6 +247,18 @@ WeightPileUpInterface *PECReaderConfig::GetPileUpReweighter()
          "configuration parameter.");
     
     return puReweighter.get();
+}
+
+
+bool PECReaderConfig::IsSetJERCCorrector() const
+{
+    return bool(jercCorrector);
+}
+
+
+JetCorrectorInterface *PECReaderConfig::GetJERCCorrector() const
+{
+    return jercCorrector.get();
 }
 
 

@@ -87,7 +87,7 @@ public:
      * 
      * For further details refer to the documentation of the overriden method.
      */
-    virtual void Correct(Jet &jet, double rho, SystVariation syst = SystVariation());
+    virtual void Correct(Jet &jet, double rho, SystVariation syst = SystVariation()) const;
     
 private:
     /**

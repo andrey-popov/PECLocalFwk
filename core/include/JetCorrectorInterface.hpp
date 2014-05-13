@@ -49,8 +49,8 @@ public:
      * In addition to the jet's properties, the method takes a value of the mean angular pt density,
      * rho, as it is needed to parametrise L1 JEC.
      */
-    virtual void Correct(Jet &jet, double rho, SystVariation syst = SystVariation()) = 0;
+    virtual void Correct(Jet &jet, double rho, SystVariation syst = SystVariation()) const = 0;
     
     /// A short-cut for the Correct method
-    void operator()(Jet &jet, double rho, SystVariation syst = SystVariation());
+    void operator()(Jet &jet, double rho, SystVariation syst = SystVariation()) const;
 };

@@ -75,7 +75,7 @@ void JetCorrector::Init()
 }
 
 
-void JetCorrector::Correct(Jet &jet, double rho, SystVariation syst /*= SystVariation()*/)
+void JetCorrector::Correct(Jet &jet, double rho, SystVariation syst /*= SystVariation()*/) const
 {
     TLorentzVector const &rawP4 = jet.RawP4();
     

@@ -18,6 +18,7 @@
 #include <EventSelectionInterface.hpp>
 #include <WeightBTagInterface.hpp>
 #include <WeightPileUpInterface.hpp>
+#include <JetCorrectorInterface.hpp>
 #include <SystDefinition.hpp>
 
 #include <TFile.h>
@@ -111,6 +112,9 @@ public:
      * This action has no effect on real data.
      */
     void SetPileUpReweighter(WeightPileUpInterface const *puReweigher);
+    
+    /// Sets an object to apply JEC and perform JER smearing
+    void SetJERCCorrector(JetCorrectorInterface *jercCorrector);
     
     /**
      * \brief Specifies whether information about the hard interaction is to be read
@@ -328,6 +332,9 @@ private:
     /// Pointer to an object to perform pile-up reweighting (set for a simulation dataset only)
     WeightPileUpInterface const *puReweighter;
     
+    /// An object to apply JEC and perform JER smearing
+    JetCorrectorInterface *jercCorrector;
+    
     /// A short-cut for PECReaderConfig::GetReadHardInteraction
     bool readHardParticles;
     
@@ -471,7 +478,7 @@ private:
     // "True" number of pile-up interactions (available in simulation only)
     Float_t puTrueNumInteractions;
     
-    // Mean angular energy density
+    // Mean angular pt density
     Float_t puRho;
     
     
