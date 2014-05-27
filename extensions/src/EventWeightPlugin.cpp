@@ -13,7 +13,8 @@ EventWeightPlugin::EventWeightPlugin(string const &name_):
 
 
 EventWeightPlugin::EventWeightPlugin(EventWeightPlugin const &src) noexcept:
-    Plugin(src)
+    Plugin(src),
+    weights(src.weights)
 {}
 
 
