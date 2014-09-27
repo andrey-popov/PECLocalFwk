@@ -5,10 +5,10 @@ function set_environment
 {
     case $1 in
         "-r")
-        gcc_version="4.7.2"
-        source /afs/cern.ch/sw/lcg/external/gcc/$gcc_version/x86_64-slc5/setup.sh ""
-        root_version="5.34.09"
-        source /afs/cern.ch/sw/lcg/app/releases/ROOT/$root_version/x86_64-slc5-gcc46-opt/root/bin/thisroot.sh
+        gcc_version="4.9.1"
+        source /afs/cern.ch/sw/lcg/external/gcc/$gcc_version/x86_64-slc6/setup.sh ""
+        root_version="5.34.20"
+        source /afs/cern.ch/sw/lcg/app/releases/ROOT/$root_version/x86_64-slc6-gcc48-opt/root/bin/thisroot.sh
         #echo "GCC $gcc_version and ROOT $root_version are configured"
         ;;
         

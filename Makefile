@@ -9,11 +9,11 @@ endif
 ifeq ($(shell hostname | grep -q lxplus; echo $$?), 0)
   ifeq ($(BOOST_ROOT), )
     # Set the path to Boost appropriate for lxplus
-    BOOST_ROOT = /afs/cern.ch/sw/lcg/external/Boost/1.50.0_python2.7/x86_64-slc5-gcc46-opt
+    BOOST_ROOT = /afs/cern.ch/sw/lcg/external/Boost/1.55.0_python2.7/x86_64-slc6-gcc47-opt
   endif
   
-  BOOST_INCLUDE = $(BOOST_ROOT)/include/boost-1_50
-  BOOST_LIB_POSTFIX = -gcc46-mt-1_50
+  BOOST_INCLUDE = $(BOOST_ROOT)/include/boost-1_55
+  BOOST_LIB_POSTFIX = -gcc47-mt-1_55
 else
   ifeq ($(BOOST_ROOT), )
     $(error Mandatory environment variable BOOST_ROOT is not set)
@@ -30,7 +30,7 @@ BOOST_LIB = $(BOOST_ROOT)/lib
 CC = g++
 INCLUDE = -Icore/include -Iextensions/include -I$(shell root-config --incdir) -I$(BOOST_INCLUDE)
 OPFLAGS = -O2
-CFLAGS = -Wall -Wextra -fPIC -std=c++11 $(INCLUDE) $(OPFLAGS)
+CFLAGS = -Wall -Wextra -Wno-unused-local-typedefs -fPIC -std=c++11 $(INCLUDE) $(OPFLAGS)
 #LDFLAGS = $(shell root-config --libs) -lTreePlayer -lHistPainter \
 # -L$(BOOST_LIB) -lboost_filesystem$(BOOST_LIB_POSTFIX) $(PEC_FWK_INSTALL)/lib/libpecfwk.a \
 # -Wl,-rpath=$(BOOST_LIB)
