@@ -55,6 +55,9 @@ void PECReader::Configure(PECReaderConfig const &config)
     if (config.IsSetPileUpReweighter())
         SetPileUpReweighter(config.GetPileUpReweighter());
     
+    if (config.IsSetJERCCorrector())
+        SetJERCCorrector(config.GetJERCCorrector());
+    
     SetReadHardInteraction(config.GetReadHardInteraction());
     SetReadGenJets(config.GetReadGenJets());
     SetReadPartonShower(config.GetReadPartonShower());
@@ -83,6 +86,12 @@ void PECReader::SetBTagReweighter(WeightBTagInterface *bTagReweighter_)
 void PECReader::SetPileUpReweighter(WeightPileUpInterface const *puReweighter_)
 {
     puReweighter = puReweighter_;
+}
+
+
+void PECReader::SetJERCCorrector(JetCorrectorInterface *jercCorrector_)
+{
+    jercCorrector = jercCorrector_;
 }
 
 
@@ -176,28 +185,40 @@ bool PECReader::NextEvent()
         // Read the rest of event
         generalTree->GetEntry(curEventTree);
         
-        
         ++curEventTree;
         
-        if (BuildAndSelectEvent())  // an appropriate event has been read
-        {
-            CalculateEventWeights();
-            
-            if (weightCentral not_eq 0.)
-            {
-                if (readHardParticles)
-                    ParseHardInteraction();
-                
-                if (readGenJets and dataset.IsMC())
-                    BuildGenJets();
-                
-                if (readPartonShower and dataset.IsMC())
-                    ReadPartonShower();
-                
-                break;
-            }
-        }
+        
+        // Read generator-level jets. Should be done at this moment, because JER smearing for RECO
+        //jets depends on the generator-level jets
+        if (readGenJets and dataset.IsMC())
+            BuildGenJets();
+        
+        
+        // Read RECO objets and continue to the next event if the current one fails the selection
+        if (not BuildAndSelectEvent())
+            continue;
+        
+        
+        // Calculate event weights and make sure the event still passes the selection
+        CalculateEventWeights();
+        
+        if (weightCentral == 0.)
+            continue;
+        
+        
+        // Read remaining pieces of information
+        if (readHardParticles)
+            ParseHardInteraction();
+        
+        if (readPartonShower and dataset.IsMC())
+            ReadPartonShower();
+        
+        
+        // If the workflow has reached this point, the event passes the full selection. Break the
+        //loop
+        break;
     }
+    
     
     return true;
 }
@@ -335,6 +356,10 @@ void PECReader::Initialize()
     if (not eventSelection)
         logger << "Warning in PECReader::Initialize: No event selection has been specified." << eom;
     
+    if (not jercCorrector)
+        logger << "Warning in PECReader::Initialize: No JEC or JER smearing have been " <<
+         "specified. Jets will not be corrected." << eom;
+    
     if (dataset.IsMC())
     {
         if (not bTagReweighter)
@@ -351,6 +376,9 @@ void PECReader::Initialize()
     
     // Perform remaining initialization
     sourceFileIt = dataset.GetFiles().begin();
+    
+    if (jercCorrector)
+        jercCorrector->Init();
     
     
     // Indicate that initialization has been performed
@@ -456,18 +484,10 @@ void PECReader::OpenSourceFile()
     generalTree->SetBranchAddress("muCharge", muCharge);
     
     generalTree->SetBranchAddress("jetSize", &jetSize);
-    generalTree->SetBranchAddress("jetPt", jetPt);
-    generalTree->SetBranchAddress("jetEta", jetEta);
-    generalTree->SetBranchAddress("jetPhi", jetPhi);
-    generalTree->SetBranchAddress("jetMass", jetMass);
-    
-    if (dataset.IsMC() and syst.type == SystTypeAlgo::JER)
-    {
-        if (syst.direction > 0)
-            generalTree->SetBranchAddress("jerFactorUp", jerFactor);
-        else
-            generalTree->SetBranchAddress("jerFactorDown", jerFactor);
-    }
+    generalTree->SetBranchAddress("jetRawPt", jetRawPt);
+    generalTree->SetBranchAddress("jetRawEta", jetRawEta);
+    generalTree->SetBranchAddress("jetRawPhi", jetRawPhi);
+    generalTree->SetBranchAddress("jetRawMass", jetRawMass);
     
     /*
     generalTree->SetBranchAddress("softJetPt", &softJetPt);
@@ -501,6 +521,8 @@ void PECReader::OpenSourceFile()
     
     generalTree->SetBranchAddress("jetCharge", jetCharge);
     generalTree->SetBranchAddress("jetPullAngle", jetPullAngle);
+    generalTree->SetBranchAddress("jetPileUpID", jetPileUpID);
+    generalTree->SetBranchAddress("jetArea", jetArea);
     
     generalTree->SetBranchAddress("metSize", &metSize);
     generalTree->SetBranchAddress("metPt", metPt);
@@ -526,8 +548,6 @@ void PECReader::OpenSourceFile()
         
         if (syst.type == SystTypeAlgo::JEC)
         {
-            generalTree->SetBranchAddress("jecUncertainty", jecUncertainty);
-            
             /*
             generalTree->SetBranchAddress("softJetPtJECUnc", &softJetPtJECUnc);
             generalTree->SetBranchAddress("softJetEtaJECUnc", &softJetEtaJECUnc);
@@ -682,16 +702,56 @@ bool PECReader::BuildAndSelectEvent()
     for (int i = 0; i < jetSize; ++i)
     {
         TLorentzVector p4;
-        p4.SetPtEtaPhiM(jetPt[i], jetEta[i], jetPhi[i], jetMass[i]);
+        p4.SetPtEtaPhiM(jetRawPt[i], jetRawEta[i], jetRawPhi[i], jetRawMass[i]);
         
         
-        // Vary jet four-momentum within JEC uncertainty
-        if (syst.type == SystTypeAlgo::JEC)
-            p4 *= 1. + syst.direction * jecUncertainty[i];
+        // Build the jet object
+        Jet jet;
+        jet.SetCorrectedP4(p4, 1.);  // the momentum will be corrected below
         
-        // Rescale jet four-momentum to account for JER systematical variation
-        if (syst.type == SystTypeAlgo::JER)
-            p4 *= jerFactor[i];
+        jet.SetCSV(jetCSV[i]);
+        jet.SetTCHP(jetTCHP[i]);
+        
+        jet.SetCharge(jetCharge[i]);
+        jet.SetPullAngle(jetPullAngle[i]);
+        jet.SetRawPileUpID(jetPileUpID[i]);
+        jet.SetArea(jetArea[i]);
+        
+        if (dataset.IsMC())
+            jet.SetParentID(jetFlavour[i]);
+        
+        
+        // Perform a matching with generator-level jets. Use the definition from JME-13-005
+        if (dataset.IsMC() and readGenJets)
+        {
+            GenJet const *matchedJet = nullptr;
+            double minDRSq = 0.25 * 0.25;
+            //^ If the distance is larger than this initial one, the GEN jet will be ignored
+            
+            for (GenJet const &genJet: genJets)
+            {
+                if (genJet.Pt() < 8.)
+                    continue;
+                
+                // Use squared DelraR not to compute the square root, which is not needed here
+                double const dRSq = pow(jet.Eta() - genJet.Eta(), 2) +
+                 pow(TVector2::Phi_mpi_pi(jet.Phi() - genJet.Phi()), 2);
+                
+                if (dRSq < minDRSq)
+                {
+                    matchedJet = &genJet;
+                    minDRSq = dRSq;
+                }
+            }
+            
+            
+            jet.SetMatchedGenJet(matchedJet);
+        }
+        
+        
+        // Apply JEC and smear the jet for JER
+        if (jercCorrector)
+            jercCorrector->Correct(jet, puRho, syst);
         
         
         // Reject too soft or too forward jets
@@ -699,17 +759,7 @@ bool PECReader::BuildAndSelectEvent()
             continue;
         
         
-        Jet jet(p4);
-        
-        jet.SetCSV(jetCSV[i]);
-        jet.SetTCHP(jetTCHP[i]);
-        
-        jet.SetCharge(jetCharge[i]);
-        jet.SetPullAngle(jetPullAngle[i]);
-        
-        if (dataset.IsMC())
-            jet.SetParentID(jetFlavour[i]);
-        
+        // Add the jet to the collection
         if (not eventSelection or eventSelection->IsAnalysisJet(jet))
             goodJets.push_back(jet);
         else
@@ -766,13 +816,22 @@ bool PECReader::BuildAndSelectEvent()
     
     
     // Reconstruct the neutrino with the leading tight lepton
-    double const nuPz =
-     Nu4Momentum(tightLeptons.front().P4(), metPt[metIndex], metPhi[metIndex]).Pz();
-    double const nuEnergy = sqrt(metPt[metIndex] * metPt[metIndex] + nuPz * nuPz);
-    neutrino.SetPtEtaPhiM(metPt[metIndex], 0.5 * log((nuEnergy + nuPz) / (nuEnergy - nuPz)),
-     metPhi[metIndex], 0.);
+    if (tightLeptons.size() > 0)
+    {
+        double const nuPz =
+         Nu4Momentum(tightLeptons.front().P4(), metPt[metIndex], metPhi[metIndex]).Pz();
+        double const nuEnergy = sqrt(metPt[metIndex] * metPt[metIndex] + nuPz * nuPz);
+        neutrino.SetPtEtaPhiM(metPt[metIndex], 0.5 * log((nuEnergy + nuPz) / (nuEnergy - nuPz)),
+         metPhi[metIndex], 0.);
+    }
+    else
+    {
+        // If there are no leptons, cannot reconstruct z component of neutrino's momentum. Put a
+        //reasonable placeholder
+        neutrino.SetPtEtaPhiM(metPt[metIndex], 0., metPhi[metIndex], 0.);
+    }
     
-        
+    
     return true;
 }
 

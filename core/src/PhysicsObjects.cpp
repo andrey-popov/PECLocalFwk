@@ -64,6 +64,12 @@ double Candidate::M() const noexcept
 }
 
 
+double Candidate::E() const noexcept
+{
+    return p4.E();
+}
+
+
 bool Candidate::operator<(Candidate const &rhs) const noexcept
 {
     return (p4.Pt() < rhs.p4.Pt());
@@ -130,22 +136,48 @@ int Lepton::Charge() const noexcept
 // Methods of class Jet
 Jet::Jet() noexcept:
     Candidate(),
+    rawMomentumSF(0.),
     CSVValue(-numeric_limits<double>::infinity()),
     JPValue(-numeric_limits<double>::infinity()),
     TCHPValue(-numeric_limits<double>::infinity()),
     parentPDGID(0),
-    charge(-10.), pullAngle(-10.)
+    charge(-10.), pullAngle(-10.),
+    rawPileUpID(0),
+    matchedGenJet(nullptr)
 {}
 
 
-Jet::Jet(TLorentzVector const &p4) noexcept:
-    Candidate(p4),
+Jet::Jet(TLorentzVector const &correctedP4) noexcept:
+    Candidate(correctedP4),
+    rawMomentumSF(0.),
     CSVValue(-numeric_limits<double>::infinity()),
     JPValue(-numeric_limits<double>::infinity()),
     TCHPValue(-numeric_limits<double>::infinity()),
     parentPDGID(0),
-    charge(-10.), pullAngle(-10.)
+    charge(-10.), pullAngle(-10.),
+    rawPileUpID(0),
+    matchedGenJet(nullptr)
 {}
+
+
+Jet::Jet(TLorentzVector const &rawP4, double corrSF) noexcept:
+    Candidate(rawP4 * corrSF),
+    rawMomentumSF(1. / corrSF),
+    CSVValue(-numeric_limits<double>::infinity()),
+    JPValue(-numeric_limits<double>::infinity()),
+    TCHPValue(-numeric_limits<double>::infinity()),
+    parentPDGID(0),
+    charge(-10.), pullAngle(-10.),
+    rawPileUpID(0),
+    matchedGenJet(nullptr)
+{}
+
+
+void Jet::SetCorrectedP4(TLorentzVector const &correctedP4, double rawMomentumSF_) noexcept
+{
+    SetP4(correctedP4);
+    rawMomentumSF = rawMomentumSF_;
+}
 
 
 void Jet::SetBTags(double CSV, double JP, double TCHP) noexcept
@@ -192,6 +224,30 @@ void Jet::SetPullAngle(double pullAngle_) noexcept
 }
 
 
+void Jet::SetRawPileUpID(unsigned rawPileUpID_) noexcept
+{
+    rawPileUpID = rawPileUpID_;
+}
+
+
+void Jet::SetArea(double area_) noexcept
+{
+    area = area_;
+}
+
+
+void Jet::SetMatchedGenJet(GenJet const *matchedJet) noexcept
+{
+    matchedGenJet = matchedJet;
+}
+
+
+TLorentzVector Jet::RawP4() const noexcept
+{
+    return P4() * rawMomentumSF;
+}
+
+
 double Jet::CSV() const noexcept
 {
     return CSVValue;
@@ -225,6 +281,24 @@ double Jet::Charge() const noexcept
 double Jet::GetPullAngle() const noexcept
 {
     return pullAngle;
+}
+
+
+unsigned Jet::GetRawPileUpID() const noexcept
+{
+    return rawPileUpID;
+}
+
+
+double Jet::Area() const noexcept
+{
+    return area;
+}
+
+
+GenJet const *Jet::MatchedGenJet() const noexcept
+{
+    return matchedGenJet;
 }
 
 

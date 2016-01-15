@@ -28,26 +28,31 @@ BOOST_LIB = $(BOOST_ROOT)/lib
 
 # Define the flags to control make
 CC = g++
-INCLUDE = -Icore/include -Iextensions/include -I$(shell root-config --incdir) -I$(BOOST_INCLUDE)
+INCLUDE = -Icore/include -Iextensions/include -I./ -I$(shell root-config --incdir) -I$(BOOST_INCLUDE)
 OPFLAGS = -O2
 CFLAGS = -Wall -Wextra -Wno-unused-local-typedefs -fPIC -std=c++11 $(INCLUDE) $(OPFLAGS)
 #LDFLAGS = $(shell root-config --libs) -lTreePlayer -lHistPainter \
 # -L$(BOOST_LIB) -lboost_filesystem$(BOOST_LIB_POSTFIX) $(PEC_FWK_INSTALL)/lib/libpecfwk.a \
 # -Wl,-rpath=$(BOOST_LIB)
-SOURCES = $(shell ls core/src/ | grep .cpp) $(shell ls extensions/src/ | grep .cpp)
-OBJECTS = $(SOURCES:.cpp=.o)
-# See http://www.gnu.org/software/make/manual/make.html#Substitution-Refs
 
-# Define the search paths for the targets and dependencies. See
-# http://www.gnu.org/software/make/manual/make.html#Directory-Search
-vpath %.hpp core/include:extensions/include
-vpath %.cpp core/src:extensions/src
+
+# Define where the object files should be located
+MODULE_PATHS = core extensions $(shell ls -d external/*)
+OBJPATH = obj
+OBJECTS = $(shell for d in $(MODULE_PATHS); \
+ do  for f in `ls $$d/src/ | grep .cpp`; do echo $(OBJPATH)/`basename $$f .cpp`.o; done; done)
+
+vpath %.cpp $(addsuffix /src/,$(MODULE_PATHS))
+vpath %.o $(OBJPATH)
+
 
 # Define the phony targets
 .PHONY: clean
 
+
 # The default rule
-all: libpecfwk.a libpecfwk.so
+all: libpecfwk.a libpecfwk.so unpack
+
 
 libpecfwk.a: $(OBJECTS)
 	@ mkdir -p lib
@@ -56,6 +61,7 @@ libpecfwk.a: $(OBJECTS)
 # '$@' is expanded to the target, '$+' expanded to all the dependencies. See
 # http://www.gnu.org/savannah-checkouts/gnu/make/manual/html_node/Automatic-Variables.html
 
+
 libpecfwk.so: $(OBJECTS)
 	@ mkdir -p lib
 	@ rm -f lib/$@
@@ -63,10 +69,18 @@ libpecfwk.so: $(OBJECTS)
 	@ mv $@.1.0 lib/
 	@ ln -sf $@.1.0 lib/$@
 	
-%.o: %.cpp
+
+$(OBJPATH)/%.o: %.cpp
+	@ mkdir -p $(OBJPATH)
 	@ $(CC) $(CFLAGS) -c $< -o $@
 # '$<' is expanded to the first dependency
 
+
+unpack:
+	@ if [ `ls data/JERC/ | grep AK5PFchs.txt | wc -l` -eq 0 ]; \
+	 then tar -xzf data/JERC/Summer13_V5_AK5PFchs.tar.gz -C data/JERC/; fi
+
+
 clean:
-	@ rm -f *.o
+	@ rm -f $(OBJPATH)/*
 # '@' prevents the command from being printed to stdout

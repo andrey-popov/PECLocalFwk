@@ -18,6 +18,7 @@
 #include <EventSelectionInterface.hpp>
 #include <WeightBTagInterface.hpp>
 #include <WeightPileUpInterface.hpp>
+#include <JetCorrectorInterface.hpp>
 #include <SystDefinition.hpp>
 
 #include <TFile.h>
@@ -111,6 +112,9 @@ public:
      * This action has no effect on real data.
      */
     void SetPileUpReweighter(WeightPileUpInterface const *puReweigher);
+    
+    /// Sets an object to apply JEC and perform JER smearing
+    void SetJERCCorrector(JetCorrectorInterface *jercCorrector);
     
     /**
      * \brief Specifies whether information about the hard interaction is to be read
@@ -328,6 +332,9 @@ private:
     /// Pointer to an object to perform pile-up reweighting (set for a simulation dataset only)
     WeightPileUpInterface const *puReweighter;
     
+    /// An object to apply JEC and perform JER smearing
+    JetCorrectorInterface *jercCorrector;
+    
     /// A short-cut for PECReaderConfig::GetReadHardInteraction
     bool readHardParticles;
     
@@ -398,17 +405,17 @@ private:
     Bool_t muCharge[maxSize];
     
     UChar_t jetSize;
-    Float_t jetPt[maxSize];
-    Float_t jetEta[maxSize];
-    Float_t jetPhi[maxSize];
-    Float_t jetMass[maxSize];
+    Float_t jetRawPt[maxSize];
+    Float_t jetRawEta[maxSize];
+    Float_t jetRawPhi[maxSize];
+    Float_t jetRawMass[maxSize];
     Float_t jetCSV[maxSize];
     Float_t jetTCHP[maxSize];
     Char_t jetFlavour[maxSize];
-    Float_t jecUncertainty[maxSize];
-    Float_t jerFactor[maxSize];
     Float_t jetCharge[maxSize];
     Float_t jetPullAngle[maxSize];
+    UChar_t jetPileUpID[maxSize];
+    Float_t jetArea[maxSize];
     
     /*
     Float_t softJetPt;
@@ -468,7 +475,7 @@ private:
     // "True" number of pile-up interactions (available in simulation only)
     Float_t puTrueNumInteractions;
     
-    // Mean angular energy density
+    // Mean angular pt density
     Float_t puRho;
     
     

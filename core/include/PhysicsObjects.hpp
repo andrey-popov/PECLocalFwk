@@ -10,6 +10,10 @@
 #include <TLorentzVector.h>
 
 
+// Forward declarations
+class GenJet;
+
+
 /**
  * \class Candidate
  * \brief Represents a general object with a 4-momentum
@@ -47,6 +51,9 @@ public:
     
     /// Mass
     double M() const noexcept;
+    
+    /// Energy
+    double E() const noexcept;
     
     /// Ordering operator
     bool operator<(Candidate const &rhs) const noexcept;
@@ -112,6 +119,9 @@ private:
 /**
  * \class Jet
  * \brief Represents a jet
+ * 
+ * The four-momentum inherited from the base class is fully corrected. An object stores also a
+ * scale factor to reproduce raw momentum.
  */
 class Jet: public Candidate
 {
@@ -119,10 +129,26 @@ public:
     /// Default constructor
     Jet() noexcept;
     
-    /// Constuctor with the 4-momentum
-    Jet(TLorentzVector const &p4) noexcept;
+    /// Constuctor from the fully-corrected four-momentum
+    Jet(TLorentzVector const &correcteP4) noexcept;
+    
+    /**
+     * \brief Constructor from the raw four-momentum and total correction scale factor
+     * 
+     * The scale factor includes full JEC and, in case of simulation, JER. A fully-corrected
+     * momentum is calculated as rawP4 * corrSF.
+     */
+    Jet(TLorentzVector const &rawP4, double corrSF) noexcept;
 
 public:
+    /**
+     * \brief Sets jet corrected and raw momentum
+     * 
+     * The first argument is a fully-corrected four-momentum. The second argument is a scale factor
+     * to calculate the raw momentum from it.
+     */
+    void SetCorrectedP4(TLorentzVector const &correctedP4, double rawMomentumSF) noexcept;
+    
     /// Sets the values of the b-tagging discriminators
     void SetBTags(double CSV, double JP, double TCHP) noexcept;
     
@@ -144,6 +170,18 @@ public:
     /// Sets jet pull angle
     void SetPullAngle(double pullAngle) noexcept;
     
+    /// Sets bitmask with results of pile-up ID
+    void SetRawPileUpID(unsigned rawPileUpID) noexcept;
+    
+    /// Sets jet area
+    void SetArea(double area) noexcept;
+    
+    /// Sets matched generator-level jet
+    void SetMatchedGenJet(GenJet const *matchedJet) noexcept;
+    
+    /// Returns raw momentum
+    TLorentzVector RawP4() const noexcept;
+    
     /// Gets the value of the CSV b-tagging discriminator
     double CSV() const noexcept;
     
@@ -161,14 +199,37 @@ public:
     
     /// Gets the pull angle
     double GetPullAngle() const noexcept;
+    
+    /// Returns a bitmask with results of jet pile-up ID
+    unsigned GetRawPileUpID() const noexcept;
+    
+    /// Returns jet area
+    double Area() const noexcept;
+    
+    /**
+     * \brief Returns matched generator-level jet (if applicable)
+     * 
+     * If no jet is matched or generator-level jets are not available, returns a null pointer.
+     */
+    GenJet const *MatchedGenJet() const noexcept;
 
 private:
+    /// A scale factor to build raw four-momentum
+    double rawMomentumSF;
+    
     double CSVValue;   ///< CSV b-tagging discriminator
     double JPValue;    ///< JP b-tagging discriminator
     double TCHPValue;  ///< TCHP b-tagging discriminator
     int parentPDGID;  ///< PDG ID of the parent
     double charge;  ///< Electric charge
     double pullAngle;  ///< "Pull angle" (characterises the colour flow)
+    unsigned rawPileUpID;  ///< Bit mask with results of jet pile-up ID
+    
+    /// Jet area
+    double area;
+    
+    /// Pointer to matched generator-level jet
+    GenJet const *matchedGenJet;
 };
 
 
