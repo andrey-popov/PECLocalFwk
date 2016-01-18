@@ -25,9 +25,6 @@ CC = g++
 INCLUDE = -Icore/include -Iextensions/include -I./ -I$(shell root-config --incdir) -I$(BOOST_INCLUDE)
 OPFLAGS = -O2
 CFLAGS = -Wall -Wextra -Wno-unused-function -fPIC -std=c++14 $(INCLUDE) $(OPFLAGS)
-#LDFLAGS = $(shell root-config --libs) -lTreePlayer -lHistPainter \
-# -L$(BOOST_LIB) -lboost_filesystem$(BOOST_LIB_POSTFIX) $(PEC_FWK_INSTALL)/lib/libpecfwk.a \
-# -Wl,-rpath=$(BOOST_LIB)
 
 
 # Define where the object files should be located
@@ -45,29 +42,20 @@ vpath %.o $(OBJPATH)
 
 
 # The default rule
-all: libpecfwk.a libpecfwk.so unpack
-
-
-libpecfwk.a: $(OBJECTS)
-	@ mkdir -p lib
-	@ rm -f lib/$@
-	@ ar -cq lib/$@ $+
-# '$@' is expanded to the target, '$+' expanded to all the dependencies. See
-# http://www.gnu.org/savannah-checkouts/gnu/make/manual/html_node/Automatic-Variables.html
+all: libpecfwk.so unpack
 
 
 libpecfwk.so: $(OBJECTS)
 	@ mkdir -p lib
 	@ rm -f lib/$@
-	@ $(CC) -shared -Wl,-soname,$@.1 -o $@.1.0 $+
-	@ mv $@.1.0 lib/
-	@ ln -sf $@.1.0 lib/$@
+	@ $(CC) -shared -Wl,-soname,$@.4 -o $@.4.0 $+
+	@ mv $@.4.0 lib/
+	@ ln -sf $@.4.0 lib/$@.4; ln -sf $@.4 lib/$@
 	
 
 $(OBJPATH)/%.o: %.cpp
 	@ mkdir -p $(OBJPATH)
 	@ $(CC) $(CFLAGS) -c $< -o $@
-# '$<' is expanded to the first dependency
 
 
 unpack:
@@ -77,4 +65,3 @@ unpack:
 
 clean:
 	@ rm -f $(OBJPATH)/*
-# '@' prevents the command from being printed to stdout

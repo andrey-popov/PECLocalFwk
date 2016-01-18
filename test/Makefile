@@ -26,8 +26,8 @@ INCLUDE = -I$(PEC_FWK_INSTALL)/core/include -I$(PEC_FWK_INSTALL)/extensions/incl
 OPFLAGS = -O2
 CFLAGS = -Wall -Wextra -std=c++14 $(INCLUDE) $(OPFLAGS)
 LDFLAGS = $(shell root-config --libs) -lTreePlayer -lHistPainter \
- -L$(BOOST_LIB) -lboost_filesystem$(BOOST_LIB_POSTFIX) $(PEC_FWK_INSTALL)/lib/libpecfwk.a \
- -Wl,-rpath=$(BOOST_LIB)
+ -L$(PEC_FWK_INSTALL)/lib -lpecfwk -Wl,-rpath=$(PEC_FWK_INSTALL)/lib \
+ -L$(BOOST_LIB) -lboost_filesystem$(BOOST_LIB_POSTFIX) -Wl,-rpath=$(BOOST_LIB)
 
 
 # Define the phony targets
