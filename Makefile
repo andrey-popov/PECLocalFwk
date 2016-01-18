@@ -8,27 +8,16 @@ ifeq ($(shell which root-config), )
   $(error ROOT installation is not found)
 endif
 
-
-# Set Boost variables
-# A bit of special setup is required for lxplus
-ifeq ($(shell hostname | grep -q lxplus; echo $$?), 0)
-  ifeq ($(BOOST_ROOT), )
-    # Set the path to Boost appropriate for lxplus
-    BOOST_ROOT = /afs/cern.ch/sw/lcg/external/Boost/1.55.0_python2.7/x86_64-slc6-gcc47-opt
-  endif
-  
-  BOOST_INCLUDE = $(BOOST_ROOT)/include/boost-1_55
-  BOOST_LIB_POSTFIX = -gcc47-mt-1_55
-else
-  ifeq ($(BOOST_ROOT), )
-    $(error Mandatory environment variable BOOST_ROOT is not set)
-  endif
-  
-  BOOST_INCLUDE = $(BOOST_ROOT)/include
-  BOOST_LIB_POSTFIX = 
+# Make sure Boost is available
+ifeq ($(BOOST_ROOT), )
+  $(error Mandatory environment variable BOOST_ROOT is not set)
 endif
 
+
+# Setup variables to use Boost libraries
+BOOST_INCLUDE = $(BOOST_ROOT)/include
 BOOST_LIB = $(BOOST_ROOT)/lib
+BOOST_LIB_POSTFIX = 
 
 
 # Flags to control compilation and linking
