@@ -35,7 +35,7 @@ BOOST_LIB = $(BOOST_ROOT)/lib
 CC = g++
 INCLUDE = -Icore/include -Iextensions/include -I./ -I$(shell root-config --incdir) -I$(BOOST_INCLUDE)
 OPFLAGS = -O2
-CFLAGS = -Wall -Wextra -Wno-unused-local-typedefs -fPIC -std=c++14 $(INCLUDE) $(OPFLAGS)
+CFLAGS = -Wall -Wextra -Wno-unused-function -fPIC -std=c++14 $(INCLUDE) $(OPFLAGS)
 #LDFLAGS = $(shell root-config --libs) -lTreePlayer -lHistPainter \
 # -L$(BOOST_LIB) -lboost_filesystem$(BOOST_LIB_POSTFIX) $(PEC_FWK_INSTALL)/lib/libpecfwk.a \
 # -Wl,-rpath=$(BOOST_LIB)
