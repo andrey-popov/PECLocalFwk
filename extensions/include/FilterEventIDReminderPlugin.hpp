@@ -1,6 +1,5 @@
 /**
  * \file FilterEventIDReminderPlugin.hpp
- * \author Andrey Popov
  * 
  * Defines a class that filters event based on based on a reminder of division of their event number
  * by a specified denominator.

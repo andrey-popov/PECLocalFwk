@@ -1,6 +1,5 @@
 /**
  * \file MetFilterPlugin.hpp
- * \author Andrey Popov
  *
  * Defines a simple plugin to perform additional filtering on value of MET.
  */

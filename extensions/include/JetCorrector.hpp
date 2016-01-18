@@ -1,6 +1,5 @@
 /**
  * \file JetCorrector.hpp
- * \author Andrey Popov
  * 
  * Defines a class to apply JEC and perform JER smearing.
  */

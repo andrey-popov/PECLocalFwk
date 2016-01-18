@@ -1,6 +1,5 @@
 /**
  * \file StdBTaggerPlugin.hpp
- * \author Andrey Popov
  * 
  * Defines a class to wrap the standard b-tagging into a plugin.
  */

@@ -1,6 +1,5 @@
 /**
  * \file WeightBTagInterface.hpp
- * \author Andrey Popov
  * 
  * Defines an abstract base class to evaluate weight of an event due to b-tagging.
  */

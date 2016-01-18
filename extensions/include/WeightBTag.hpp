@@ -1,6 +1,5 @@
 /**
  * \file WeightBTag.hpp
- * \author Andrey Popov
  * 
  * Defines a class to evaluate event weight due to b-tagging.
  */

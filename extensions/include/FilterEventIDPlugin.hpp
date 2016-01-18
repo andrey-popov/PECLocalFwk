@@ -1,6 +1,5 @@
 /**
  * \file FilterEventIDPlugin.hpp
- * \author Andrey Popov
  * 
  * Defines a class that filters event based on their ID.
  */

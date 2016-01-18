@@ -1,6 +1,5 @@
 /**
  * \file BTagSFInterface.hpp
- * \author Andrey Popov
  * 
  * Defines an abstract base class to access scale factors for b-tagging efficiencies.
  */

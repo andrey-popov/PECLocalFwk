@@ -1,6 +1,5 @@
 /**
  * \file JetResolutionFactor.hpp
- * \author Andrey Popov
  * 
  * Defines a class to perform JER smearing in simulation.
  */

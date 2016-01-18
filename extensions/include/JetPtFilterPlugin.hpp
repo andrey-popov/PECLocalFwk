@@ -1,6 +1,5 @@
 /**
  * \file JetPtFilterPlugin.hpp
- * \author Andrey Popov
  *
  * Defines a simple plugin to perform additional filtering on jet transverse momenta.
  */

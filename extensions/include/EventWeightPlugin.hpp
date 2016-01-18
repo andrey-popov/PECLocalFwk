@@ -1,6 +1,5 @@
 /**
  * \file EventWeightPlugin.hpp
- * \author Andrey Popov
  * 
  * Defines an abstract base class for a plugin to calculate event weight.
  */

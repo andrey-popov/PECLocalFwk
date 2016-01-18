@@ -1,6 +1,5 @@
 /**
  * \file Dataset.hpp
- * \author Andrey Popov
  * 
  * The module defines a class to descibe a dataset.
  */

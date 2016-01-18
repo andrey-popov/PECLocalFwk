@@ -1,6 +1,5 @@
 /**
  * \file PECReaderPlugin.hpp
- * \author Andrey Popov
  * 
  * The module defines a wrapper of PECReader class into a plugin.
  */
@@ -26,73 +25,73 @@
  */
 class PECReaderPlugin: public Plugin
 {
-    public:
-        /**
-         * \brief Constructor
-         * 
-         * Given configuration is deeply copied by the constructor, and the object owns the copy.
-         */
-        PECReaderPlugin(std::unique_ptr<PECReaderConfig> &&config);
-        
-        /// Move constructor
-        PECReaderPlugin(PECReaderPlugin &&src);
-        
-        /// Copy constructor is deleted
-        PECReaderPlugin(PECReaderPlugin const &) = delete;
-        
-        /// Destructor
-        ~PECReaderPlugin();
+public:
+    /**
+     * \brief Constructor
+     * 
+     * Given configuration is deeply copied by the constructor, and the object owns the copy.
+     */
+    PECReaderPlugin(std::unique_ptr<PECReaderConfig> &&config);
     
-    public:
-        /**
-         * \brief Implementation of cloning
-         * 
-         * Consult documentation of the base class. Pay attention to the meaning of this method is
-         * slightly different from the usual one.
-         */
-        Plugin *Clone() const;
-        
-        /**
-         * \brief Called before processing of a new dataset is started
-         * 
-         * Consult documentation of the base class.
-         */
-        void BeginRun(Dataset const &dataset);
-        
-        /**
-         * \brief Called after processing of a dataset is finished
-         * 
-         * Consult documentation of the base class.
-         */
-        void EndRun();
-        
-        /**
-         * \brief Called for each event
-         * 
-         * Consult documentation of the base class for a general objective of the method. In this
-         * derived class the method returns false if only there are no more events in the dataset.
-         */
-        bool ProcessEvent();
-        
-        /**
-         * \brief Returns a reference to the underlying PECReader object
-         * 
-         * If no valied object is associated to the plugin, an exception is thrown.
-         */
-        PECReader const &operator*() const;
-        
-        /// Returns a pointer to the underlying PECReader object
-        PECReader const *operator->() const;
+    /// Move constructor
+    PECReaderPlugin(PECReaderPlugin &&src);
     
-    private:
-        /// A pointer to a current instance of class PECReader
-        PECReader *reader;
-        
-        /**
-         * \brief Configuration for an instance of class PECReader
-         * 
-         * The configuration is owned by the plugin. It is used to construct instances of class
-         * PECReader for each dataset.
-         */
-        std::unique_ptr<PECReaderConfig> readerConfig;
+    /// Copy constructor is deleted
+    PECReaderPlugin(PECReaderPlugin const &) = delete;
+    
+    /// Destructor
+    ~PECReaderPlugin();
+
+public:
+    /**
+     * \brief Implementation of cloning
+     * 
+     * Consult documentation of the base class. Pay attention to the meaning of this method is
+     * slightly different from the usual one.
+     */
+    Plugin *Clone() const;
+    
+    /**
+     * \brief Called before processing of a new dataset is started
+     * 
+     * Consult documentation of the base class.
+     */
+    void BeginRun(Dataset const &dataset);
+    
+    /**
+     * \brief Called after processing of a dataset is finished
+     * 
+     * Consult documentation of the base class.
+     */
+    void EndRun();
+    
+    /**
+     * \brief Called for each event
+     * 
+     * Consult documentation of the base class for a general objective of the method. In this
+     * derived class the method returns false if only there are no more events in the dataset.
+     */
+    bool ProcessEvent();
+    
+    /**
+     * \brief Returns a reference to the underlying PECReader object
+     * 
+     * If no valied object is associated to the plugin, an exception is thrown.
+     */
+    PECReader const &operator*() const;
+    
+    /// Returns a pointer to the underlying PECReader object
+    PECReader const *operator->() const;
+
+private:
+    /// A pointer to a current instance of class PECReader
+    PECReader *reader;
+    
+    /**
+     * \brief Configuration for an instance of class PECReader
+     * 
+     * The configuration is owned by the plugin. It is used to construct instances of class
+     * PECReader for each dataset.
+     */
+    std::unique_ptr<PECReaderConfig> readerConfig;
 };

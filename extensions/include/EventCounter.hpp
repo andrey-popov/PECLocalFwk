@@ -1,6 +1,5 @@
 /**
  * \file EventCounter.hpp
- * \author Andrey Popov
  * 
  * Defines a class to build a cut-flow table and (optionally) store event IDs.
  */
@@ -64,41 +63,41 @@ struct SelectionStep
  */
 class EventCounter
 {
-    public:
-        /// Constructor from a title to indentify an instance of the class
-        EventCounter(std::string const &title = "");
-        
-        /// Copy constructor is deleted
-        EventCounter(EventCounter const &) = delete;
-        
-        /// Assignment operator is deleted
-        EventCounter &operator=(EventCounter const &) = delete;
+public:
+    /// Constructor from a title to indentify an instance of the class
+    EventCounter(std::string const &title = "");
     
-    public:
-        /// Resets the title
-        void ResetTitle(std::string const &title);
-        
-        /// Registers a new selection step
-        void RegisterSelectionStep(std::string const &label, std::string const &description);
-        
-        /// Increases the counter for a given selection step
-        void AddEvent(std::string const &label);
-        
-        /// Increases the counter for a given selection step and saves event ID
-        void AddEvent(std::string const &label, EventID const &id);
-        
-        /**
-         * \brief Writes down accumulated information about selection steps
-         * 
-         * Cut-flow table is written to the standard output, and lists of event IDs are saved to
-         * ASCII files.
-         */
-        void WriteResults() const;
+    /// Copy constructor is deleted
+    EventCounter(EventCounter const &) = delete;
     
-    private:
-        /// A title to identify an instance of the class
-        std::string title;
-        
-        /// A map from labels of selection step (needed to access them) to SelectionStep objets
-        std::map<std::string, SelectionStep> steps;
+    /// Assignment operator is deleted
+    EventCounter &operator=(EventCounter const &) = delete;
+
+public:
+    /// Resets the title
+    void ResetTitle(std::string const &title);
+    
+    /// Registers a new selection step
+    void RegisterSelectionStep(std::string const &label, std::string const &description);
+    
+    /// Increases the counter for a given selection step
+    void AddEvent(std::string const &label);
+    
+    /// Increases the counter for a given selection step and saves event ID
+    void AddEvent(std::string const &label, EventID const &id);
+    
+    /**
+     * \brief Writes down accumulated information about selection steps
+     * 
+     * Cut-flow table is written to the standard output, and lists of event IDs are saved to
+     * ASCII files.
+     */
+    void WriteResults() const;
+
+private:
+    /// A title to identify an instance of the class
+    std::string title;
+    
+    /// A map from labels of selection step (needed to access them) to SelectionStep objets
+    std::map<std::string, SelectionStep> steps;
 };

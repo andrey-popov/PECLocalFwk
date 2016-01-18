@@ -1,6 +1,5 @@
 /**
  * \file PhysicsObjects.hpp
- * \author Andrey Popov
  * 
  * The module defines a set of aggregate types to represent the high-level physical objects.
  */

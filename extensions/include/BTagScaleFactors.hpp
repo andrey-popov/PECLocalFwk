@@ -1,6 +1,5 @@
 /**
  * \file BTagScaleFactors.hpp
- * \author Andrey Popov
  * 
  * Defines a class to access b-tagging scale factors.
  */

@@ -1,6 +1,5 @@
 /**
  * \file PECReader.hpp
- * \author Andrey Popov, Natalia Tsirova
  * 
  * The module defines a class to read files in PlainEventContent (PEC) format.
  */

@@ -1,6 +1,5 @@
 /**
  * \file Logger.hpp
- * \author Andrey Popov
  * 
  * The module implements a light-weight thread-safe logging facility. The output is performed to
  * the standard output stream. The user should use a globally-available instance logger. Several
@@ -65,49 +64,49 @@ struct _TimeStamp
  */
 class Logger
 {
-    public:
-        /// Default constructor
-        Logger() = default;
+public:
+    /// Default constructor
+    Logger() = default;
+
+public:
+    /**
+     * \brief Overload to end the current message
+     * 
+     * Prints a newline symbol, flushes the buffer, releases the mutex.
+     */
+    Logger &operator<<(_EndOfMessage (*)());
     
-    public:
-        /**
-         * \brief Overload to end the current message
-         * 
-         * Prints a newline symbol, flushes the buffer, releases the mutex.
-         */
-        Logger &operator<<(_EndOfMessage (*)());
-        
-        /**
-         * \brief Overload to print a timestamp
-         * 
-         * Prints the current date and time.
-         */
-        Logger &operator<<(_TimeStamp (*)());
-        
-        /// Performs the actual write
-        template<typename T>
-        Logger &operator<<(T const &msg);
+    /**
+     * \brief Overload to print a timestamp
+     * 
+     * Prints the current date and time.
+     */
+    Logger &operator<<(_TimeStamp (*)());
     
-    private:
-        /**
-         * \brief Makes sure the current thread own the mutex
-         * 
-         * Method lock the recursive mutex. If it finds that the mutex has already been locked by
-         * the current thread, it unlock the mutex one time. Therefore, the mutex is locked two
-         * times at maximum.
-         */
-        void VerifyLock();
+    /// Performs the actual write
+    template<typename T>
+    Logger &operator<<(T const &msg);
+
+private:
+    /**
+     * \brief Makes sure the current thread own the mutex
+     * 
+     * Method lock the recursive mutex. If it finds that the mutex has already been locked by
+     * the current thread, it unlock the mutex one time. Therefore, the mutex is locked two
+     * times at maximum.
+     */
+    void VerifyLock();
+
+private:
+    /// A mutex to protect output
+    static std::recursive_mutex outputMutex;
     
-    private:
-        /// A mutex to protect output
-        static std::recursive_mutex outputMutex;
-        
-        /**
-         * \brief Indicates if the mutex is locked
-         * 
-         * This data member is used to determine if the mutex is locked for the second time.
-         */
-        static bool isLocked;
+    /**
+     * \brief Indicates if the mutex is locked
+     * 
+     * This data member is used to determine if the mutex is locked for the second time.
+     */
+    static bool isLocked;
 };
 
 

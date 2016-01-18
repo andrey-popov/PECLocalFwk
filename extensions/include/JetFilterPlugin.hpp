@@ -1,6 +1,5 @@
 /**
  * \file JetFilterPlugin.hpp
- * \author Andrey Popov
  *
  * Defines a plugin to filter events based on the number of jets that pass a generic selection.
  */

@@ -1,6 +1,5 @@
 /**
  * \file ROOTLock.hpp
- * \author Andrey Popov
  * 
  * The module defines a global locking mechanism to protect thread-unsafe ROOT routines.
  */
@@ -21,21 +20,21 @@
  */
 class ROOTLock
 {
-    public:
-        /// Constructor is deleted
-        ROOTLock() = delete;
+public:
+    /// Constructor is deleted
+    ROOTLock() = delete;
+
+public:
+    /// Locks
+    static void Lock();
     
-    public:
-        /// Locks
-        static void Lock();
-        
-        /// Unlocks
-        static void Unlock();
-        
-        /// Checks if the lock is set
-        static bool TryLock();
+    /// Unlocks
+    static void Unlock();
     
-    private:
-        /// Static mutex
-        static std::mutex globalROOTMutex;
+    /// Checks if the lock is set
+    static bool TryLock();
+
+private:
+    /// Static mutex
+    static std::mutex globalROOTMutex;
 };

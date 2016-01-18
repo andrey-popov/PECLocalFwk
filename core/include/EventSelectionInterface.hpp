@@ -1,6 +1,5 @@
 /**
  * \file EventSelectionInterface.hpp
- * \author Andrey Popov
  * 
  * The module defines an interface to specify an event selection.
  */
@@ -33,57 +32,57 @@
  */
 class EventSelectionInterface
 {
-    public:
-        /// Default constructor with no arguments
-        EventSelectionInterface() = default;
-        
-        /// Default copy constructor
-        EventSelectionInterface(EventSelectionInterface const &) = default;
-        
-        /// Trivial virtual destructor
-        virtual ~EventSelectionInterface();
+public:
+    /// Default constructor with no arguments
+    EventSelectionInterface() = default;
     
-    public:
-        /**
-         * \brief The lepton step of the event selection
-         * 
-         * Performs the lepton step of the event selection. Although the meaning of the two input
-         * collections is not restricted by the interface, the tight leptons must be a subset of the
-         * loose ones. Both collections must be ordered in pt in decreasing order. Most typically,
-         * when this method is redefined in a derieved class, it will simply count the tight and the
-         * loose leptons. The method should return true if the event passes the selection.
-         */
-        virtual bool PassLeptonStep(std::vector<Lepton> const &tightLeptons,
-         std::vector<Lepton> const &looseLeptons) const = 0;
-        
-        /**
-         * \brief The jet step of the event selection
-         * 
-         * Performs the jet step of the event selection. Normally, the provided collection should
-         * contain the jets selected by IsAnalysisJet method only, although the user is allowed to
-         * deviate from this recommendation. The collection must be sorted in pt in the decreasing
-         * order. The method returns true if the event passes the selection.
-         */
-        virtual bool PassJetStep(std::vector<Jet> const &jets) const = 0;
-        
-        /**
-         * \brief Selects the analysis-level jets
-         * 
-         * An analysis might consider moderately soft jets for some observables, despite these jets
-         * do not contribute to jet multiplicity and the most of jet-related observables. This
-         * method is intended to filter them out. For an analysis-level jet it should return true.
-         * In this class the method is implemented to mark all the jets as analysis-level.
-         */
-        virtual bool IsAnalysisJet(Jet const &jet) const;
-        
-        /**
-         * \brief Creates a newly-configured copy of the instance
-         * 
-         * User must implement this method in a derived class to create an initialized copy of the
-         * instance of the class. Logic of processing algorithm and its configuration only must be
-         * duplicated, but the current state might be ignored. The method is expected to be only
-         * called before the first event is processed (i.e. before any call to PassLeptonStep,
-         * PassJetStep, or IsAnalysisJet).
-         */
-        virtual EventSelectionInterface *Clone() const = 0;
+    /// Default copy constructor
+    EventSelectionInterface(EventSelectionInterface const &) = default;
+    
+    /// Trivial virtual destructor
+    virtual ~EventSelectionInterface();
+
+public:
+    /**
+     * \brief The lepton step of the event selection
+     * 
+     * Performs the lepton step of the event selection. Although the meaning of the two input
+     * collections is not restricted by the interface, the tight leptons must be a subset of the
+     * loose ones. Both collections must be ordered in pt in decreasing order. Most typically,
+     * when this method is redefined in a derieved class, it will simply count the tight and the
+     * loose leptons. The method should return true if the event passes the selection.
+     */
+    virtual bool PassLeptonStep(std::vector<Lepton> const &tightLeptons,
+     std::vector<Lepton> const &looseLeptons) const = 0;
+    
+    /**
+     * \brief The jet step of the event selection
+     * 
+     * Performs the jet step of the event selection. Normally, the provided collection should
+     * contain the jets selected by IsAnalysisJet method only, although the user is allowed to
+     * deviate from this recommendation. The collection must be sorted in pt in the decreasing
+     * order. The method returns true if the event passes the selection.
+     */
+    virtual bool PassJetStep(std::vector<Jet> const &jets) const = 0;
+    
+    /**
+     * \brief Selects the analysis-level jets
+     * 
+     * An analysis might consider moderately soft jets for some observables, despite these jets
+     * do not contribute to jet multiplicity and the most of jet-related observables. This
+     * method is intended to filter them out. For an analysis-level jet it should return true.
+     * In this class the method is implemented to mark all the jets as analysis-level.
+     */
+    virtual bool IsAnalysisJet(Jet const &jet) const;
+    
+    /**
+     * \brief Creates a newly-configured copy of the instance
+     * 
+     * User must implement this method in a derived class to create an initialized copy of the
+     * instance of the class. Logic of processing algorithm and its configuration only must be
+     * duplicated, but the current state might be ignored. The method is expected to be only
+     * called before the first event is processed (i.e. before any call to PassLeptonStep,
+     * PassJetStep, or IsAnalysisJet).
+     */
+    virtual EventSelectionInterface *Clone() const = 0;
 };

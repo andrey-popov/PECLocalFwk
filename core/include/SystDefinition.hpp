@@ -1,6 +1,5 @@
 /**
  * \file SystDefinition.hpp
- * \author Andrey Popov
  * 
  * The module defines auxiliary data types to choose specific sources of systematical uncertainties.
  * Algorithms to propagate the uncertainties are not considered here and are decribed in dedicated

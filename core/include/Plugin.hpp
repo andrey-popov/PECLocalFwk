@@ -1,6 +1,5 @@
 /**
  * \file Plugin.hpp
- * \author Andrey Popov
  * 
  * The module describes an interface for a plugin for Processor.
  */
@@ -42,74 +41,74 @@
  */
 class Plugin
 {
-    public:
-        /// Constructor
-        Plugin(std::string const &name);
-        
-        /// Default copy constructor
-        Plugin(Plugin const &) = default;
-        
-        /// Default move constructor
-        Plugin(Plugin &&) = default;
-        
-        /// Default assignment operator
-        Plugin &operator=(Plugin const &) = default;
-        
-        /// Trivial destructor
-        virtual ~Plugin();
+public:
+    /// Constructor
+    Plugin(std::string const &name);
     
-    public:
-        /**
-         * \brief Provides a pointer to an instance of Processor class that owns the plugin
-         * 
-         * The pointer is guaranteed to be initialized before the first call to BeginRun. It stays
-         * valid for the lifetime of the object.
-         */
-        void SetParent(Processor const *processor);
-        
-        /// Returns name of the plugin
-        std::string const &GetName() const;
-        
-        /**
-         * \brief Clones the object. Must be implemented by the user
-         * 
-         * The method must create a new instance of the (derived) class with the same constructor
-         * parameters. The method must not address any parameters specific to a run or an event.
-         * Thechnically it means the method must create a new instance of the class exactly in the
-         * same way this has been created and initialized.
-         * 
-         * The method is used when unique copies of plugins are created for each instance of class
-         * Processor. Clonning is performed before call to SetParent and before the first call to
-         * BeginRun.
-         */
-        virtual Plugin *Clone() const = 0;
-        
-        /**
-         * \brief Called before processing of a new dataset is started
-         * 
-         * The method is trivial in the default implementation
-         */
-        virtual void BeginRun(Dataset const &dataset);
-        
-        /**
-         * \brief Called after processing of a dataset is finished
-         * 
-         * The method is trivial in the default implementation
-         */
-        virtual void EndRun();
-        
-        /**
-         * \brief Called for each event. Must be implemented by the user
-         * 
-         * The boolean return value allows to implement event filtering. The plugin must return
-         * true unless it suggests the event to be discarded.
-         */
-        virtual bool ProcessEvent() = 0;
+    /// Default copy constructor
+    Plugin(Plugin const &) = default;
     
-    protected:
-        /// Unique name to identify the plugin
-        std::string const name;
-        
-        /// Parent Processor object
-        Processor const *processor;
+    /// Default move constructor
+    Plugin(Plugin &&) = default;
+    
+    /// Default assignment operator
+    Plugin &operator=(Plugin const &) = default;
+    
+    /// Trivial destructor
+    virtual ~Plugin();
+
+public:
+    /**
+     * \brief Provides a pointer to an instance of Processor class that owns the plugin
+     * 
+     * The pointer is guaranteed to be initialized before the first call to BeginRun. It stays
+     * valid for the lifetime of the object.
+     */
+    void SetParent(Processor const *processor);
+    
+    /// Returns name of the plugin
+    std::string const &GetName() const;
+    
+    /**
+     * \brief Clones the object. Must be implemented by the user
+     * 
+     * The method must create a new instance of the (derived) class with the same constructor
+     * parameters. The method must not address any parameters specific to a run or an event.
+     * Thechnically it means the method must create a new instance of the class exactly in the
+     * same way this has been created and initialized.
+     * 
+     * The method is used when unique copies of plugins are created for each instance of class
+     * Processor. Clonning is performed before call to SetParent and before the first call to
+     * BeginRun.
+     */
+    virtual Plugin *Clone() const = 0;
+    
+    /**
+     * \brief Called before processing of a new dataset is started
+     * 
+     * The method is trivial in the default implementation
+     */
+    virtual void BeginRun(Dataset const &dataset);
+    
+    /**
+     * \brief Called after processing of a dataset is finished
+     * 
+     * The method is trivial in the default implementation
+     */
+    virtual void EndRun();
+    
+    /**
+     * \brief Called for each event. Must be implemented by the user
+     * 
+     * The boolean return value allows to implement event filtering. The plugin must return
+     * true unless it suggests the event to be discarded.
+     */
+    virtual bool ProcessEvent() = 0;
+
+protected:
+    /// Unique name to identify the plugin
+    std::string const name;
+    
+    /// Parent Processor object
+    Processor const *processor;
 };

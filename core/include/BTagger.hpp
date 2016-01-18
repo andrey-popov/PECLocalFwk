@@ -1,6 +1,5 @@
 /**
  * \file BTagger.hpp
- * \author Andrey Popov
  * 
  * The module provides means to perform b-tagging.
  */

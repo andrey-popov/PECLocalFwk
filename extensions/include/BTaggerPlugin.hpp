@@ -1,6 +1,5 @@
 /**
  * \file BTaggerPlugin.hpp
- * \author Andrey Popov
  * 
  * Defines an abstract base class for a plugin to perform b-tagging.
  */

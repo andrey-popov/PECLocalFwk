@@ -1,6 +1,5 @@
 /**
  * \file BTagEffInterface.hpp
- * \author Andrey Popov
  * 
  * Defines an abstract base class for accessing b-tagging efficiencies.
  */

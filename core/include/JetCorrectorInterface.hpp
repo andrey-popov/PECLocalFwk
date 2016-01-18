@@ -1,6 +1,5 @@
 /**
  * \file JetCorrectorInterface.hpp
- * \author Andrey Popov
  * 
  * Defines an interface to perform corrections of jet momentum.
  */

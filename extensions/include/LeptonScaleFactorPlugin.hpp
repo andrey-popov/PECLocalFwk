@@ -1,6 +1,5 @@
 /**
  * \file LeptonScaleFactorPlugin.hpp
- * \author Andrey Popov
  * 
  * The module defines a plugin to account of lepton scale factors.
  */
