@@ -31,7 +31,7 @@ endif
 BOOST_LIB = $(BOOST_ROOT)/lib
 
 
-# Define the flags to control make
+# Flags to control compilation and linking
 CC = g++
 INCLUDE = -Icore/include -Iextensions/include -I./ -I$(shell root-config --incdir) -I$(BOOST_INCLUDE)
 OPFLAGS = -O2
@@ -51,7 +51,7 @@ vpath %.cpp $(addsuffix /src/,$(MODULE_PATHS))
 vpath %.o $(OBJPATH)
 
 
-# Define the phony targets
+# Define phony targets
 .PHONY: clean
 
 
