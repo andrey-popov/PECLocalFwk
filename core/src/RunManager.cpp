@@ -42,6 +42,12 @@ PECReaderConfig &RunManager::GetPECReaderConfig()
 }
 
 
+void RunManager::RegisterService(Service *service)
+{
+    services.emplace_back(unique_ptr<Service>(service));
+}
+
+
 void RunManager::RegisterPlugin(Plugin *plugin)
 {
     plugins.emplace_back(unique_ptr<Plugin>(plugin));
@@ -65,9 +71,16 @@ void RunManager::ProcessImp(int nThreads)
     processors.reserve(nThreads);
     processors.emplace_back(this);
     
+    
+    // The first processor is used as a template
+    for (auto &s: services)
+        processors.front().RegisterService(s.release());
+    
     for (auto &p: plugins)
         processors.front().RegisterPlugin(p.release());
     
+    
+    // Other processors are copied from the first one
     for (int i = 1; i < nThreads; ++i)
         processors.emplace_back(processors.front());
     

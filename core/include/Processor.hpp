@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <Service.hpp>
 #include <PluginForward.hpp>
 #include <PECReaderConfig.hpp>
 #include <PECReaderPlugin.hpp>
@@ -65,12 +66,19 @@ public:
 
 public:
     /**
+     * \brief Adds a new service
+     * 
+     * The service is owned by Processor. All services must have unique names, and an exception will
+     * be thrown if a duplicate is found.
+     */
+    void RegisterService(Service *service);
+    
+    /**
      * \brief Adds a new plugin to be executed
      * 
      * The new plugin is inserted at the end of execution path. The plugin object is owned by
-     * Processor; therefore, the user might need to use std::move to transfer the ownship.
-     * Note that a plugin wrapper for class PECReader is included automatically and executed
-     * first; it must not be registered explicitly.
+     * Processor. Note that a plugin wrapper for class PECReader is included automatically and
+     * executed first; it must not be registered explicitly.
      */
     void RegisterPlugin(Plugin *plugin);
     
@@ -87,7 +95,23 @@ public:
     void ProcessDataset(Dataset const &dataset);
     
     /**
-     * \brief Returns a pointer to plugin with given name
+     * \brief Returns pointer to service with given name
+     * 
+     * The method uses a map to find the service and this is fast. Throws an except if a service
+     * with the given name does not exist.
+     */
+    Service const *GetService(std::string const &name) const;
+    
+    /**
+     * \brief Returns pointer to service with given name
+     * 
+     * The behaviour is identical to method GetService, but it does not throw an except if the
+     * requested service is not found. Instead, a null pointer is returned.
+     */
+    Service const *GetServiceQuiet(std::string const &name) const;
+    
+    /**
+     * \brief Returns pointer to plugin with given name
      * 
      * Searches for a plugin with given name in the path and returns a constant pointer to it
      * if found; an exception is thrown otherwise. Do not use this method when an ordering of
@@ -141,6 +165,14 @@ private:
     RunManager *manager;
     
     /**
+     * \brief Registered services
+     * 
+     * The map is utilized both for storage and to provide a fast access to services by their names.
+     * The ordering of services is not important to logic of the framework.
+     */
+    std::map<std::string, std::unique_ptr<Service>> services;
+    
+    /**
      * \brief Pointers to registered plugins
      * 
      * Random access is mandatory for this container. The first plugin is always a wrapper for
@@ -149,5 +181,5 @@ private:
     std::vector<std::unique_ptr<Plugin>> path;
     
     /// Mapping from plugin names to their indices in vector path
-    std::unordered_map<std::string, unsigned> nameMap;
+    std::unordered_map<std::string, unsigned> pluginNameMap;
 };

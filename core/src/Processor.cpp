@@ -30,8 +30,9 @@ Processor::Processor(RunManager *manager_):
 
 Processor::Processor(Processor &&src) noexcept:
     manager(src.manager),
+    services(move(src.services)),
     path(move(src.path)),
-    nameMap(move(src.nameMap))
+    pluginNameMap(move(src.pluginNameMap))
 {
     // Prevent the source object from deleting the plugins
     src.path.clear();
@@ -40,8 +41,13 @@ Processor::Processor(Processor &&src) noexcept:
 
 Processor::Processor(Processor const &src):
     manager(src.manager),
-    nameMap(src.nameMap)
+    pluginNameMap(src.pluginNameMap)
 {
+    for (auto const &s: src.services)
+        services.emplace(piecewise_construct,
+         forward_as_tuple(s.first), forward_as_tuple(s.second->Clone()));
+    
+    
     for (auto const &p: src.path)
         path.emplace_back(p->Clone());
 }
@@ -52,19 +58,34 @@ Processor::~Processor() noexcept
     // Destroy plugins in a reversed order
     for (auto pIt = path.rbegin(); pIt != path.rend(); ++pIt)
         pIt->reset();
+    
+    // Do not care in which order services will be destroyed, so let it be done automatically
+}
+
+
+void Processor::RegisterService(Service *service)
+{
+    // Attempt to add the given service to the collection
+    auto res = services.insert(make_pair(service->GetName(), unique_ptr<Service>(service)));
+    
+    
+    // Throw an exception if the insersion failed
+    if (res.second == false)
+        throw runtime_error("Processor::RegisterService: Attempting to register a second "s +
+         "service with name \"" + service->GetName() + "\".");
 }
 
 
 void Processor::RegisterPlugin(Plugin *plugin)
 {
     // Make sure there is no plugin named the same
-    if (nameMap.find(plugin->GetName()) != nameMap.end())
+    if (pluginNameMap.find(plugin->GetName()) != pluginNameMap.end())
         throw runtime_error(string("Processor::RegisterPlugin: Attempting to register a second ") +
          "plugin named \"" + plugin->GetName() + "\".");
     
     
     // Update the map for plugin names
-    nameMap[plugin->GetName()] = path.size();  // this will be the index of this plugin
+    pluginNameMap[plugin->GetName()] = path.size();  // this will be the index of this plugin
     
     
     // Insert the plugin into the path
@@ -74,7 +95,10 @@ void Processor::RegisterPlugin(Plugin *plugin)
 
 void Processor::operator()()
 {
-    // Register this as the master of the owned plugins
+    // Register this as the master of owned services and plugins
+    for (auto &s: services)
+        s.second->SetMaster(this);
+    
     for (auto &p: path)
         p->SetMaster(this);
     
@@ -110,9 +134,12 @@ void Processor::ProcessDataset(Dataset const &dataset)
      dataset.GetFiles().front().GetBaseName() << ".root\"." << eom;
     
     
-    // Declare begin of a dataset for all plugins
-    for (auto pIt = path.begin(); pIt != path.end(); ++pIt)
-        (*pIt)->BeginRun(dataset);
+    // Declare begin of a dataset for all services and plugins
+    for (auto &s: services)
+        s.second->BeginRun(dataset);
+     
+    for (auto &p: path)
+        p->BeginRun(dataset);
     
     
     // Process all events in the dataset
@@ -142,9 +169,35 @@ void Processor::ProcessDataset(Dataset const &dataset)
     }
     
     
-    // Declare end of the dataset for all plugins (in a reversed order)
+    // Declare end of the dataset for all plugins (in a reversed order) and services
     for (auto pIt = path.rbegin(); pIt != path.rend(); ++pIt)
         (*pIt)->EndRun();
+    
+    for (auto &s: services)
+        s.second->EndRun();
+}
+
+
+Service const *Processor::GetService(string const &name) const
+{
+    auto res = services.find(name);
+    
+    if (res == services.end())
+        throw runtime_error("Processor::GetService: A service with name \""s + name +
+         "\" is not registered.");
+    else
+        return res->second.get();
+}
+
+
+Service const *Processor::GetServiceQuiet(string const &name) const
+{
+    auto res = services.find(name);
+    
+    if (res == services.end())
+        return nullptr;
+    else
+        return res->second.get();
 }
 
 
@@ -200,7 +253,7 @@ unsigned Processor::GetPluginIndex(string const &name) const
     
     try
     {
-        index = nameMap.at(name);
+        index = pluginNameMap.at(name);
     }
     catch (out_of_range)  // the name has not been found
     {

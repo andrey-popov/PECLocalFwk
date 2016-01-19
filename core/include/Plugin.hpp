@@ -32,8 +32,8 @@
  * is required to multiplicate the plugin structure for each thread represented by class Processor.
  * 
  * A derived class must be capable of working in a multi-thread mode. The user should pay attention
- * to the fact that ROOT is not thread-safe. For this reason all the critical blocks (which include,
- * for example, creation of any ROOT objects) must be guarded with the help of class ROOTLock.
+ * to the fact that ROOT is not thread-safe. For this reason all critical blocks (which include, for
+ * example, creation of any ROOT objects) must be guarded with the help of class ROOTLock.
  * 
  * A derived class must define a valid move constructor.
  * 

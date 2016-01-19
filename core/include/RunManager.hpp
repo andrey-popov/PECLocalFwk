@@ -7,6 +7,7 @@
 #pragma once
 
 #include <Dataset.hpp>
+#include <Service.hpp>
 #include <Plugin.hpp>
 #include <ProcessorForward.hpp>
 #include <PECReaderConfig.hpp>
@@ -60,12 +61,19 @@ public:
     PECReaderConfig &GetPECReaderConfig();
     
     /**
+     * \brief Adds a new service
+     * 
+     * The service is owned by RunManager. Names of all registered services must be unique;
+     * otherwise an exception will be thrown in consequitive initialization.
+     */
+    void RegisterService(Service *service);
+    
+    /**
      * \brief Adds a new plugin to be executed
      * 
      * The new plugin is inserted at the end of execution path. The plugin object is owned by
-     * RunManager; therefore, the user might need to use std::move to transfer the ownship.
-     * Note that a plugin wrapper for class PECReader is included automatically and executed
-     * first; it must not be registered explicitly.
+     * RunManager. Note that a plugin wrapper for class PECReader is included automatically and
+     * executed first; it must not be registered explicitly.
      */
     void RegisterPlugin(Plugin *plugin);
 
@@ -82,6 +90,13 @@ private:
     
     /// Configuration for PECReader
     std::unique_ptr<PECReaderConfig> readerConfig;
+    
+    /**
+     * \brief Vector of registered services
+     * 
+     * The order of services is not important to the framework.
+     */
+    std::vector<std::unique_ptr<Service>> services;
     
     /// Vector of registered plugins
     std::vector<std::unique_ptr<Plugin>> plugins;
