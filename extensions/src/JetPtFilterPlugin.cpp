@@ -25,7 +25,7 @@ string BuildPluginName(string const &baseName, unsigned nJets, double pt)
 
 
 JetPtFilterPlugin::JetPtFilterPlugin(unsigned minNumJets_, double ptThreshold_):
-    Plugin(BuildPluginName("JetPtFilter", minNumJets_, ptThreshold_)),
+    AnalysisPlugin(BuildPluginName("JetPtFilter", minNumJets_, ptThreshold_)),
     minNumJets(minNumJets_), ptThreshold(ptThreshold_)
 {
     if (minNumJets == 0)

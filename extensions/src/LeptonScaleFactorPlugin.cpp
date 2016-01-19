@@ -13,7 +13,7 @@ using namespace std;
 
 LeptonScaleFactorPlugin::LeptonScaleFactorPlugin(string const &name_,
  Lepton::Flavour targetFlavour_, string const &srcFileName, list<string> histogramNames):
-    Plugin(name_),  // need to call constructor of a virtual base class explicitly
+    AnalysisPlugin(name_),  // need to call constructor of a virtual base class explicitly
     EventWeightPlugin(name_),
     targetFlavour(targetFlavour_)
 {
@@ -52,7 +52,7 @@ LeptonScaleFactorPlugin::LeptonScaleFactorPlugin(string const &name_,
 
 
 LeptonScaleFactorPlugin::LeptonScaleFactorPlugin(LeptonScaleFactorPlugin const &src):
-    Plugin(src),  // need to call constructor of a virtual base class explicitly
+    AnalysisPlugin(src),  // need to call constructor of a virtual base class explicitly
     EventWeightPlugin(src),
     targetFlavour(src.targetFlavour),
     sfComponents(src.sfComponents)

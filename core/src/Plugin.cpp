@@ -31,3 +31,9 @@ void Plugin::BeginRun(Dataset const &)
 
 void Plugin::EndRun()
 {}
+
+
+Plugin::EventOutcome Plugin::ProcessEventToOutcome()
+{
+    return ReinterpretDecision(ProcessEvent());
+}

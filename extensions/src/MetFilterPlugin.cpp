@@ -24,7 +24,7 @@ string BuildPluginName(string const &baseName, double met)
 
 
 MetFilterPlugin::MetFilterPlugin(double threshold_):
-    Plugin(BuildPluginName("MetFilter", threshold_)),
+    AnalysisPlugin(BuildPluginName("MetFilter", threshold_)),
     threshold(threshold_)
 {}
 

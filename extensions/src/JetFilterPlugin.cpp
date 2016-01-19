@@ -26,7 +26,7 @@ string BuildPluginName(string const &baseName, unsigned minNumJets, unsigned max
 JetFilterPlugin::JetFilterPlugin(string const &name_,
  function<bool(Jet const &)> const &selection_,
  unsigned minNumJets_, unsigned maxNumJets_ /*= -1*/) noexcept:
-    Plugin(name_),
+    AnalysisPlugin(name_),
     selection(selection_),
     minNumJets(minNumJets_), maxNumJets(maxNumJets_)
 {}
@@ -34,14 +34,14 @@ JetFilterPlugin::JetFilterPlugin(string const &name_,
 
 JetFilterPlugin::JetFilterPlugin(function<bool(Jet const &)> const &selection_,
  unsigned minNumJets_, unsigned maxNumJets_ /*= -1*/) noexcept:
-    Plugin(BuildPluginName("JetFilter", minNumJets, maxNumJets)),
+    AnalysisPlugin(BuildPluginName("JetFilter", minNumJets, maxNumJets)),
     selection(selection_),
     minNumJets(minNumJets_), maxNumJets(maxNumJets_)
 {}
 
 
 JetFilterPlugin::JetFilterPlugin(JetFilterPlugin const &src) noexcept:
-    Plugin(src),
+    AnalysisPlugin(src),
     selection(src.selection),
     minNumJets(src.minNumJets), maxNumJets(src.maxNumJets)
 {}

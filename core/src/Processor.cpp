@@ -110,30 +110,39 @@ void Processor::ProcessDataset(Dataset const &dataset)
      dataset.GetFiles().front().GetBaseName() << ".root\"." << eom;
     
     
-    // Declare begin or a dataset for all the plugins
+    // Declare begin of a dataset for all plugins
     for (auto pIt = path.begin(); pIt != path.end(); ++pIt)
         (*pIt)->BeginRun(dataset);
     
     
-    // Process all the events in the dataset
+    // Process all events in the dataset
     while (true)
     {
-        // Read new event with PECReader. If it returns false, the dataset has been exhausted
-        if (not path.at(0)->ProcessEvent())  // the first plugin in the path is always PECReader
-            break;
+        Plugin::EventOutcome result = Plugin::EventOutcome::NoEvents;
+        //^ This initialization allows to break the event loop if there are no plugins registered
         
-        
-        // Run the remainin plugins. If one of them returns false, the following plugins in the path
-        //are not executed for the current event
-        for (unsigned i = 1; i < path.size(); ++i)
+        for (auto &plugin: path)
         {
-            if (not path.at(i)->ProcessEvent())
+            result = plugin->ProcessEventToOutcome();
+            
+            if (result != Plugin::EventOutcome::Ok)
+            {
+                // Whatever happened, do not execute remaining plugins for the current event
                 break;
+            }
+        }
+        
+        
+        // Check if any event has been read successfully during this iteration
+        if (result == Plugin::EventOutcome::NoEvents)
+        {
+            // Some reader said that there were no events left in the current dataset
+            break;
         }
     }
     
     
-    // Declare end of the dataset for all the plugins (reversed order)
+    // Declare end of the dataset for all plugins (in a reversed order)
     for (auto pIt = path.rbegin(); pIt != path.rend(); ++pIt)
         (*pIt)->EndRun();
 }

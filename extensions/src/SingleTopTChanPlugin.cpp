@@ -14,7 +14,7 @@ using namespace std;
 
 
 SingleTopTChanPlugin::SingleTopTChanPlugin(string const &outDirectory_, BTagger const &bTagger_):
-    Plugin("SingleTop"),
+    AnalysisPlugin("SingleTop"),
     bTagger(bTagger_), outDirectory(outDirectory_)
 {
     // Make sure the directory path ends with a slash

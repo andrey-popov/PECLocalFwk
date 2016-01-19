@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <Plugin.hpp>
+#include <AnalysisPlugin.hpp>
 
 #include <PECReaderPlugin.hpp>
 
@@ -18,7 +18,7 @@
  * The plugin checks that an event contains at least a given number of jets above a given threshold
  * on transverse momentum.
  */
-class JetPtFilterPlugin: public Plugin
+class JetPtFilterPlugin: public AnalysisPlugin
 {
 public:
     /**
@@ -41,6 +41,7 @@ public:
      */
     void BeginRun(Dataset const &);
     
+private:
     /// Peforms filtering
     bool ProcessEvent();
     

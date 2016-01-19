@@ -9,13 +9,13 @@ using namespace std;
 
 
 PECReaderPlugin::PECReaderPlugin(unique_ptr<PECReaderConfig> &&config):
-    Plugin("Reader"),
+    ReaderPlugin("Reader"),
     reader(nullptr), readerConfig(move(config))
 {}
 
 
 PECReaderPlugin::PECReaderPlugin(PECReaderPlugin &&src):
-    Plugin(src),
+    ReaderPlugin(src),
     reader(src.reader),
     readerConfig(move(src.readerConfig))
 {
@@ -63,6 +63,21 @@ void PECReaderPlugin::EndRun()
     reader = nullptr;
 }
 
+PECReader const &PECReaderPlugin::operator*() const
+{
+    if (not reader)
+        throw runtime_error("PECReaderPlugin::operator*: No valid PECReader object is associated "
+         "to the plugin.");
+    
+    return *reader;
+}
+
+
+PECReader const *PECReaderPlugin::operator->() const
+{
+    return reader;
+}
+
 
 bool PECReaderPlugin::ProcessEvent()
 {
@@ -82,20 +97,4 @@ bool PECReaderPlugin::ProcessEvent()
     
     // If the control reaches this point, an event has been read successfully
     return true;
-}
-
-
-PECReader const &PECReaderPlugin::operator*() const
-{
-    if (not reader)
-        throw runtime_error("PECReaderPlugin::operator*: No valid PECReader object is associated "
-         "to the plugin.");
-    
-    return *reader;
-}
-
-
-PECReader const *PECReaderPlugin::operator->() const
-{
-    return reader;
 }

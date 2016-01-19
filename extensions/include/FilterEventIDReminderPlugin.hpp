@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <Plugin.hpp>
+#include <AnalysisPlugin.hpp>
 
 #include <PECReaderPlugin.hpp>
 #include <EventID.hpp>
@@ -25,7 +25,7 @@
  * configurable denominator. If this reminder is larger that the configurable maximal allowed value,
  * the event is rejected. If needed, this logic can be inverted by setting a dedicated flag.
  */
-class FilterEventIDReminderPlugin: public Plugin
+class FilterEventIDReminderPlugin: public AnalysisPlugin
 {
 public:
     /**
@@ -58,6 +58,7 @@ public:
      */
     void EndRun();
     
+private:
     /**
      * \brief Decides if the event should be kept or rejected based on its event number
      * 

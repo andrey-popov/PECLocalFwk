@@ -12,7 +12,7 @@ using namespace std;
 
 FilterEventIDPlugin::FilterEventIDPlugin(string const &name_, string const &eventIDsFileName,
  bool rejectKnownEvent_ /*= true*/):
-    Plugin(name_),
+    AnalysisPlugin(name_),
     rejectKnownEvent(rejectKnownEvent_),
     eventIDsCurFile(nullptr)
 {
@@ -98,7 +98,7 @@ FilterEventIDPlugin::FilterEventIDPlugin(string const &name_, string const &even
 
 FilterEventIDPlugin::FilterEventIDPlugin(string const &name_,
  map<string, vector<EventID>> const &eventIDsAllFiles_, bool rejectKnownEvent_):
-    Plugin(name_),
+    AnalysisPlugin(name_),
     rejectKnownEvent(rejectKnownEvent_),
     eventIDsAllFiles(eventIDsAllFiles_),
     eventIDsCurFile(nullptr)

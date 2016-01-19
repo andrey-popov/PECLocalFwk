@@ -12,7 +12,7 @@ using namespace std;
 
 FilterEventIDReminderPlugin::FilterEventIDReminderPlugin(string const &name_,
  unsigned maxReminder_, unsigned denominator_, bool isReversed_ /*=false*/):
-    Plugin(name_),
+    AnalysisPlugin(name_),
     maxReminder(maxReminder_), denominator(denominator_), isReversed(isReversed_)
 {}
 

@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <Plugin.hpp>
+#include <AnalysisPlugin.hpp>
 
 #include <PECReaderPlugin.hpp>
 
@@ -17,7 +17,7 @@
  * 
  * The plugin checks that the value of MET in an event is larger than the given threshold.
  */
-class MetFilterPlugin: public Plugin
+class MetFilterPlugin: public AnalysisPlugin
 {
 public:
     /**
@@ -40,6 +40,7 @@ public:
      */
     void BeginRun(Dataset const &);
     
+private:
     /// Peforms filtering
     bool ProcessEvent();
     

@@ -8,12 +8,12 @@ using namespace std;
 
 
 EventWeightPlugin::EventWeightPlugin(string const &name_):
-    Plugin(name_)
+    AnalysisPlugin(name_)
 {}
 
 
 EventWeightPlugin::EventWeightPlugin(EventWeightPlugin const &src) noexcept:
-    Plugin(src),
+    AnalysisPlugin(src),
     weights(src.weights)
 {}
 

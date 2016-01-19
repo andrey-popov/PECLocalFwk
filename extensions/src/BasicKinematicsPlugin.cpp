@@ -10,7 +10,7 @@ using namespace std;
 
 
 BasicKinematicsPlugin::BasicKinematicsPlugin(string const &outDirectory_):
-    Plugin("BasicKinematics"),
+    AnalysisPlugin("BasicKinematics"),
     outDirectory(outDirectory_)
 {
     // Make sure the directory path ends with a slash

@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <Plugin.hpp>
+#include <AnalysisPlugin.hpp>
 #include <PECReaderPlugin.hpp>
 
 #include <TFile.h>
@@ -22,7 +22,7 @@
  * The class is provided more as an illustration of the plugin concept rather than is expected to
  * be used in a real-life analysis.
  */
-class BasicKinematicsPlugin: public Plugin
+class BasicKinematicsPlugin: public AnalysisPlugin
 {
 public:
     /// Constructor
@@ -49,7 +49,8 @@ public:
      * Consult documentation of the overriden method for details.
      */
     void EndRun();
-    
+
+private:
     /**
      * \brief Processes the current event
      * 

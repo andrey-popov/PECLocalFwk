@@ -66,6 +66,7 @@ public:
      */
     virtual void BeginRun(Dataset const &);
     
+private:
     /**
      * \brief Calculates the event weight from the scale factors
      * 

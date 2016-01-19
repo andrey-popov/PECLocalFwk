@@ -5,12 +5,12 @@ using namespace std;
 
 
 BTaggerPlugin::BTaggerPlugin(string const &name_) noexcept:
-    Plugin(name_)
+    AnalysisPlugin(name_)
 {}
 
 
 BTaggerPlugin::BTaggerPlugin(BTaggerPlugin const &src) noexcept:
-    Plugin(src.name)
+    AnalysisPlugin(src.name)
 {}
 
 

@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <Plugin.hpp>
+#include <AnalysisPlugin.hpp>
 
 #include <PhysicsObjects.hpp>
 
@@ -20,13 +20,13 @@
  * example, b-tagged jets might be chosen randomly on per-event basis. Such functionality can be
  * implemented only in a plugin. This base class provides an interface for a b-tagging plugin.
  */
-class BTaggerPlugin: public virtual Plugin
+class BTaggerPlugin: public virtual AnalysisPlugin
 {
 public:
     /**
      * \brief Constructor
      * 
-     * Forwards the given name to the constructor of Plugin.
+     * Forwards the given name to the constructor of AnalysisPlugin.
      */
     BTaggerPlugin(std::string const &name) noexcept;
     
@@ -38,17 +38,18 @@ public:
      
 public:
     /**
-     * \brief A placeholder for a method to be called for each new event
-     * 
-     * In the default implementation it always returns true, i.e. no event is rejected.
-     */
-    virtual bool ProcessEvent();
-    
-    /**
      * \brief Checks if the given jet should be considered as b-tagged
      * 
      * The given reference must point to a jet in the collection returned by PECReader::GetJets(),
      * otherwise the behaviour of the overriden method is undefined.
      */
     virtual bool IsTagged(Jet const &jet) const = 0;
+    
+private:
+    /**
+     * \brief A placeholder for a method to be called for each new event
+     * 
+     * In the default implementation it always returns true, i.e. no event is rejected.
+     */
+    virtual bool ProcessEvent();
 };

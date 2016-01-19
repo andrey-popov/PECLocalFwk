@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <Plugin.hpp>
+#include <ReaderPlugin.hpp>
 #include <PECReader.hpp>
 #include <PECReaderConfig.hpp>
 
@@ -23,7 +23,7 @@
  * 
  * Consult documentation for the base class for a description of the interface.
  */
-class PECReaderPlugin: public Plugin
+class PECReaderPlugin: public ReaderPlugin
 {
 public:
     /**
@@ -66,14 +66,6 @@ public:
     void EndRun();
     
     /**
-     * \brief Called for each event
-     * 
-     * Consult documentation of the base class for a general objective of the method. In this
-     * derived class the method returns false if only there are no more events in the dataset.
-     */
-    bool ProcessEvent();
-    
-    /**
      * \brief Returns a reference to the underlying PECReader object
      * 
      * If no valied object is associated to the plugin, an exception is thrown.
@@ -82,7 +74,16 @@ public:
     
     /// Returns a pointer to the underlying PECReader object
     PECReader const *operator->() const;
-
+    
+private:
+    /**
+     * \brief Called for each event
+     * 
+     * Consult documentation of the base class for a general objective of the method. In this
+     * derived class the method returns false if only there are no more events in the dataset.
+     */
+    bool ProcessEvent();
+    
 private:
     /// A pointer to a current instance of class PECReader
     PECReader *reader;

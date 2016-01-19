@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <Plugin.hpp>
+#include <AnalysisPlugin.hpp>
 
 #include <PECReaderPlugin.hpp>
 #include <EventID.hpp>
@@ -25,7 +25,7 @@
  * 
  * \warning The class can filter atomic datasets only (i.e. ones that contain a single file).
  */
-class FilterEventIDPlugin: public Plugin
+class FilterEventIDPlugin: public AnalysisPlugin
 {
 public:
     /// Constructor
@@ -59,6 +59,7 @@ public:
      */
     void EndRun();
     
+private:
     /**
      * \brief Processes the current event
      * 

@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <Plugin.hpp>
+#include <AnalysisPlugin.hpp>
 
 #include <PECReaderPlugin.hpp>
 #include <BTagger.hpp>
@@ -24,7 +24,7 @@
  * 
  * The class is expected to serve as an illustration rather than to be used in a real-life analysis.
  */
-class SingleTopTChanPlugin: public Plugin
+class SingleTopTChanPlugin: public AnalysisPlugin
 {
 public:
     /// Constructor
@@ -52,6 +52,7 @@ public:
      */
     void EndRun();
     
+private:
     /**
      * \brief Processes the current event
      * 

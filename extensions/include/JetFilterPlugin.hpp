@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <Plugin.hpp>
+#include <AnalysisPlugin.hpp>
 
 #include <PECReaderPlugin.hpp>
 
@@ -21,7 +21,7 @@
  * selection is specified with the help of std::function and, therefore, can be very general. It
  * checks only jets in the PECReader::GetJets collection.
  */
-class JetFilterPlugin: public Plugin
+class JetFilterPlugin: public AnalysisPlugin
 {
 public:
     /**
@@ -58,6 +58,7 @@ public:
      */
     virtual void BeginRun(Dataset const &);
     
+private:
     /// Peforms filtering
     virtual bool ProcessEvent();
     

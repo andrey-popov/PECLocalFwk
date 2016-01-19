@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <Plugin.hpp>
+#include <AnalysisPlugin.hpp>
 
 #include <vector>
 
@@ -20,13 +20,13 @@
  * reasonable way. The content of the collection must follow a specification provided in the
  * documentation for method GetWeights.
  */
-class EventWeightPlugin: public virtual Plugin
+class EventWeightPlugin: public virtual AnalysisPlugin
 {
 public:
     /**
      * \brief Constructor
      * 
-     * Forwards the given name to the constructor of Plugin.
+     * Forwards the given name to the constructor of AnalysisPlugin.
      */
     EventWeightPlugin(std::string const &name);
     
