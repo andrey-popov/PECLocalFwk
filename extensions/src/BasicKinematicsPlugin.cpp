@@ -34,7 +34,7 @@ Plugin *BasicKinematicsPlugin::Clone() const
 void BasicKinematicsPlugin::BeginRun(Dataset const &dataset)
 {
     // Save pointer to the reader plugin
-    reader = dynamic_cast<PECReaderPlugin const *>(processor->GetPluginBefore("Reader", name));
+    reader = dynamic_cast<PECReaderPlugin const *>(master->GetPluginBefore("Reader", name));
     
     
     // Creation of ROOT objects is not thread-safe and must be protected

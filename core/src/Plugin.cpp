@@ -5,7 +5,7 @@ using namespace std;
 
 
 Plugin::Plugin(string const &name_):
-    name(name_), processor(nullptr)
+    name(name_), master(nullptr)
 {}
 
 
@@ -13,9 +13,9 @@ Plugin::~Plugin()
 {}
 
 
-void Plugin::SetParent(Processor const *processor_)
+void Plugin::SetMaster(Processor const *processor)
 {
-    processor = processor_;
+    master = processor;
 }
 
 

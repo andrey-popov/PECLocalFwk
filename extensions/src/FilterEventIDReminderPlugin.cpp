@@ -26,7 +26,7 @@ Plugin *FilterEventIDReminderPlugin::Clone() const
 void FilterEventIDReminderPlugin::BeginRun(Dataset const &)
 {
     // Save pointer to the reader plugin
-    reader = dynamic_cast<PECReaderPlugin const *>(processor->GetPluginBefore("Reader", name));
+    reader = dynamic_cast<PECReaderPlugin const *>(master->GetPluginBefore("Reader", name));
 }
 
 

@@ -74,9 +74,9 @@ void Processor::RegisterPlugin(Plugin *plugin)
 
 void Processor::operator()()
 {
-    // Set parent for the plugins
+    // Register this as the master of the owned plugins
     for (auto &p: path)
-        p->SetParent(this);
+        p->SetMaster(this);
     
     
     // Read datasets from the queue in the manager one by one

@@ -74,7 +74,7 @@ public:
      * The pointer is guaranteed to be initialized before the first call to BeginRun. It stays
      * valid for the lifetime of the object.
      */
-    void SetParent(Processor const *processor);
+    void SetMaster(Processor const *processor);
     
     /// Returns name of the plugin
     std::string const &GetName() const;
@@ -88,7 +88,7 @@ public:
      * same way this has been created and initialized.
      * 
      * The method is used when unique copies of plugins are created for each instance of class
-     * Processor. Clonning is performed before call to SetParent and before the first call to
+     * Processor. Clonning is performed before call to SetMaster and before the first call to
      * BeginRun.
      */
     virtual Plugin *Clone() const = 0;
@@ -139,6 +139,6 @@ protected:
     /// Unique name to identify the plugin
     std::string const name;
     
-    /// Parent Processor object
-    Processor const *processor;
+    /// Processor object that owns the plugin
+    Processor const *master;
 };

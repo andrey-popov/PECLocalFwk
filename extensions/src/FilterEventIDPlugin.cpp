@@ -121,7 +121,7 @@ void FilterEventIDPlugin::BeginRun(Dataset const &dataset)
     
     
     // Save pointer to the reader plugin
-    reader = dynamic_cast<PECReaderPlugin const *>(processor->GetPluginBefore("Reader", name));
+    reader = dynamic_cast<PECReaderPlugin const *>(master->GetPluginBefore("Reader", name));
     
     
     // Make a short-cut for list of event IDs for the new atomic dataset

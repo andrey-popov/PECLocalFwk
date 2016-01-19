@@ -72,7 +72,7 @@ Plugin *LeptonScaleFactorPlugin::Clone() const
 void LeptonScaleFactorPlugin::BeginRun(Dataset const &)
 {
     // Save the pointer to the reader plugin
-    reader = dynamic_cast<PECReaderPlugin const *>(processor->GetPluginBefore("Reader", name));
+    reader = dynamic_cast<PECReaderPlugin const *>(master->GetPluginBefore("Reader", name));
 }
 
 
