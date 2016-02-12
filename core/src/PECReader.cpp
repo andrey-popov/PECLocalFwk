@@ -27,7 +27,7 @@ PECReader::PECReader(Dataset const &dataset_):
     dataset(dataset_),
     isInitialized(false),
     triggerSelection(nullptr), eventSelection(nullptr),
-    bTagReweighter(nullptr), puReweighter(nullptr),
+    bTagReweighter(nullptr), puReweighter(nullptr), jercCorrector(nullptr),
     readHardParticles(false), readGenJets(false), readPartonShower(false),
     sourceFile(nullptr),
     eventIDTree(nullptr), triggerTree(nullptr), generalTree(nullptr)
