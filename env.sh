@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Development is now performed under GCC 5.3.0, ROOT 6.06.00, and Boost 1.60.0. However, these
+# versions are not installed in CERN infrastracture and because of this commands below are not
+# updated. The package should compile properly with these older versions, except for some warnings
+# about deprecation.
+
 
 function set_environment
 {
