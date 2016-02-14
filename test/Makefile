@@ -21,8 +21,7 @@ BOOST_LIB_POSTFIX =
 
 
 # Flags to control compilation and linking
-INCLUDE = -I$(PEC_FWK_INSTALL)/core/include -I$(PEC_FWK_INSTALL)/extensions/include \
- -I$(shell root-config --incdir)
+INCLUDE = -I$(PEC_FWK_INSTALL)/include -I$(shell root-config --incdir)
 OPFLAGS = -O2
 CFLAGS = -Wall -Wextra -std=c++14 $(INCLUDE) $(OPFLAGS)
 LDFLAGS = $(shell root-config --libs) -lTreePlayer -lHistPainter \
@@ -38,11 +37,11 @@ LDFLAGS = $(shell root-config --libs) -lTreePlayer -lHistPainter \
 all: minimal multithread
 
 
-minimal: minimal.cpp $(PEC_FWK_INSTALL)/lib/libpecfwk.a
+minimal: minimal.cpp
 	@ g++ $< $(CFLAGS) $(LDFLAGS) -o $@
 
 
-multithread: multithread.cpp $(PEC_FWK_INSTALL)/lib/libpecfwk.a
+multithread: multithread.cpp
 	@ g++ $< $(CFLAGS) $(LDFLAGS) -o $@
 
 

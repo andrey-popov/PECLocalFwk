@@ -22,18 +22,18 @@ BOOST_LIB_POSTFIX =
 
 # Flags to control compilation and linking
 CC = g++
-INCLUDE = -Icore/include -Iextensions/include -I./ -I$(shell root-config --incdir) -I$(BOOST_INCLUDE)
+INCLUDE = -Iinclude -I. -I$(shell root-config --incdir) -I$(BOOST_INCLUDE)
 OPFLAGS = -O2
 CFLAGS = -Wall -Wextra -Wno-unused-function -fPIC -std=c++14 $(INCLUDE) $(OPFLAGS)
 
 
 # Define where the object files should be located
-MODULE_PATHS = core extensions $(shell ls -d external/*)
+SOURCE_PATHS = src/core src/extensions $(shell for p in `ls -d external/*`; do echo $$p/src; done)
 OBJPATH = obj
-OBJECTS = $(shell for d in $(MODULE_PATHS); \
- do  for f in `ls $$d/src/ | grep .cpp`; do echo $(OBJPATH)/`basename $$f .cpp`.o; done; done)
+OBJECTS = $(shell for d in $(SOURCE_PATHS); \
+ do  for f in `ls $$d/ | grep .cpp`; do echo $(OBJPATH)/`basename $$f .cpp`.o; done; done)
 
-vpath %.cpp $(addsuffix /src/,$(MODULE_PATHS))
+vpath %.cpp $(SOURCE_PATHS)
 vpath %.o $(OBJPATH)
 
 

@@ -1,11 +1,11 @@
-#include <GenericEventSelection.hpp>
-#include <Dataset.hpp>
-#include <PECReader.hpp>
-#include <BTagger.hpp>
-#include <BTagEfficiencies.hpp>
-#include <BTagScaleFactors.hpp>
-#include <WeightBTag.hpp>
-#include <TriggerSelection.hpp>
+#include <PECFwk/core/Dataset.hpp>
+#include <PECFwk/core/PECReader.hpp>
+#include <PECFwk/core/BTagger.hpp>
+#include <PECFwk/extensions/GenericEventSelection.hpp>
+#include <PECFwk/extensions/BTagEfficiencies.hpp>
+#include <PECFwk/extensions/BTagScaleFactors.hpp>
+#include <PECFwk/extensions/WeightBTag.hpp>
+#include <PECFwk/extensions/TriggerSelection.hpp>
 
 #include <iostream>
 #include <memory>
