@@ -1,4 +1,4 @@
-# Check if an installation path of PECFwk is provided
+# Check if the installation path of PECFwk is provided
 ifeq ($(PEC_FWK_INSTALL), )
   $(error Mandatory environment variable PEC_FWK_INSTALL is not set)
 endif
@@ -14,54 +14,37 @@ ifeq ($(BOOST_ROOT), )
 endif
 
 
-# Setup variables to use Boost libraries
-BOOST_INCLUDE = $(BOOST_ROOT)/include
-BOOST_LIB = $(BOOST_ROOT)/lib
-BOOST_LIB_POSTFIX = 
+# Include standard definitions
+include Makefile.inc
 
 
-# Flags to control compilation and linking
-CC = g++
-INCLUDE = -Iinclude -I. -I$(shell root-config --incdir) -I$(BOOST_INCLUDE)
-OPFLAGS = -O2
-CFLAGS = -Wall -Wextra -Wno-unused-function -fPIC -std=c++14 $(INCLUDE) $(OPFLAGS)
-
-
-# Define where the object files should be located
-SOURCE_PATHS = src/core src/extensions $(shell for p in `ls -d external/*`; do echo $$p/src; done)
-OBJPATH = obj
-OBJECTS = $(shell for d in $(SOURCE_PATHS); \
- do  for f in `ls $$d/ | grep .cpp`; do echo $(OBJPATH)/`basename $$f .cpp`.o; done; done)
-
-vpath %.cpp $(SOURCE_PATHS)
-vpath %.o $(OBJPATH)
+# Information about individual modules in the project
+MODULES_PATH = modules
+MODULES = core extensions PECReader
+MODULE_LIBS = $(shell for m in $(MODULES); do echo $(MODULES_PATH)/$$m/lib/$$m.a; done)
 
 
 # Define phony targets
-.PHONY: clean
+.PHONY: clean $(MODULES)
 
 
-# The default rule
+# Building rules
 all: libpecfwk.so unpack
 
-
-libpecfwk.so: $(OBJECTS)
+libpecfwk.so: $(MODULES)
 	@ mkdir -p lib
 	@ rm -f lib/$@
-	@ $(CC) -shared -Wl,-soname,$@.4 -o $@.4.0 $+
+	@ $(CC) -shared -Wl,-soname,$@.4 -o $@.4.0 \
+		-Wl,--whole-archive $(MODULE_LIBS) -Wl,--no-whole-archive
 	@ mv $@.4.0 lib/
 	@ ln -sf $@.4.0 lib/$@.4; ln -sf $@.4 lib/$@
-	
 
-$(OBJPATH)/%.o: %.cpp
-	@ mkdir -p $(OBJPATH)
-	@ $(CC) $(CFLAGS) -c $< -o $@
-
+$(MODULES):
+	@ +make -s -C $(MODULES_PATH)/$@
 
 unpack:
 	@ if [ `ls data/JERC/ | grep AK5PFchs.txt | wc -l` -eq 0 ]; \
 	 then tar -xzf data/JERC/Summer13_V5_AK5PFchs.tar.gz -C data/JERC/; fi
 
-
 clean:
-	@ rm -f $(OBJPATH)/*
+	@ for m in $(MODULES); do rm -rf $(MODULES_PATH)/$$m/obj; rm -rf $(MODULES_PATH)/$$m/lib; done
