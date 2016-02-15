@@ -3,10 +3,10 @@
 // Author: Konstantinos Kousouris, Philipp Schieferdecker
 // Email:  kkousour@fnal.gov, philipp.schieferdecker@cern.ch
 
-#include "external/JEC/include/FactorizedJetCorrector.hpp"
-#include "external/JEC/include/SimpleJetCorrector.hpp"
-#include "external/JEC/include/JetCorrectorParameters.hpp"
-#include "external/JEC/src/Utilities.cpp"
+#include <PECFwk/external/JERC/FactorizedJetCorrector.hpp>
+#include <PECFwk/external/JERC/SimpleJetCorrector.hpp>
+#include <PECFwk/external/JERC/JetCorrectorParameters.hpp>
+#include "Utilities.cpp"
 #include "Math/PtEtaPhiE4D.h"
 #include "Math/Vector3D.h"
 #include "Math/LorentzVector.h"

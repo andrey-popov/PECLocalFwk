@@ -10,8 +10,8 @@
 
 #include <PECFwk/extensions/JetResolutionFactor.hpp>
 
-#include <external/JEC/include/FactorizedJetCorrector.hpp>
-#include <external/JEC/include/JetCorrectionUncertainty.hpp>
+#include <PECFwk/external/JERC/FactorizedJetCorrector.hpp>
+#include <PECFwk/external/JERC/JetCorrectionUncertainty.hpp>
 
 #include <string>
 #include <vector>

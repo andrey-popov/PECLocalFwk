@@ -1,6 +1,6 @@
-#include "external/JEC/include/SimpleJetCorrector.hpp"
-#include "external/JEC/include/JetCorrectorParameters.hpp"
-#include "external/JEC/src/Utilities.cpp"
+#include <PECFwk/external/JERC/SimpleJetCorrector.hpp>
+#include <PECFwk/external/JERC/JetCorrectorParameters.hpp>
+#include "Utilities.cpp"
 #include <iostream>
 #include <sstream>
 #include <cmath>

@@ -4,8 +4,8 @@
 //
 // Generic parameters for Jet corrections
 //
-#include "external/JEC/include/JetCorrectorParameters.hpp"
-#include "external/JEC/src/Utilities.cpp"
+#include <PECFwk/external/JERC/JetCorrectorParameters.hpp>
+#include "Utilities.cpp"
 #include <iostream>
 #include <iomanip>
 #include <fstream>

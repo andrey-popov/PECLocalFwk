@@ -3,7 +3,7 @@
 #include <PECFwk/core/FileInPath.hpp>
 #include <PECFwk/core/ROOTLock.hpp>
 
-#include <external/JEC/include/JetCorrectorParameters.hpp>
+#include <PECFwk/external/JERC/JetCorrectorParameters.hpp>
 
 #include <stdexcept>
 

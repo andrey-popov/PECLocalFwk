@@ -19,9 +19,12 @@ include Makefile.inc
 
 
 # Information about individual modules in the project
-MODULES_PATH = modules
-MODULES = core extensions PECReader
-MODULE_LIBS = $(shell for m in $(MODULES); do echo $(MODULES_PATH)/$$m/lib/$$m.a; done)
+MODULES_PATH := modules
+MODULES := core extensions PECReader
+MODULE_LIBS := $(shell for m in $(MODULES); do echo $(MODULES_PATH)/$$m/lib/$$m.a; done)
+
+MODULES += external/JERC
+MODULE_LIBS += $(MODULES_PATH)/external/JERC/lib/JERC.a
 
 
 # Define phony targets

@@ -1,5 +1,5 @@
-#include "external/JEC/include/SimpleJetCorrectionUncertainty.hpp"
-#include "external/JEC/include/JetCorrectorParameters.hpp"
+#include <PECFwk/external/JERC/SimpleJetCorrectionUncertainty.hpp>
+#include <PECFwk/external/JERC/JetCorrectorParameters.hpp>
 //#include "FWCore/Utilities/interface/Exception.h"
 #include <vector>
 #include <string>
