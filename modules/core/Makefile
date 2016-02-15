@@ -3,12 +3,12 @@ include $(PEC_FWK_INSTALL)/Makefile.inc
 
 
 # Paths to source and object files
-SOURCE_PATH = src
-OBJ_PATH = obj
-OBJECTS = $(shell for f in `find $(SOURCE_PATH) -regex ".*\.cpp"`; \
+SOURCE_PATH := src
+OBJ_PATH := obj
+OBJECTS := $(shell for f in `find $(SOURCE_PATH) -regex ".*\.cpp"`; \
 	do echo $(OBJ_PATH)/`basename $$f .cpp`.o; done)
-MODULE_NAME = $(shell basename `pwd`)
-LIB_PATH = lib
+MODULE_NAME := $(shell basename `pwd`)
+LIB_PATH := lib
 
 
 # Building rules
