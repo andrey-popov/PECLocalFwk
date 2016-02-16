@@ -11,6 +11,9 @@ MODULE_NAME := $(shell basename `pwd`)
 LIB_PATH := lib
 
 
+.PHONY: clean
+
+
 # Building rules
 all: $(LIB_PATH)/$(MODULE_NAME).a
 
@@ -22,3 +25,6 @@ $(LIB_PATH)/$(MODULE_NAME).a: $(OBJECTS)
 $(OBJ_PATH)/%.o: $(SOURCE_PATH)/%.cpp
 	@ mkdir -p $(OBJ_PATH)
 	@ $(CC) $(CFLAGS) -c $< -o $@
+
+clean:
+	@ rm -rf $(OBJ_PATH) $(LIB_PATH)

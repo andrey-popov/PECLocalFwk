@@ -50,4 +50,4 @@ unpack:
 	 then tar -xzf data/JERC/Summer13_V5_AK5PFchs.tar.gz -C data/JERC/; fi
 
 clean:
-	@ for m in $(MODULES); do rm -rf $(MODULES_PATH)/$$m/obj; rm -rf $(MODULES_PATH)/$$m/lib; done
+	@ for m in $(MODULES); do make -s -C $(MODULES_PATH)/$$m clean; done

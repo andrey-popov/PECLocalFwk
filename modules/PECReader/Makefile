@@ -11,6 +11,9 @@ MODULE_NAME := $(shell basename `pwd`)
 LIB_PATH := lib
 
 
+.PHONY: clean
+
+
 # Building rules
 all: $(LIB_PATH)/$(MODULE_NAME).a
 
@@ -25,3 +28,6 @@ $(OBJ_PATH)/%.o: $(SOURCE_PATH)/%.cpp
 
 $(SOURCE_PATH)/classes_rflx.cpp: $(SOURCE_PATH)/classes.h $(SOURCE_PATH)/classes_def.xml
 	@ genreflex classes.h -s classes_def.xml -I$(PEC_FWK_INSTALL)/include/
+
+clean:
+	@ rm -rf $(OBJ_PATH) $(LIB_PATH)
