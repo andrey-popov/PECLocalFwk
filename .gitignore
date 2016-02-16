@@ -5,12 +5,16 @@
 
 # Compiled Dynamic libraries
 *.so
+*.so.*
 *.dylib
 
 # Compiled Static libraries
 *.lai
 *.la
 *.a
+
+# ROOT dictionaries
+*.pcm
 
 # Libraries by location
 lib/*

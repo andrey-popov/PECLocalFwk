@@ -19,7 +19,7 @@ INCLUDE = -I$(PEC_FWK_INSTALL)/include -I$(shell root-config --incdir)
 OPFLAGS = -O2
 CFLAGS = -Wall -Wextra -std=c++14 $(INCLUDE) $(OPFLAGS)
 LDFLAGS = $(shell root-config --libs) -lTreePlayer -lHistPainter \
- -L$(PEC_FWK_INSTALL)/lib -lPECFwk -Wl,-rpath=$(PEC_FWK_INSTALL)/lib \
+ -L$(PEC_FWK_INSTALL)/lib -lPECFwk -lPECReader -Wl,-rpath=$(PEC_FWK_INSTALL)/lib \
  -L$(BOOST_ROOT)/lib -lboost_filesystem -Wl,-rpath=$(BOOST_ROOT)/lib
 
 

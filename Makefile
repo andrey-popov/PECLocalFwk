@@ -60,6 +60,7 @@ link-libs: $(MODULES_SHARED)
 		do for f in `find $(PEC_FWK_INSTALL)/$(MODULES_DIR)/$$m/lib/ -regex ".*/lib.*\.so.*$$"`; \
 			do ln -sf $$f .; done \
 		done
+	@ cd $(LIB_DIR); ln -sf $(wildcard $(PEC_FWK_INSTALL)/$(MODULES_DIR)/PECReader/lib/*.pcm) .
 
 $(MODULES):
 	@ +make -s -C $(MODULES_DIR)/$@

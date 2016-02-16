@@ -52,5 +52,8 @@ namespace pec
         
         /// Event number within the run
         ULong64_t event;
+        
+        
+        ClassDef(EventID, 1);
     };
 }
