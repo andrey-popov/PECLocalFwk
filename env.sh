@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Development is now performed under GCC 5.3.0, ROOT 6.06.00, and Boost 1.60.0. However, these
-# versions are not installed in CERN infrastracture and because of this commands below are not
-# updated. The package should compile properly with these older versions, except for some warnings
-# about deprecation.
+# Development is now performed with Boost 1.60.0, which is not installed in CERN infrastructure,
+# however. Because of this, the relevant command below is not updated. It should be possible to
+# build the package properly using the older version specified below, except for some warnings
+# during compilation.
 
 
 function set_environment
@@ -11,14 +11,14 @@ function set_environment
     case $1 in
         "-r")
         
-        gcc_version="5.2.0"
+        gcc_version="4.9.3"
         source /afs/cern.ch/sw/lcg/external/gcc/$gcc_version/x86_64-slc6/setup.sh ""
         
         # Export symbol GCC_ROOT. This is needed because otherwise the Boost setup script will set
         # the environment for whatever default version of GCC is specified among its dependencies
         export GCC_ROOT=${LCG_gcc_home}
         
-        root_version="6.04.12"
+        root_version="6.06.00"
         source /afs/cern.ch/sw/lcg/app/releases/ROOT/$root_version/x86_64-slc6-gcc49-opt/root/bin/thisroot.sh
         
         #echo "GCC $gcc_version and ROOT $root_version have been configured"

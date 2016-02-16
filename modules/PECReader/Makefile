@@ -14,7 +14,7 @@ LIB_PATH := lib
 # Building rules
 all: $(LIB_PATH)/$(MODULE_NAME).a
 
-$(LIB_PATH)/$(MODULE_NAME).a: $(OBJECTS) $(OBJ_PATH)/classes_rflx.o
+$(LIB_PATH)/$(MODULE_NAME).a: $(OBJECTS)
 	@ mkdir -p $(LIB_PATH)
 	@ rm -f $@
 	@ ar -cq $@ $+
