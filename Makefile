@@ -18,29 +18,48 @@ endif
 include Makefile.inc
 
 
-# Information about individual modules in the project
+# Information about individual modules in the project. Some of them are built into static libraries
+# that are then combined in a shared library. But some are built into independent shared libraries.
 MODULES_DIR := modules
-MODULES := core extensions PECReader
-MODULE_LIBS := $(shell for m in $(MODULES); do echo $(MODULES_DIR)/$$m/lib/$$m.a; done)
 
-MODULES += external/JERC
-MODULE_LIBS += $(MODULES_DIR)/external/JERC/lib/JERC.a
+MODULES_STATIC := core extensions
+MODULE_STATIC_LIBS := $(shell for m in $(MODULES_STATIC); \
+	do echo $(MODULES_DIR)/$$m/lib/$$m.a; done)
+MODULES_STATIC += external/JERC
+MODULE_STATIC_LIBS += $(MODULES_DIR)/external/JERC/lib/JERC.a
+
+MODULES_SHARED := PECReader
+MODULE_SHARED_LIBS := $(shell for m in $(MODULES_SHARED); \
+	do echo $(MODULES_DIR)/$$m/lib/lib$$m.so; done)
+
+MODULES := $(MODULES_STATIC) $(MODULES_SHARED)
+
+LIB_DIR := lib
+# Library built from modules that do not produce shared libraries on their own
+MAIN_LIB_NAME := libPECFwk.so
+MAIN_LIB_PATH := $(LIB_DIR)/$(MAIN_LIB_NAME)
 
 
 # Define phony targets
-.PHONY: clean $(MODULES)
+.PHONY: $(MODULES) link-libs unpack clean
 
 
 # Building rules
-all: libpecfwk.so unpack
+all: $(MAIN_LIB_PATH) link-libs unpack
 
-libpecfwk.so: $(MODULES)
-	@ mkdir -p lib
-	@ rm -f lib/$@
-	@ $(CC) -shared -Wl,-soname,$@.4 -o $@.4.0 \
-		-Wl,--whole-archive $(MODULE_LIBS) -Wl,--no-whole-archive
-	@ mv $@.4.0 lib/
-	@ ln -sf $@.4.0 lib/$@.4; ln -sf $@.4 lib/$@
+$(MAIN_LIB_PATH): $(MODULES_STATIC)
+	@ mkdir -p $(LIB_DIR)
+	@ rm -f $@
+	@ $(CC) -shared -Wl,-soname,$(MAIN_LIB_NAME).4 -o $@.4.0 \
+		-Wl,--whole-archive $(MODULE_STATIC_LIBS) -Wl,--no-whole-archive
+	@ ln -sf $(MAIN_LIB_NAME).4.0 $@.4; ln -sf $(MAIN_LIB_NAME).4 $@
+
+link-libs: $(MODULES_SHARED)
+	@ mkdir -p $(LIB_DIR)
+	@ cd $(LIB_DIR); for m in $(MODULES_SHARED); \
+		do for f in `find $(PEC_FWK_INSTALL)/$(MODULES_DIR)/$$m/lib/ -regex ".*/lib.*\.so.*$$"`; \
+			do ln -sf $$f .; done \
+		done
 
 $(MODULES):
 	@ +make -s -C $(MODULES_DIR)/$@
