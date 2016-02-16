@@ -19,12 +19,12 @@ include Makefile.inc
 
 
 # Information about individual modules in the project
-MODULES_PATH := modules
+MODULES_DIR := modules
 MODULES := core extensions PECReader
-MODULE_LIBS := $(shell for m in $(MODULES); do echo $(MODULES_PATH)/$$m/lib/$$m.a; done)
+MODULE_LIBS := $(shell for m in $(MODULES); do echo $(MODULES_DIR)/$$m/lib/$$m.a; done)
 
 MODULES += external/JERC
-MODULE_LIBS += $(MODULES_PATH)/external/JERC/lib/JERC.a
+MODULE_LIBS += $(MODULES_DIR)/external/JERC/lib/JERC.a
 
 
 # Define phony targets
@@ -43,11 +43,11 @@ libpecfwk.so: $(MODULES)
 	@ ln -sf $@.4.0 lib/$@.4; ln -sf $@.4 lib/$@
 
 $(MODULES):
-	@ +make -s -C $(MODULES_PATH)/$@
+	@ +make -s -C $(MODULES_DIR)/$@
 
 unpack:
 	@ if [ `ls data/JERC/ | grep AK5PFchs.txt | wc -l` -eq 0 ]; \
 	 then tar -xzf data/JERC/Summer13_V5_AK5PFchs.tar.gz -C data/JERC/; fi
 
 clean:
-	@ for m in $(MODULES); do make -s -C $(MODULES_PATH)/$$m clean; done
+	@ for m in $(MODULES); do make -s -C $(MODULES_DIR)/$$m clean; done

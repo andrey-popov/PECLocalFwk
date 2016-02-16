@@ -3,22 +3,31 @@ include $(PEC_FWK_INSTALL)/Makefile.inc
 
 
 # Paths to source and object files
-SOURCE_PATH := src
-OBJ_PATH := obj
-OBJECTS := $(shell for f in `find $(SOURCE_PATH) -regex ".*\.cpp"`; \
-	do echo $(OBJ_PATH)/`basename $$f .cpp`.o; done)
+SOURCE_DIR := src
+OBJ_DIR := obj
+OBJECTS := $(shell for f in `find $(SOURCE_DIR) -regex ".*\.cpp"`; \
+	do echo $(OBJ_DIR)/`basename $$f .cpp`.o; done)
 MODULE_NAME := $(shell basename `pwd`)
-LIB_PATH := lib
+LIB_DIR := lib
+LIB_PATH := $(LIB_DIR)/$(MODULE_NAME).a
+
+vpath %.cpp $(SOURCE_DIR)
+
+
+.PHONY: clean
 
 
 # Building rules
-all: $(LIB_PATH)/$(MODULE_NAME).a
+all: $(LIB_PATH)
 
-$(LIB_PATH)/$(MODULE_NAME).a: $(OBJECTS)
-	@ mkdir -p $(LIB_PATH)
+$(LIB_PATH): $(OBJECTS)
+	@ mkdir -p $(LIB_DIR)
 	@ rm -f $@
 	@ ar -cq $@ $+
 
-$(OBJ_PATH)/%.o: $(SOURCE_PATH)/%.cpp
-	@ mkdir -p $(OBJ_PATH)
+$(OBJ_DIR)/%.o: $(SOURCE_DIR)/%.cpp
+	@ mkdir -p $(OBJ_DIR)
 	@ $(CC) $(CFLAGS) -c $< -o $@
+
+clean:
+	@ rm -rf $(OBJ_DIR) $(LIB_DIR)

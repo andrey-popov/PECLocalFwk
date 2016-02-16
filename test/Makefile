@@ -14,19 +14,13 @@ ifeq ($(BOOST_ROOT), )
 endif
 
 
-# Setup variables to use Boost libraries
-BOOST_INCLUDE = $(BOOST_ROOT)/include
-BOOST_LIB = $(BOOST_ROOT)/lib
-BOOST_LIB_POSTFIX = 
-
-
 # Flags to control compilation and linking
 INCLUDE = -I$(PEC_FWK_INSTALL)/include -I$(shell root-config --incdir)
 OPFLAGS = -O2
 CFLAGS = -Wall -Wextra -std=c++14 $(INCLUDE) $(OPFLAGS)
 LDFLAGS = $(shell root-config --libs) -lTreePlayer -lHistPainter \
  -L$(PEC_FWK_INSTALL)/lib -lpecfwk -Wl,-rpath=$(PEC_FWK_INSTALL)/lib \
- -L$(BOOST_LIB) -lboost_filesystem$(BOOST_LIB_POSTFIX) -Wl,-rpath=$(BOOST_LIB)
+ -L$(BOOST_ROOT)/lib -lboost_filesystem -Wl,-rpath=$(BOOST_ROOT)/lib
 
 
 # Define the phony targets
