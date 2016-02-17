@@ -47,18 +47,18 @@ public:
     
 public:
     /**
-     * \brief Creates a newly configured clone
-     * 
-     * Implemented from Plugin.
-     */
-    virtual Plugin *Clone() const override;
-    
-    /**
      * \brief Performs initialization for a new dataset
      * 
      * Reimplemented from Plugin.
      */
     virtual void BeginRun(Dataset const &dataset) override;
+    
+    /**
+     * \brief Creates a newly configured clone
+     * 
+     * Implemented from Plugin.
+     */
+    virtual Plugin *Clone() const override;
     
     /// Returns ID of the current event
     EventID const &GetEventID() const;
@@ -71,7 +71,7 @@ public:
      * in place yet, but in future the method could keep a list of requested trees and flag report
      * an error if one of the trees is requested for the second time.
      */
-    std::unique_ptr<TTree> GetTree(std::string const &name);
+    std::unique_ptr<TTree> GetTree(std::string const &name) const;
     
 private:
     /**

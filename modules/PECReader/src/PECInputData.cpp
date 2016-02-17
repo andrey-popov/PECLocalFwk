@@ -23,12 +23,6 @@ PECInputData::~PECInputData()
 {}
 
 
-Plugin *PECInputData::Clone() const
-{
-    return new PECInputData(name);
-}
-
-
 void PECInputData::BeginRun(Dataset const &dataset)
 {
     // Copy information about files in the dataset and set up the iterator
@@ -47,13 +41,19 @@ void PECInputData::BeginRun(Dataset const &dataset)
 }
 
 
+Plugin *PECInputData::Clone() const
+{
+    return new PECInputData(GetName());
+}
+
+
 EventID const &PECInputData::GetEventID() const
 {
     return eventID;
 }
 
 
-std::unique_ptr<TTree> PECInputData::GetTree(std::string const &name)
+std::unique_ptr<TTree> PECInputData::GetTree(std::string const &name) const
 {
     // Make sure that the requested tree is not the event ID tree which is read by this plugin
     if (name == "pecEventID/EventID")

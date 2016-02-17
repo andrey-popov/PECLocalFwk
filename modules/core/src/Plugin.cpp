@@ -1,5 +1,7 @@
 #include <PECFwk/core/Plugin.hpp>
 
+#include <stdexcept>
+
 
 using namespace std;
 
@@ -16,6 +18,17 @@ Plugin::~Plugin()
 void Plugin::SetMaster(Processor const *processor)
 {
     master = processor;
+}
+
+
+Processor const &Plugin::GetMaster() const
+{
+    if (not master)
+    {
+        throw logic_error("Plugin::GetMaster: The plugin does not have a master.");
+    }
+    
+    return *master;
 }
 
 

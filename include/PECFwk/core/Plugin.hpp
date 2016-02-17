@@ -76,6 +76,14 @@ public:
      */
     void SetMaster(Processor const *processor);
     
+    /**
+     * \brief Returns a reference to the master
+     * 
+     * Will throw an exception if the pointer to master is null. Using this method is the preferred
+     * way to access the master.
+     */
+    Processor const &GetMaster() const;
+    
     /// Returns name of the plugin
     std::string const &GetName() const;
     
@@ -136,9 +144,17 @@ private:
     virtual EventOutcome ReinterpretDecision(bool decision) const = 0;
     
 protected:
-    /// Unique name to identify the plugin
+    /**
+     * \brief Unique name to identify the plugin
+     * 
+     * \todo Make this attribute private.
+     */
     std::string const name;
     
-    /// Processor object that owns the plugin
+    /**
+     * \brief Processor object that owns the plugin
+     * 
+     * \todo Make this attribute private.
+     */
     Processor const *master;
 };
