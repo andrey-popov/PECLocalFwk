@@ -20,6 +20,12 @@
  * The plugin opens files in a dataset in PEC format. It only reads the tree with event ID,
  * exploiting it also to judge when there are no more events in an input file. Other plugins can
  * request it to extract trees from the file.
+ * 
+ * Currently the framework does not provide an elegant way to notify other plugins when a new file
+ * is opened. This is a problem because dependant plugins much update their pointers to trees and
+ * set up branch addresses whenever a new input file is opened. However, the framework typically
+ * operates with atomic datasets, so this should not be a large problem. For the time being,
+ * reading of multiple files in a dataset is disabled; only the first file will be read.
  */
 class PECInputData: public ReaderPlugin
 {

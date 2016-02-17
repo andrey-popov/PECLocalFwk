@@ -1,5 +1,6 @@
 #include <PECFwk/PECReader/PECInputData.hpp>
 
+#include <PECFwk/core/Logger.hpp>
 #include <PECFwk/core/ROOTLock.hpp>
 
 #include <algorithm>
@@ -7,6 +8,7 @@
 #include <stdexcept>
 
 
+using namespace logging;
 using namespace std::string_literals;
 
 
@@ -31,8 +33,17 @@ void PECInputData::BeginRun(Dataset const &dataset)
 {
     // Copy information about files in the dataset and set up the iterator
     auto const &srcFiles = dataset.GetFiles();
-    std::copy(srcFiles.begin(), srcFiles.end(), std::back_inserter(inputFiles));
+    // std::copy(srcFiles.begin(), srcFiles.end(), std::back_inserter(inputFiles));
+    inputFiles.emplace_back(srcFiles.front());
     nextFileIt = inputFiles.begin();
+    
+    // Currently the class only supports datasets with a single file (see documentation for the
+    //class). This is why only first file is copied to the list of input files. Print a warning
+    //about this
+    if (srcFiles.size() > 1)
+        logger << "Error in PECInputData: Currently the class only supports datasets " <<
+         "containing a single file, but the given dataset consists of " << srcFiles.size() <<
+         " files. Only first file (\"" << nextFileIt->name << "\") will be processed." << eom;
 }
 
 
