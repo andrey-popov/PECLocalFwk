@@ -57,5 +57,5 @@ $(SOURCE_DIR)/$(DICT_CPP_NAME).cpp: $(SOURCE_DIR)/classes.h $(SOURCE_DIR)/classe
     # [1] http://stackoverflow.com/questions/2973445/gnu-makefile-rule-generating-a-few-targets-from-a-single-source-file
 
 clean:
-	@ rm -rf $(OBJ_DIR) $(LIB_DIR)
+	@ rm -rf $(OBJ_DIR)
 	@ rm -f $(SOURCE_DIR)/dictPEC.cpp $(wildcard $(SOURCE_DIR)/*_rdict.pcm)
