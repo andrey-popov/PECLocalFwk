@@ -4,15 +4,14 @@
 
 #include <algorithm>
 #include <iterator>
-/**/#include <iostream>
 #include <stdexcept>
 
 
 using namespace std::string_literals;
 
 
-PECInputData::PECInputData(std::string const name /*= ""*/):
-    ReaderPlugin((name == "") ? "InputData" : name),
+PECInputData::PECInputData(std::string const name):
+    ReaderPlugin(name),
     nextFileIt(inputFiles.end()),
     nEvents(0), nextEvent(0)
 {}
@@ -37,14 +36,22 @@ void PECInputData::BeginRun(Dataset const &dataset)
 }
 
 
-void PECInputData::EndRun()
-{}
-
-
-TTree *PECInputData::GetTree(std::string const &name)
+EventID const &PECInputData::GetEventID() const
 {
+    return eventID;
+}
+
+
+std::unique_ptr<TTree> PECInputData::GetTree(std::string const &name)
+{
+    // Make sure that the requested tree is not the event ID tree which is read by this plugin
+    if (name == "pecEventID/EventID")
+        throw std::runtime_error("PECInputData::GetTree: Requested to read the tree with event "
+         "ID, which is not allowed since the tree is read by the PECInputData plugin.");
+    
+    
     ROOTLock::Lock();
-    TTree *tree = dynamic_cast<TTree *>(curInputFile->Get(name.c_str()));
+    std::unique_ptr<TTree> tree(dynamic_cast<TTree *>(curInputFile->Get(name.c_str())));
     ROOTLock::Unlock();
     
     return tree;
@@ -116,8 +123,8 @@ bool PECInputData::ProcessEvent()
     eventIDTree->GetEntry(nextEvent);
     ++nextEvent;
     
-    /**/std::cout << "Event ID: " << bfEventID.RunNumber() << ":" <<
-     bfEventID.LumiSectionNumber() << ":" << bfEventID.EventNumber() << std::endl;
+    // Translate the ID from the storage format to the standard format of the framework
+    eventID.Set(bfEventID.RunNumber(), bfEventID.LumiSectionNumber(), bfEventID.EventNumber());
     
     
     return true;

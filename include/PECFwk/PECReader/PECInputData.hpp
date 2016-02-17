@@ -2,6 +2,7 @@
 
 #include <PECFwk/core/ReaderPlugin.hpp>
 
+#include <PECFwk/core/EventID.hpp>
 #include <PECFwk/core/Dataset.hpp>
 #include <PECFwk/PECReader/EventID.hpp>
 
@@ -11,18 +12,20 @@
 #include <memory>
 #include <string>
 
+
 /**
  * \class PECInputData
- * \brief Opens and owns an input file in PEC format
+ * \brief Opens files in PEC format
  * 
- * 
+ * The plugin opens files in a dataset in PEC format. It only reads the tree with event ID,
+ * exploiting it also to judge when there are no more events in an input file. Other plugins can
+ * request it to extract trees from the file.
  */
 class PECInputData: public ReaderPlugin
 {
 public:
-    // PECInputData() = delete;
-    
-    PECInputData(std::string const name = "");
+    /// Creates a new plugin with the given name
+    PECInputData(std::string const name = "InputData");
     
     /// The copy constructor is deleted
     PECInputData(PECInputData const &) = delete;
@@ -37,16 +40,49 @@ public:
     virtual ~PECInputData();
     
 public:
+    /**
+     * \brief Creates a newly configured clone
+     * 
+     * Implemented from Plugin.
+     */
     virtual Plugin *Clone() const override;
     
+    /**
+     * \brief Performs initialization for a new dataset
+     * 
+     * Reimplemented from Plugin.
+     */
     virtual void BeginRun(Dataset const &dataset) override;
     
-    virtual void EndRun() override;
+    /// Returns ID of the current event
+    EventID const &GetEventID() const;
     
-    TTree *GetTree(std::string const &name);
+    /**
+     * \brief Reads the tree with the given name from the current file
+     * 
+     * Since event ID is read by this class, the method does not allow to read the corresponding
+     * tree again and will throw an exception is an attempt of this. This safety check is not
+     * in place yet, but in future the method could keep a list of requested trees and flag report
+     * an error if one of the trees is requested for the second time.
+     */
+    std::unique_ptr<TTree> GetTree(std::string const &name);
     
 private:
+    /**
+     * \brief Opens the next input file in the dataset
+     * 
+     * Returns true in case of success and false if there are no more input files left.
+     */
     bool NextInputFile();
+    
+    /**
+     * \brief Reads the next event
+     * 
+     * Reads ID of the next event in the current input file. Calls NextInputFile if there are no
+     * events left in the file. Returns true in case of success and false if there are no more
+     * events in the dataset.
+     * Implemented from Plugin.
+     */
     virtual bool ProcessEvent() override;
     
 private:
@@ -77,4 +113,7 @@ private:
      * ROOT needs a variable with a pointer to an object to read the object from a tree.
      */
     pec::EventID *bfEventIDPointer;
+    
+    /// ID of the current event converted into the standard format of the framework
+    EventID eventID;
 };

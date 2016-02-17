@@ -95,10 +95,14 @@ int main()
     
     
     // Loop over few events
-    for (unsigned i = 0; i < 10; ++i)
+    for (unsigned i = 0; i < 5; ++i)
     {
         cout << "Event " << i << '\n';
         pecInputData.ProcessEventToOutcome();
+        
+        auto const &eventID = pecInputData.GetEventID();
+        cout << "Event ID: " << eventID.Run() << ":" << eventID.LumiBlock() << ":" <<
+         eventID.Event() << endl;
         
         
         #if 0
