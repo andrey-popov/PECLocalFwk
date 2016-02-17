@@ -7,6 +7,8 @@
 #include <PECFwk/extensions/WeightBTag.hpp>
 #include <PECFwk/extensions/TriggerSelection.hpp>
 
+#include <PECFwk/PECReader/PECInputData.hpp>
+
 #include <iostream>
 #include <memory>
 
@@ -16,6 +18,7 @@ using namespace std;
 
 int main()
 {
+    #if 0
     // Define the b-tagging objects
     shared_ptr<BTagger const> bTagger(
      new BTagger(BTagger::Algorithm::CSV, BTagger::WorkingPoint::Tight));
@@ -79,12 +82,26 @@ int main()
     reader.SetBTagReweighter(&bTagReweighter);
     //reader.SetReadHardInteraction();
     reader.NextSourceFile();
+    #endif
+    
+    
+    Dataset testData2015({Dataset::Process::ttbar, Dataset::Process::ttSemilep},
+     Dataset::Generator::MadGraph, Dataset::ShowerGenerator::Pythia);
+    testData2015.AddFile("/gridgroup/cms/popov/Analyses/ZPrimeToTT/2016.01.15_Grid-campaign/PEC/"
+     "ExampleOutputFiles/ttbar-pw_3.0.0_VmF_1.root", 1., 1);
+    
+    PECInputData pecInputData("InputData");
+    pecInputData.BeginRun(testData2015);
     
     
     // Loop over few events
     for (unsigned i = 0; i < 10; ++i)
     {
         cout << "Event " << i << '\n';
+        pecInputData.ProcessEventToOutcome();
+        
+        
+        #if 0
         reader.NextEvent();
         
         cout << "Tight leptons' pts:";
@@ -117,6 +134,7 @@ int main()
         */
         
         cout << "\nEvent weight: " << reader.GetCentralWeight();
+        #endif
         
         cout << "\n\n";
     }

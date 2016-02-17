@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <iterator>
+/**/#include <iostream>
 #include <stdexcept>
 
 
@@ -114,6 +115,9 @@ bool PECInputData::ProcessEvent()
     // Read ID of the next event from the tree
     eventIDTree->GetEntry(nextEvent);
     ++nextEvent;
+    
+    /**/std::cout << "Event ID: " << bfEventID.RunNumber() << ":" <<
+     bfEventID.LumiSectionNumber() << ":" << bfEventID.EventNumber() << std::endl;
     
     
     return true;
