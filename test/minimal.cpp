@@ -1,4 +1,6 @@
 #include <PECFwk/core/Dataset.hpp>
+#include <PECFwk/core/Processor.hpp>
+
 #include <PECFwk/core/PECReader.hpp>
 #include <PECFwk/core/BTagger.hpp>
 #include <PECFwk/extensions/GenericEventSelection.hpp>
@@ -8,6 +10,7 @@
 #include <PECFwk/extensions/TriggerSelection.hpp>
 
 #include <PECFwk/PECReader/PECInputData.hpp>
+#include <PECFwk/PECReader/PECLeptonReader.hpp>
 
 #include <iostream>
 #include <memory>
@@ -85,24 +88,39 @@ int main()
     #endif
     
     
-    Dataset testData2015({Dataset::Process::ttbar, Dataset::Process::ttSemilep},
+    Dataset dataTTbar({Dataset::Process::ttbar, Dataset::Process::ttSemilep},
      Dataset::Generator::MadGraph, Dataset::ShowerGenerator::Pythia);
-    testData2015.AddFile("/gridgroup/cms/popov/Analyses/ZPrimeToTT/2016.01.15_Grid-campaign/PEC/"
+    dataTTbar.AddFile("/gridgroup/cms/popov/Analyses/ZPrimeToTT/2016.01.15_Grid-campaign/PEC/"
      "ExampleOutputFiles/ttbar-pw_3.0.0_VmF_1.root", 1., 1);
     
-    PECInputData pecInputData("InputData");
-    pecInputData.BeginRun(testData2015);
+    Processor processor;
+    
+    processor.RegisterPlugin(new PECInputData);
+    processor.RegisterPlugin(new PECLeptonReader);
+    
+    processor.OpenDataset(dataTTbar);
+    
+    LeptonReader const *leptonReader =
+      dynamic_cast<LeptonReader const *>(processor.GetPlugin("Leptons"));
     
     
     // Loop over few events
-    for (unsigned i = 0; i < 5; ++i)
+    for (unsigned i = 0; i < 20; ++i)
     {
         cout << "Event " << i << '\n';
-        pecInputData.ProcessEventToOutcome();
+        processor.ProcessEvent();
         
-        auto const &eventID = pecInputData.GetEventID();
-        cout << "Event ID: " << eventID.Run() << ":" << eventID.LumiBlock() << ":" <<
-         eventID.Event() << endl;
+        cout << "Tight leptons:\n";
+        
+        for (auto const &l: leptonReader->GetLeptons())
+            cout << " flavour: " << int(l.GetFlavour()) << ", pt: " << l.Pt() << ", iso: " <<
+              l.RelIso() << ", dB: " << l.DB() << "\n";
+        
+        cout << "\nLoose leptons:\n";
+        
+        for (auto const &l: leptonReader->GetLooseLeptons())
+            cout << " flavour: " << int(l.GetFlavour()) << ", pt: " << l.Pt() << ", iso: " <<
+              l.RelIso() << ", dB: " << l.DB() << "\n";
         
         
         #if 0
