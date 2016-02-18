@@ -3,13 +3,16 @@
 #include <PECFwk/core/Processor.hpp>
 #include <PECFwk/PECReader/PECInputData.hpp>
 
+#include <limits>
+
 
 PECJetMETReader::PECJetMETReader(std::string name /*= "JetMET"*/):
     JetMETReader(name),
     inputDataPluginName("InputData"),
     inputDataPlugin(nullptr),
     treeName("pecJetMET/JetMET"),
-    bfJetPointer(&bfJets), bfMETPointer(&bfMETs)
+    bfJetPointer(&bfJets), bfMETPointer(&bfMETs),
+    minPt(0.), maxAbsEta(std::numeric_limits<double>::infinity())
 {}
 
 
@@ -38,6 +41,13 @@ Plugin *PECJetMETReader::Clone() const
 }
 
 
+void PECJetMETReader::SetSelection(double minPt_, double maxAbsEta_)
+{
+    minPt = minPt_;
+    maxAbsEta = maxAbsEta_;
+}
+
+
 bool PECJetMETReader::ProcessEvent()
 {
     // Clear vector with jets from the previous event
@@ -55,8 +65,12 @@ bool PECJetMETReader::ProcessEvent()
         p4.SetPtEtaPhiM(j.Pt(), j.Eta(), j.Phi(), j.M());
         
         
-        // Loose selection
+        // Loose physics selection
         if (not j.TestBit(0) /* "loose" jet ID */)
+            continue;
+        
+        // User-defined selection on momentum
+        if (p4.Pt() < minPt or fabs(p4.Eta()) > maxAbsEta)
             continue;
         
         

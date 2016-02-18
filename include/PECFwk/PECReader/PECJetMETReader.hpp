@@ -52,6 +52,9 @@ public:
      */
     virtual Plugin *Clone() const override;
     
+    /// Specifiy desired selection on jets
+    void SetSelection(double minPt, double maxAbsEta);
+    
 private:
     /**
      * \brief Reads jets and MET from the input tree
@@ -89,4 +92,10 @@ private:
      * Need by ROOT to read the object from a tree.
      */
     decltype(bfMETs) *bfMETPointer;
+    
+    /// Minimal allowed transverse momentum
+    double minPt;
+    
+    /// Maximal allowed absolute value of pseudorapidity
+    double maxAbsEta;
 };

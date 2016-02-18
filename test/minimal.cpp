@@ -10,6 +10,7 @@
 #include <PECFwk/extensions/TriggerSelection.hpp>
 
 #include <PECFwk/PECReader/PECInputData.hpp>
+#include <PECFwk/PECReader/PECJetMETReader.hpp>
 #include <PECFwk/PECReader/PECLeptonReader.hpp>
 
 #include <iostream>
@@ -98,6 +99,10 @@ int main()
     processor.RegisterPlugin(new PECInputData);
     processor.RegisterPlugin(new PECLeptonReader);
     
+    PECJetMETReader *jetReader = new PECJetMETReader;
+    jetReader->SetSelection(30., 2.4);
+    processor.RegisterPlugin(jetReader);
+    
     processor.OpenDataset(dataTTbar);
     
     LeptonReader const *leptonReader =
@@ -114,49 +119,21 @@ int main()
         
         for (auto const &l: leptonReader->GetLeptons())
             cout << " flavour: " << int(l.GetFlavour()) << ", pt: " << l.Pt() << ", iso: " <<
-              l.RelIso() << ", dB: " << l.DB() << "\n";
+              l.RelIso() << ", dB: " << l.DB() << '\n';
         
         cout << "\nLoose leptons:\n";
         
         for (auto const &l: leptonReader->GetLooseLeptons())
             cout << " flavour: " << int(l.GetFlavour()) << ", pt: " << l.Pt() << ", iso: " <<
-              l.RelIso() << ", dB: " << l.DB() << "\n";
+              l.RelIso() << ", dB: " << l.DB() << '\n';
         
+        cout << "\nAnalysis jets:\n";
         
-        #if 0
-        reader.NextEvent();
+        for (auto const &j: jetReader->GetJets())
+            cout << " pt: " << j.Pt() << ", eta: " << j.Eta() << ", b-tag: " << j.CSV() <<
+              ", flavour: " << j.GetParentID() << '\n';
         
-        cout << "Tight leptons' pts:";
-        
-        for (auto const &l: reader.GetLeptons())
-            cout << " pt: " << l.Pt() << ", iso: " << l.RelIso() << ", dB: " << l.DB();
-        
-        cout << "\nAnalysis jets' pts:";
-        
-        for (auto const &j: reader.GetJets())
-            cout << " " << j.Pt();
-        
-        cout << "\nAdditional jets' pts:";
-        
-        for (auto const &j: reader.GetAdditionalJets())
-            cout << " " << j.Pt();
-        
-        cout << "\nNeutrino's pt: " << reader.GetNeutrino().Pt() << ", pz: " <<
-         reader.GetNeutrino().P4().Pz();
-        
-        /*
-        cout << "\nHard generator-level particles:";
-        
-        for (auto const &p: reader.GetHardGenParticles())
-        {
-            cout << "\n PDG ID: " << p.GetPdgId() <<
-             "\n # mothers: " << p.GetMothers().size() <<
-             "\n # daughters: " << p.GetDaughters().size();
-        }
-        */
-        
-        cout << "\nEvent weight: " << reader.GetCentralWeight();
-        #endif
+        cout << "\nMET: " << jetReader->GetMET().Pt() << '\n';
         
         cout << "\n\n";
     }
