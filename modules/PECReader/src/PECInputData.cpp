@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <sstream>
 #include <stdexcept>
 
 
@@ -15,7 +16,9 @@ using namespace std::string_literals;
 PECInputData::PECInputData(std::string const name):
     ReaderPlugin(name),
     nextFileIt(inputFiles.end()),
-    nEvents(0), nextEvent(0)
+    eventIDTreeName("pecEventID/EventID"),
+    nEvents(0), nextEvent(0),
+    eventIDTree(nullptr)
 {}
 
 
@@ -47,33 +50,86 @@ Plugin *PECInputData::Clone() const
 }
 
 
+TTree *PECInputData::ExposeTree(std::string const &name) const
+{
+    auto const res = loadedTrees.find(name);
+    
+    if (res == loadedTrees.end())
+        throw std::logic_error("PECInputData::ExposeTree: Method is called for tree \""s +
+          name + "\", which has not been loaded.");
+    
+    return res->second.get();
+}
+
+
 EventID const &PECInputData::GetEventID() const
 {
     return eventID;
 }
 
 
-std::unique_ptr<TTree> PECInputData::GetTree(std::string const &name) const
+PECInputData::LoadTreeStatus PECInputData::LoadTree(std::string const &name)
 {
-    // Make sure that the requested tree is not the event ID tree which is read by this plugin
-    if (name == "pecEventID/EventID")
-        throw std::runtime_error("PECInputData::GetTree: Requested to read the tree with event "
-         "ID, which is not allowed since the tree is read by the PECInputData plugin.");
+    // Make sure the tree has not been loaded already
+    auto const res = loadedTrees.find(name);
+    
+    if (res != loadedTrees.end())
+    {
+        logger << "Error in PECInputData::LoadTree: Plugin \"" << GetName() <<
+          "\" is requested to load tree \"" << name << "\", which has already been loaded by " <<
+          "another plugin. If multiple plugins attempt to read the same tree, this will result " <<
+          "in an undefined behaviour." << eom;
+        return LoadTreeStatus::AlreadyLoaded;
+    }
     
     
+    // Read the tree from the input file
     ROOTLock::Lock();
-    std::unique_ptr<TTree> tree(dynamic_cast<TTree *>(curInputFile->Get(name.c_str())));
+    TTree *tree = dynamic_cast<TTree *>(curInputFile->Get(name.c_str()));
     ROOTLock::Unlock();
     
-    return tree;
+    if (tree)
+        loadedTrees[name] = std::unique_ptr<TTree>(tree);
+    else
+        return LoadTreeStatus::NotFound;
+    
+    
+    // Starting from the second loaded tree, make sure that the tree contains the same number of
+    //events as the first tree (event ID).
+    if (loadedTrees.size() > 1 and (unsigned long) tree->GetEntries() != nEvents)
+    {
+        std::ostringstream message;
+        message << "PECInputData::LoadTree: Plugin \"" << GetName() << "\" is requested to " <<
+          "load tree \"" << name << "\", which contains a different number of events than " <<
+          "preloaded tree \"" << eventIDTreeName << "\" (" << tree->GetEntries() << " vs " <<
+          nEvents << ").";
+        throw std::runtime_error(message.str());
+    }
+    
+    return LoadTreeStatus::Success;
+}
+
+
+void PECInputData::ReadEventFromTree(std::string const &name) const
+{
+    auto const res = loadedTrees.find(name);
+    
+    if (res == loadedTrees.end())
+        throw std::logic_error("PECInputData::ReadEventFromTree: Method is called for tree \""s +
+          name + "\", which has not been loaded.");
+    else
+        res->second->GetEntry(nextEvent - 1);
 }
 
 
 bool PECInputData::NextInputFile()
 {
-    // Delete the event ID tree and the current input file
+    // Delete loaded trees and the current input file
     ROOTLock::Lock();
-    eventIDTree.reset();
+    
+    for (auto &p: loadedTrees)
+        p.second.reset();
+    
     curInputFile.reset();
     ROOTLock::Unlock();
     
@@ -92,7 +148,8 @@ bool PECInputData::NextInputFile()
         throw std::runtime_error("PECInputData::NextInputFile: File \""s + nextFileIt->name +
          "\" does not exist or is not a valid ROOT file.");
     
-    eventIDTree.reset(dynamic_cast<TTree *>(curInputFile->Get("pecEventID/EventID")));
+    LoadTree(eventIDTreeName);
+    eventIDTree = ExposeTree(eventIDTreeName);
     
     if (not eventIDTree)
         throw std::runtime_error("PECInputData::NextInputFile: File \""s + nextFileIt->name +
