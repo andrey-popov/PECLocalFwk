@@ -61,7 +61,7 @@ public:
     
 public:
     /**
-     * \brief Performs initialization for a new dataset
+     * \brief Performs initialization for a new dataset and opens first input file
      * 
      * Reimplemented from Plugin.
      */
