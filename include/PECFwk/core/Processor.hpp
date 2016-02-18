@@ -1,9 +1,3 @@
-/**
- * \file Processor.hpp
- * 
- * The module defines a class responsible for evaluation of a set of requested plugins.
- */
-
 #pragma once
 
 #include <PECFwk/core/Dataset.hpp>
@@ -22,12 +16,16 @@
  * \class Processor
  * \brief Runs plugins in a single thread
  * 
- * An instance of this class performs evaluation of requested plugins. A plugin can access other
- * plugins in the path via constant pointers. The plugins are owned by an instance of class
- * Processor; move and copy constructors are implemented to respect this ownership.
+ * This class is responsible for execution of a collection of plugins, which is organized into an
+ * ordered path. It allows each plugin to access other plugins in the path and services. Plugins
+ * and services are owned by Processor, which also registers itself as their master.
  * 
- * One instance of class Processor is expected to be run in a single (separate) thread. The class
- * is friend to class RunManager and pops up datasets from a queue RunManager::datasets.
+ * Instances of this class are spanned by RunManager to process a queue of datasets. Each processor
+ * is run in a separate thread. This class is a friend of RunManager and thus can pop up datasets
+ * from the queue RunManager::datasets.
+ * 
+ * However, it is also possible to run a Processor independently of a RunManager. In this case the
+ * entry point for execution is method ProcessDataset.
  */
 class Processor
 {
@@ -41,9 +39,9 @@ public:
     /**
      * \brief Copy constructor
      * 
-     * Configuration of plugins is copied only but not their states. Copying of an instance of
-     * class Processor after it started processing a dataset is not foreseen and is not a well-
-     * defined operation.
+     * Configurations of each plugin and service are copied, but not their states. Pointers to
+     * master are changed to this. Copying a Processor after it started processing a dataset is not
+     * supported and would lead to an undefined behaviour.
      */
     Processor(Processor const &src);
     
@@ -74,11 +72,11 @@ public:
     void operator()();
     
     /**
-     * \brief Processes a single atomic dataset
+     * \brief Processes a dataset
      * 
      * Processes the dataset with registered plugins. For each event the plugins are executed
-     * in the same order as they have been registered. If ProcessEvent method of a plugin
-     * returns false, the following plugins are not evaluated for the event.
+     * in the same order as they have been registered. If ProcessEvent method of an analysis plugin
+     * returns false, subsequent plugins in the path are not evaluated for the event.
      */
     void ProcessDataset(Dataset const &dataset);
     
@@ -155,8 +153,8 @@ private:
     /**
      * \brief Registered services
      * 
-     * The map is utilized both for storage and to provide a fast access to services by their names.
-     * The ordering of services is not important to logic of the framework.
+     * The map is utilized both for storage and to provide a fast access to services by their
+     * names. The ordering of services is not important to logic of the framework.
      */
     std::map<std::string, std::unique_ptr<Service>> services;
     

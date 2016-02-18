@@ -1,14 +1,14 @@
 #include <PECFwk/core/Processor.hpp>
 
-#include <PECFwk/core/RunManager.hpp>
+#include <PECFwk/core/Logger.hpp>
 #include <PECFwk/core/Plugin.hpp>
 #include <PECFwk/core/ROOTLock.hpp>
-#include <PECFwk/core/Logger.hpp>
+#include <PECFwk/core/RunManager.hpp>
 
-#include <thread>
+#include <iostream>
 #include <mutex>
 #include <stdexcept>
-#include <iostream>
+#include <thread>
 
 
 using namespace std;
@@ -35,13 +35,21 @@ Processor::Processor(Processor const &src):
     manager(src.manager),
     pluginNameMap(src.pluginNameMap)
 {
+    // Copy services and plugins
     for (auto const &s: src.services)
         services.emplace(piecewise_construct,
          forward_as_tuple(s.first), forward_as_tuple(s.second->Clone()));
     
-    
     for (auto const &p: src.path)
         path.emplace_back(p->Clone());
+    
+    
+    // Update the master in services and plugins
+    for (auto &s: services)
+        s.second->SetMaster(this);
+    
+    for (auto &p: path)
+        p->SetMaster(this);
 }
 
 
@@ -65,6 +73,10 @@ void Processor::RegisterService(Service *service)
     if (res.second == false)
         throw runtime_error("Processor::RegisterService: Attempting to register a second "s +
          "service with name \"" + service->GetName() + "\".");
+    
+    
+    // Introduce this to the service
+    service->SetMaster(this);
 }
 
 
@@ -79,20 +91,21 @@ void Processor::RegisterPlugin(Plugin *plugin)
     // Update the map for plugin names
     pluginNameMap[plugin->GetName()] = path.size();  // this will be the index of this plugin
     
-    
     // Insert the plugin into the path
     path.emplace_back(plugin);
+    
+    
+    // Introduce this to the plugin
+    plugin->SetMaster(this);
 }
 
 
 void Processor::operator()()
 {
-    // Register this as the master of owned services and plugins
-    for (auto &s: services)
-        s.second->SetMaster(this);
-    
-    for (auto &p: path)
-        p->SetMaster(this);
+    // Make sure there is a manager
+    if (not manager)
+        throw std::logic_error("Processor::operator(): This method cannot be executed when no "
+          "RunManager has been specified.");
     
     
     // Read datasets from the queue in the manager one by one
