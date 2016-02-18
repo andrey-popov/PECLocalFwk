@@ -3,6 +3,9 @@
 #include <PECFwk/core/Processor.hpp>
 #include <PECFwk/PECReader/PECInputData.hpp>
 
+#include <TVector2.h>
+
+#include <cmath>
 #include <limits>
 
 
@@ -12,7 +15,8 @@ PECJetMETReader::PECJetMETReader(std::string name /*= "JetMET"*/):
     inputDataPlugin(nullptr),
     treeName("pecJetMET/JetMET"),
     bfJetPointer(&bfJets), bfMETPointer(&bfMETs),
-    minPt(0.), maxAbsEta(std::numeric_limits<double>::infinity())
+    minPt(0.), maxAbsEta(std::numeric_limits<double>::infinity()),
+    leptonPluginName("Leptons"), leptonPlugin(nullptr), leptonDR2(0.3 * 0.3)
 {}
 
 
@@ -20,11 +24,25 @@ PECJetMETReader::~PECJetMETReader()
 {}
 
 
+void PECJetMETReader::ConfigureLeptonCleaning(std::string const leptonPluginName_ /*= "Leptons"*/,
+  double dR /*= 0.3*/)
+{
+    leptonPluginName = leptonPluginName_;
+    leptonDR2 = dR * dR;
+}
+
+
 void PECJetMETReader::BeginRun(Dataset const &)
 {
     // Save pointer to the plugin providing access to input data
     inputDataPlugin = dynamic_cast<PECInputData const *>(
       GetMaster().GetPluginBefore(inputDataPluginName, GetName()));
+    
+    
+    // Save pointer to plugin that produces leptons
+    if (leptonPluginName != "")
+        leptonPlugin = dynamic_cast<LeptonReader const *>(
+          GetMaster().GetPluginBefore(leptonPluginName, GetName()));
     
     
     // Set up the tree
@@ -57,6 +75,9 @@ bool PECJetMETReader::ProcessEvent()
     // Read jets and MET
     inputDataPlugin->ReadEventFromTree(treeName);
     
+    // Collection of leptons against which jets will be cleaned
+    auto const *leptonsForCleaning = (leptonPlugin) ? &leptonPlugin->GetLeptons() : nullptr;
+    
     
     // Process jets in the current event
     for (pec::Jet const &j: bfJets)
@@ -72,6 +93,29 @@ bool PECJetMETReader::ProcessEvent()
         // User-defined selection on momentum
         if (p4.Pt() < minPt or fabs(p4.Eta()) > maxAbsEta)
             continue;
+        
+        
+        // Peform cleaning against leptons if enabled
+        if (leptonsForCleaning)
+        {
+            bool overlap = false;
+            
+            for (auto const &l: *leptonsForCleaning)
+            {
+                double const dR2 = std::pow(p4.Eta() - l.Eta(), 2) +
+                  std::pow(TVector2::Phi_mpi_pi(p4.Phi() - l.Phi()), 2);
+                //^ Do not use TLorentzVector::DeltaR to avoid calculating sqrt
+                
+                if (dR2 < leptonDR2)
+                {
+                    overlap = true;
+                    break;
+                }
+            }
+            
+            if (overlap)
+                continue;
+        }
         
         
         // Build the jet object

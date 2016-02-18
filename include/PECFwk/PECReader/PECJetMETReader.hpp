@@ -2,6 +2,7 @@
 
 #include <PECFwk/core/JetMETReader.hpp>
 
+#include <PECFwk/core/LeptonReader.hpp>
 #include <PECFwk/PECReader/Candidate.hpp>
 #include <PECFwk/PECReader/Jet.hpp>
 
@@ -13,7 +14,14 @@ class PECInputData;
  * \class PECJetMETReader
  * \brief Provides reconstructed jets and MET
  * 
+ * This plugin reads reconstructed jets and MET from a PEC file, with the help of a PECInputData
+ * plugin, and translates them to standard classes used by the framework. User can specify a
+ * kinematic selection to be applied to jets, using method SetSelection. By default, jets are
+ * cleaned against tight leptons produced by a LeptonReader with name "Leptons". This behaviour
+ * can be configured with method ConfigureLeptonCleaning.
  * 
+ * Currently the plugin is not able to reapply JEC, does not perform matching to GEN-level jets,
+ * and neglects any systematic variations.
  */
 class PECJetMETReader: public JetMETReader
 {
@@ -38,6 +46,19 @@ public:
     virtual ~PECJetMETReader() noexcept;
     
 public:
+    /**
+     * \brief Changes parameters of jet-lepton cleaning
+     * 
+     * The first argument is the name of a LeptonReader, which must precede this plugin in the
+     * path. The second argument is the minimal allowed separation between a jet and a lepton in
+     * the (eta, phi) metric. Each jets is checked against all tight leptons produced by the
+     * LeptonReader, and if the separation from a lepton is less than dR, the jet is dropped.
+     * 
+     * The cleaning is enabled by default, with parameters specified in the prototype. It can be
+     * disabled by providing an emptry name ("") for the LeptonReader.
+     */
+    void ConfigureLeptonCleaning(std::string const leptonPluginName = "Leptons", double dR = 0.3);
+    
     /**
      * \brief Sets up reading of a tree containing jets and MET
      * 
@@ -98,4 +119,21 @@ private:
     
     /// Maximal allowed absolute value of pseudorapidity
     double maxAbsEta;
+    
+    /**
+     * \brief Name of the plugin that produces leptons
+     * 
+     * If name is an empty string, no cleaning against leptons will be performed
+     */
+    std::string leptonPluginName;
+    
+    /// Non-owning pointer to a plugin that produces leptons
+    LeptonReader const *leptonPlugin;
+    
+    /**
+     * \brief Minimal squared dR distance to leptons
+     * 
+     * Exploited in jet cleaning.
+     */
+    double leptonDR2;
 };
