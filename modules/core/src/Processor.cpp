@@ -15,17 +15,9 @@ using namespace std;
 using namespace logging;
 
 
-Processor::Processor() noexcept:
-    manager(nullptr)
-{}
-
-
-Processor::Processor(RunManager *manager_):
+Processor::Processor(RunManager *manager_ /*= nullptr*/) noexcept:
     manager(manager_)
-{
-    // Create the reader plugin
-    RegisterPlugin(new PECReaderPlugin(move(manager->readerConfig)));
-}
+{}
 
 
 Processor::Processor(Processor &&src) noexcept:

@@ -6,29 +6,25 @@
 
 #pragma once
 
-#include <PECFwk/core/Service.hpp>
-#include <PECFwk/core/PluginForward.hpp>
-#include <PECFwk/core/PECReaderConfig.hpp>
-#include <PECFwk/core/PECReaderPlugin.hpp>
-#include <PECFwk/core/RunManagerForward.hpp>
 #include <PECFwk/core/Dataset.hpp>
+#include <PECFwk/core/PluginForward.hpp>
+#include <PECFwk/core/RunManagerForward.hpp>
+#include <PECFwk/core/Service.hpp>
 
-#include <vector>
+#include <map>
+#include <memory>
 #include <string>
 #include <unordered_map>
-#include <memory>
+#include <vector>
 
 
 /**
  * \class Processor
- * \brief Runs PECReader and a set of requested plugins in a single thread
+ * \brief Runs plugins in a single thread
  * 
  * An instance of this class performs evaluation of requested plugins. A plugin can access other
  * plugins in the path via constant pointers. The plugins are owned by an instance of class
  * Processor; move and copy constructors are implemented to respect this ownership.
- * 
- * Plugin "Reader" of type PECReaderPlugin is automatically constructed and inserted at the
- * beginning of the path. Its configuration is moved from the parent instance of class RunManager.
  * 
  * One instance of class Processor is expected to be run in a single (separate) thread. The class
  * is friend to class RunManager and pops up datasets from a queue RunManager::datasets.
@@ -36,15 +32,8 @@
 class Processor
 {
 public:
-    /// Default constructor
-    Processor() noexcept;
-    
-    /**
-     * \brief Constructor
-     * 
-     * Constructor moves RunManager::readerConfig to this.
-     */
-    Processor(RunManager *manager);
+    /// Constructor
+    Processor(RunManager *manager = nullptr) noexcept;
     
     /// Move constructor
     Processor(Processor &&src) noexcept;
@@ -68,21 +57,20 @@ public:
     /**
      * \brief Adds a new service
      * 
-     * The service is owned by Processor. All services must have unique names, and an exception will
-     * be thrown if a duplicate is found.
+     * The service is owned by Processor. All services must have unique names, and an exception
+     * will be thrown if a duplicate is found.
      */
     void RegisterService(Service *service);
     
     /**
      * \brief Adds a new plugin to be executed
      * 
-     * The new plugin is inserted at the end of execution path. The plugin object is owned by
-     * Processor. Note that a plugin wrapper for class PECReader is included automatically and
-     * executed first; it must not be registered explicitly.
+     * The new plugin is inserted at the end of the execution path. The plugin object is owned by
+     * Processor.
      */
     void RegisterPlugin(Plugin *plugin);
     
-    /// Entry point for execution
+    /// Entry point for execution when processing is run by RunManager
     void operator()();
     
     /**
@@ -175,8 +163,7 @@ private:
     /**
      * \brief Pointers to registered plugins
      * 
-     * Random access is mandatory for this container. The first plugin is always a wrapper for
-     * PECReader class.
+     * Random access is mandatory for this container.
      */
     std::vector<std::unique_ptr<Plugin>> path;
     
