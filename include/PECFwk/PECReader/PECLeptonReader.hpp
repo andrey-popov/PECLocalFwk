@@ -5,8 +5,6 @@
 #include <PECFwk/PECReader/Electron.hpp>
 #include <PECFwk/PECReader/Muon.hpp>
 
-#include <TTree.h>
-
 #include <memory>
 #include <string>
 

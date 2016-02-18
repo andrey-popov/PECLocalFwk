@@ -12,6 +12,7 @@
 #include <PECFwk/PECReader/PECInputData.hpp>
 #include <PECFwk/PECReader/PECJetMETReader.hpp>
 #include <PECFwk/PECReader/PECLeptonReader.hpp>
+#include <PECFwk/PECReader/PECPileUpReader.hpp>
 
 #include <iostream>
 #include <memory>
@@ -103,16 +104,20 @@ int main()
     jetReader->SetSelection(30., 2.4);
     processor.RegisterPlugin(jetReader);
     
+    processor.RegisterPlugin(new PECPileUpReader);
+    
     processor.OpenDataset(dataTTbar);
     
     LeptonReader const *leptonReader =
       dynamic_cast<LeptonReader const *>(processor.GetPlugin("Leptons"));
+    PileUpReader const *puReader =
+      dynamic_cast<PileUpReader const *>(processor.GetPlugin("PileUp"));
     
     
     // Loop over few events
     for (unsigned i = 0; i < 20; ++i)
     {
-        cout << "Event " << i << '\n';
+        cout << "*** Event " << i << " ***\n";
         processor.ProcessEvent();
         
         cout << "Tight leptons:\n";
@@ -134,6 +139,9 @@ int main()
               ", flavour: " << j.GetParentID() << '\n';
         
         cout << "\nMET: " << jetReader->GetMET().Pt() << '\n';
+        
+        cout << "\nPile-up info:\n #PV: " << puReader->GetNumVertices() << ", rho: " <<
+          puReader->GetRho() << '\n';
         
         cout << "\n\n";
     }
