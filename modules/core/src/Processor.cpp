@@ -131,55 +131,65 @@ void Processor::operator()()
 }
 
 
-void Processor::ProcessDataset(Dataset const &dataset)
+void Processor::OpenDataset(Dataset const &dataset)
 {
-    /*cout << "Thread " << this_thread::get_id() << " starts processing dataset with file \"" <<
-     dataset.GetFiles().front().name << "\"\n";*/
-    logger << timestamp << "Start processing source file \"" <<
-     dataset.GetFiles().front().GetBaseName() << ".root\"." << eom;
-    
-    
     // Declare begin of a dataset for all services and plugins
     for (auto &s: services)
         s.second->BeginRun(dataset);
      
     for (auto &p: path)
         p->BeginRun(dataset);
+}
+
+
+bool Processor::ProcessEvent()
+{
+    Plugin::EventOutcome result = Plugin::EventOutcome::NoEvents;
+    //^ This initialization allows to terminate processing of the dataset when there are no plugins
+    //registered
     
-    
-    // Process all events in the dataset
-    while (true)
+    for (auto &plugin: path)
     {
-        Plugin::EventOutcome result = Plugin::EventOutcome::NoEvents;
-        //^ This initialization allows to break the event loop if there are no plugins registered
+        result = plugin->ProcessEventToOutcome();
         
-        for (auto &plugin: path)
+        if (result != Plugin::EventOutcome::Ok)
         {
-            result = plugin->ProcessEventToOutcome();
-            
-            if (result != Plugin::EventOutcome::Ok)
-            {
-                // Whatever happened, do not execute remaining plugins for the current event
-                break;
-            }
-        }
-        
-        
-        // Check if any event has been read successfully during this iteration
-        if (result == Plugin::EventOutcome::NoEvents)
-        {
-            // Some reader said that there were no events left in the current dataset
+            // Whatever happened, do not execute remaining plugins for the current event
             break;
         }
     }
     
     
-    // Declare end of the dataset for all plugins (in a reversed order) and services
-    for (auto pIt = path.rbegin(); pIt != path.rend(); ++pIt)
-        (*pIt)->EndRun();
+    if (result == Plugin::EventOutcome::NoEvents)
+    {
+        // Some reader said that there were no events left in the current dataset
+        // Declare end of the dataset for all plugins (in a reversed order) and services
+        for (auto pIt = path.rbegin(); pIt != path.rend(); ++pIt)
+            (*pIt)->EndRun();
+        
+        for (auto &s: services)
+            s.second->EndRun();
+        
+        // Communicate to the caller that there are no events left
+        return false;
+    }
+    else
+    {
+        // Current event was processed fine
+        return true;
+    }
+}
+
+
+void Processor::ProcessDataset(Dataset const &dataset)
+{
+    logger << timestamp << "Start processing source file \"" <<
+     dataset.GetFiles().front().GetBaseName() << ".root\"." << eom;
     
-    for (auto &s: services)
-        s.second->EndRun();
+    OpenDataset(dataset);
+    
+    while (ProcessEvent())
+    {}
 }
 
 

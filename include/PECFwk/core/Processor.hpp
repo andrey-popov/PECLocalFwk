@@ -21,11 +21,12 @@
  * and services are owned by Processor, which also registers itself as their master.
  * 
  * Instances of this class are spanned by RunManager to process a queue of datasets. Each processor
- * is run in a separate thread. This class is a friend of RunManager and thus can pop up datasets
- * from the queue RunManager::datasets.
+ * is run in a separate thread. The entry point for execution is operator(). This class is a friend
+ * of RunManager and profits from this to pop up datasets from the queue RunManager::datasets.
  * 
- * However, it is also possible to run a Processor independently of a RunManager. In this case the
- * entry point for execution is method ProcessDataset.
+ * It is also possible to run a Processor independently of a RunManager. In this case method
+ * OpenDataset must be called before the event loop, and then each single event can be processed
+ * with method ProcessEvent. The dataset as a whole can be processed using method ProcessDataset.
  */
 class Processor
 {
@@ -72,11 +73,26 @@ public:
     void operator()();
     
     /**
+     * \brief Initialization for a new dataset
+     * 
+     * Calls BeginRun for all plugins and services.
+     */
+    void OpenDataset(Dataset const &dataset);
+    
+    /**
+     * \brief Processes the next event in the dataset
+     * 
+     * Plugins are executed in the order of their appearance in the path. An analysis plugin can
+     * prevent execution of subsequent plugins in the path implementing filtering. If the event is
+     * processed successfully, returns true. If any reader plugin flags that there are no events
+     * left in the dataset, returns false.
+     */
+    bool ProcessEvent();
+    
+    /**
      * \brief Processes a dataset
      * 
-     * Processes the dataset with registered plugins. For each event the plugins are executed
-     * in the same order as they have been registered. If ProcessEvent method of an analysis plugin
-     * returns false, subsequent plugins in the path are not evaluated for the event.
+     * This short-cut calls OpenDataset and exectutes ProcessEvent in a loop.
      */
     void ProcessDataset(Dataset const &dataset);
     
