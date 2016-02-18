@@ -60,6 +60,11 @@ public:
     virtual Plugin *Clone() const override;
     
 private:
+    /**
+     * \brief Reads electrons and muons from input trees and applied physics selection
+     * 
+     * Reimplemented from Plugin.
+     */
     virtual bool ProcessEvent() override;
     
 private:

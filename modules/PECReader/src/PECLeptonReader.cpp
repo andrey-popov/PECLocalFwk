@@ -88,7 +88,7 @@ bool PECLeptonReader::ProcessEvent()
     for (pec::Muon const &l: bfMuons)
     {
         TLorentzVector p4;
-        p4.SetPtEtaPhiM(l.Pt(), l.Eta(), l.Phi(), 0.511e-3);
+        p4.SetPtEtaPhiM(l.Pt(), l.Eta(), l.Phi(), 0.105);
         
         
         // Selection to define a loose muon
