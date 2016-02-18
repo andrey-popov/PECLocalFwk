@@ -92,7 +92,7 @@ public:
      * successfully but contains a different number of entries than the event ID tree, an exception
      * is thrown.
      */
-    LoadTreeStatus LoadTree(std::string const &name);
+    LoadTreeStatus LoadTree(std::string const &name) const;
     
     /**
      * \brief Reads current event in the tree with the given name
@@ -143,8 +143,11 @@ private:
      * 
      * The map key is the tree name. Since the number of trees in a PEC file is small, a map should
      * perform better than an unordered_map.
+     * 
+     * This attribute is mutable because it is modified by other plugins via the LoadTree method,
+     * and they must not be given a non-const pointer to this plugin.
      */
-    std::map<std::string, std::unique_ptr<TTree>> loadedTrees;
+    mutable std::map<std::string, std::unique_ptr<TTree>> loadedTrees;
     
     /// A shortcut to the tree with event IDs
     TTree *eventIDTree;

@@ -68,7 +68,7 @@ EventID const &PECInputData::GetEventID() const
 }
 
 
-PECInputData::LoadTreeStatus PECInputData::LoadTree(std::string const &name)
+PECInputData::LoadTreeStatus PECInputData::LoadTree(std::string const &name) const
 {
     // Make sure the tree has not been loaded already
     auto const res = loadedTrees.find(name);
