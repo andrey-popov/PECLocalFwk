@@ -232,6 +232,10 @@ private:
 };
 
 
+/// An alias for MET
+typedef Candidate MET;
+
+
 /**
  * \class GenJet
  * \brief Represents a generator-level jet
