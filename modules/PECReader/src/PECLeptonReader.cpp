@@ -4,6 +4,7 @@
 #include <PECFwk/PECReader/PECInputData.hpp>
 
 #include <algorithm>
+/**/#include <iostream>
 
 
 PECLeptonReader::PECLeptonReader(std::string const name /*= "Leptons"*/):
@@ -74,7 +75,7 @@ bool PECLeptonReader::ProcessEvent()
         
         
         // Further selection for a tight electron
-        if (not l.BooleanID(3) /* "tight" cut-based ID */)
+        if (not l.BooleanID(3) /* "tight" cut-based ID */ or not l.TestBit(0) /* EB-EE gap */)
             continue;
         
         leptons.push_back(lepton);
@@ -92,7 +93,7 @@ bool PECLeptonReader::ProcessEvent()
         
         // Selection to define a loose muon
         if (p4.Pt() < 10. or fabs(p4.Eta()) > 2.5 or l.RelIso() > 0.25 or
-          l.TestBit(0) /* "loose" ID */)
+          not l.TestBit(0) /* "loose" ID */)
             continue;
         
         Lepton lepton(Lepton::Flavour::Muon, p4);
