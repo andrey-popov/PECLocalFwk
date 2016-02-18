@@ -40,7 +40,11 @@ public:
     };
     
 public:
-    /// Creates a new plugin with the given name
+    /**
+     * \brief Creates plugin with the given name
+     * 
+     * User is encouraged to keep the default name.
+     */
     PECInputData(std::string const name = "InputData");
     
     /// The copy constructor is deleted
