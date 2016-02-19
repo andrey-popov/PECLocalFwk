@@ -141,8 +141,8 @@ int main()
         
         // Print out some information about the selected event
         auto const &eventID = inputData->GetEventID();
-        cout << "***** Event " << eventID.Run() << ":" << eventID.LumiBlock() << ":" <<
-          eventID.Event() << " *****\n";
+        cout << "\033[0;34m***** Event " << eventID.Run() << ":" << eventID.LumiBlock() << ":" <<
+          eventID.Event() << " *****\033[0m\n";
         
         cout << "\nTight leptons:\n";
         
