@@ -1,7 +1,7 @@
 #pragma once
 
 #include <PECFwk/core/Dataset.hpp>
-#include <PECFwk/core/PluginForward.hpp>
+#include <PECFwk/core/Plugin.hpp>
 #include <PECFwk/core/RunManagerForward.hpp>
 #include <PECFwk/core/Service.hpp>
 
@@ -82,12 +82,15 @@ public:
     /**
      * \brief Processes the next event in the dataset
      * 
-     * Plugins are executed in the order of their appearance in the path. An analysis plugin can
-     * prevent execution of subsequent plugins in the path implementing filtering. If the event is
-     * processed successfully, returns true. If any reader plugin flags that there are no events
-     * left in the dataset, returns false.
+     * Plugins are executed in the order of their appearance in the path. A plugin can prevent
+     * execution of subsequent plugins in the path, implementing event filtering (in case of
+     * analysis plugins) or declaring that there are no events left in the dataset (in case of
+     * readers). If a reader declares end of dataset, this method calls EndRun for all plugins and
+     * services. The return value is the outcome code of the last executed plugin, and thus
+     * indicates whether the event has been rejected by a filter or the dataset has run out of
+     * events.
      */
-    bool ProcessEvent();
+    Plugin::EventOutcome ProcessEvent();
     
     /**
      * \brief Processes a dataset

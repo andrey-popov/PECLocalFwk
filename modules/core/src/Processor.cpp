@@ -1,7 +1,6 @@
 #include <PECFwk/core/Processor.hpp>
 
 #include <PECFwk/core/Logger.hpp>
-#include <PECFwk/core/Plugin.hpp>
 #include <PECFwk/core/ROOTLock.hpp>
 #include <PECFwk/core/RunManager.hpp>
 
@@ -142,12 +141,15 @@ void Processor::OpenDataset(Dataset const &dataset)
 }
 
 
-bool Processor::ProcessEvent()
+Plugin::EventOutcome Processor::ProcessEvent()
 {
+    // Variable to store outcome of the current event
     Plugin::EventOutcome result = Plugin::EventOutcome::NoEvents;
     //^ This initialization allows to terminate processing of the dataset when there are no plugins
     //registered
     
+    
+    // Process event with all plugins
     for (auto &plugin: path)
     {
         result = plugin->ProcessEventToOutcome();
@@ -160,24 +162,21 @@ bool Processor::ProcessEvent()
     }
     
     
+    // If some reader said that there are no events left in the current dataset, declare end of
+    //run for all plugins and services
     if (result == Plugin::EventOutcome::NoEvents)
     {
-        // Some reader said that there were no events left in the current dataset
-        // Declare end of the dataset for all plugins (in a reversed order) and services
+        // Plugins are processed in a reversed order of their creation
         for (auto pIt = path.rbegin(); pIt != path.rend(); ++pIt)
             (*pIt)->EndRun();
         
         for (auto &s: services)
             s.second->EndRun();
-        
-        // Communicate to the caller that there are no events left
-        return false;
     }
-    else
-    {
-        // Current event was processed fine
-        return true;
-    }
+    
+    
+    // Return the outcome of this event
+    return result;
 }
 
 
@@ -188,7 +187,7 @@ void Processor::ProcessDataset(Dataset const &dataset)
     
     OpenDataset(dataset);
     
-    while (ProcessEvent())
+    while (ProcessEvent() != Plugin::EventOutcome::NoEvents)
     {}
 }
 

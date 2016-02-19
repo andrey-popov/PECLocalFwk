@@ -96,6 +96,7 @@ int main()
     dataTTbar.AddFile("/gridgroup/cms/popov/Analyses/ZPrimeToTT/2016.01.15_Grid-campaign/PEC/"
      "ExampleOutputFiles/ttbar-pw_3.0.0_VmF_1.root", 1., 1);
     
+    
     Processor processor;
     
     processor.RegisterPlugin(new PECInputData);
@@ -110,6 +111,9 @@ int main()
     
     processor.OpenDataset(dataTTbar);
     
+    
+    PECInputData const *inputData =
+      dynamic_cast<PECInputData const *>(processor.GetPlugin("InputData"));
     LeptonReader const *leptonReader =
       dynamic_cast<LeptonReader const *>(processor.GetPlugin("Leptons"));
     PileUpReader const *puReader =
@@ -121,10 +125,24 @@ int main()
     // Loop over few events
     for (unsigned i = 0; i < 20; ++i)
     {
-        cout << "*** Event " << i << " ***\n";
-        processor.ProcessEvent();
+        // Process a new event from the dataset
+        Plugin::EventOutcome const status = processor.ProcessEvent();
         
-        cout << "Tight leptons:\n";
+        // Skip to the next event if the current one has been rejected by a filter
+        if (status == Plugin::EventOutcome::FilterFailed)
+            continue;
+        
+        // Terminate the loop if there are no events left in the dataset
+        if (status == Plugin::EventOutcome::NoEvents)
+            break;
+        
+        
+        // Print out some information about the selected event
+        auto const &eventID = inputData->GetEventID();
+        cout << "***** Event " << eventID.Run() << ":" << eventID.LumiBlock() << ":" <<
+          eventID.Event() << " *****\n";
+        
+        cout << "\nTight leptons:\n";
         
         for (auto const &l: leptonReader->GetLeptons())
             cout << " flavour: " << int(l.GetFlavour()) << ", pt: " << l.Pt() << ", iso: " <<
