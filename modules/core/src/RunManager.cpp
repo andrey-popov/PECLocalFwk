@@ -36,12 +36,6 @@ void RunManager::Process(double loadFraction)
 }
 
 
-PECReaderConfig &RunManager::GetPECReaderConfig()
-{
-    return *readerConfig.get();
-}
-
-
 void RunManager::RegisterService(Service *service)
 {
     services.emplace_back(unique_ptr<Service>(service));

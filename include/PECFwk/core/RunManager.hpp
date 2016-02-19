@@ -1,20 +1,15 @@
-/**
- * \file RunManager.hpp
- * 
- * Module describes a class to process datasets in parallel
- */
-
 #pragma once
 
 #include <PECFwk/core/Dataset.hpp>
-#include <PECFwk/core/Service.hpp>
 #include <PECFwk/core/Plugin.hpp>
-#include <PECFwk/core/ProcessorForward.hpp>
-#include <PECFwk/core/PECReaderConfig.hpp>
+#include <PECFwk/core/Service.hpp>
 
 #include <queue>
 #include <mutex>
 #include <memory>
+
+
+class Processor;
 
 
 /**
@@ -53,14 +48,6 @@ public:
     void Process(double loadFraction);
     
     /**
-     * \brief Returns a reference to local configuration object for PECReader
-     * 
-     * Method enables the user to adjust configuration that is forwarded to instances of class
-     * PECReader.
-     */
-    PECReaderConfig &GetPECReaderConfig();
-    
-    /**
      * \brief Adds a new service
      * 
      * The service is owned by RunManager. Names of all registered services must be unique;
@@ -88,9 +75,6 @@ private:
     /// A mutex to lock container with atomic datasets
     std::mutex mutexDatasets;
     
-    /// Configuration for PECReader
-    std::unique_ptr<PECReaderConfig> readerConfig;
-    
     /**
      * \brief Vector of registered services
      * 
@@ -106,8 +90,7 @@ friend class Processor;
 
 
 template<typename InputIt>
-RunManager::RunManager(InputIt const &datasetsBegin, InputIt const &datasetsEnd):
-    readerConfig(new PECReaderConfig)
+RunManager::RunManager(InputIt const &datasetsBegin, InputIt const &datasetsEnd)
 {
     // Fill container with atomic datasets
     for (InputIt d = datasetsBegin; d != datasetsEnd; ++d)

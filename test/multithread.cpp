@@ -79,6 +79,7 @@ int main()
     // Construct the run manager
     RunManager manager(datasets.begin(), datasets.end());
     
+    #if 0
     // Set the configuration for PECReader
     auto &config = manager.GetPECReaderConfig();
     config.SetModule(&triggerSel);
@@ -86,6 +87,7 @@ int main()
     config.SetModule(bTagger);
     config.SetModule(&bTagReweighter);
     config.SetModule(&weigtPileUp);
+    #endif
     
     // Register a plugin
     manager.RegisterPlugin(new BasicKinematicsPlugin("basicTuples"));
