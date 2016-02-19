@@ -9,6 +9,7 @@
 #include <PECFwk/extensions/WeightBTag.hpp>
 #include <PECFwk/extensions/TriggerSelection.hpp>
 
+#include <PECFwk/extensions/LeptonFilter.hpp>
 #include <PECFwk/PECReader/PECGeneratorReader.hpp>
 #include <PECFwk/PECReader/PECInputData.hpp>
 #include <PECFwk/PECReader/PECJetMETReader.hpp>
@@ -101,6 +102,7 @@ int main()
     
     processor.RegisterPlugin(new PECInputData);
     processor.RegisterPlugin(new PECLeptonReader);
+    processor.RegisterPlugin(new LeptonFilter("LeptonFilter", Lepton::Flavour::Muon, 22., 2.1));
     
     PECJetMETReader *jetReader = new PECJetMETReader;
     jetReader->SetSelection(30., 2.4);
@@ -123,7 +125,7 @@ int main()
     
     
     // Loop over few events
-    for (unsigned i = 0; i < 20; ++i)
+    for (unsigned i = 0; i < 100; ++i)
     {
         // Process a new event from the dataset
         Plugin::EventOutcome const status = processor.ProcessEvent();
