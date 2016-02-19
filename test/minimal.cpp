@@ -9,6 +9,7 @@
 #include <PECFwk/extensions/WeightBTag.hpp>
 #include <PECFwk/extensions/TriggerSelection.hpp>
 
+#include <PECFwk/extensions/JetFilter.hpp>
 #include <PECFwk/extensions/LeptonFilter.hpp>
 #include <PECFwk/PECReader/PECGeneratorReader.hpp>
 #include <PECFwk/PECReader/PECInputData.hpp>
@@ -107,6 +108,10 @@ int main()
     PECJetMETReader *jetReader = new PECJetMETReader;
     jetReader->SetSelection(30., 2.4);
     processor.RegisterPlugin(jetReader);
+    
+    JetFilter *jetFilter = new JetFilter;
+    jetFilter->AddSelectionBin(4, -1, 2, 2);
+    processor.RegisterPlugin(jetFilter);
     
     processor.RegisterPlugin(new PECPileUpReader);
     processor.RegisterPlugin(new PECGeneratorReader);
