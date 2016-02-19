@@ -23,8 +23,8 @@ void PECPileUpReader::BeginRun(Dataset const &)
       GetMaster().GetPluginBefore(inputDataPluginName, GetName()));
     
     
-    // Set the tree with pile-up information. Attributes of the PileUpInfo class that are not used,
-    //are not read
+    // Set up the tree with pile-up information. Attributes of the PileUpInfo class that are not
+    //used are not read
     inputDataPlugin->LoadTree(treeName);
     TTree *tree = inputDataPlugin->ExposeTree(treeName);
     tree->SetBranchStatus("puInfo.inTimePU", false);

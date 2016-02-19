@@ -9,6 +9,7 @@
 #include <PECFwk/extensions/WeightBTag.hpp>
 #include <PECFwk/extensions/TriggerSelection.hpp>
 
+#include <PECFwk/PECReader/PECGeneratorReader.hpp>
 #include <PECFwk/PECReader/PECInputData.hpp>
 #include <PECFwk/PECReader/PECJetMETReader.hpp>
 #include <PECFwk/PECReader/PECLeptonReader.hpp>
@@ -105,6 +106,7 @@ int main()
     processor.RegisterPlugin(jetReader);
     
     processor.RegisterPlugin(new PECPileUpReader);
+    processor.RegisterPlugin(new PECGeneratorReader);
     
     processor.OpenDataset(dataTTbar);
     
@@ -112,6 +114,8 @@ int main()
       dynamic_cast<LeptonReader const *>(processor.GetPlugin("Leptons"));
     PileUpReader const *puReader =
       dynamic_cast<PileUpReader const *>(processor.GetPlugin("PileUp"));
+    PECGeneratorReader const *generatorReader =
+      dynamic_cast<PECGeneratorReader const *>(processor.GetPlugin("Generator"));
     
     
     // Loop over few events
@@ -142,6 +146,8 @@ int main()
         
         cout << "\nPile-up info:\n #PV: " << puReader->GetNumVertices() << ", rho: " <<
           puReader->GetRho() << '\n';
+        
+        cout << "\nNominal GEN-level weight: " << generatorReader->GetNominalWeight() << '\n';
         
         cout << "\n\n";
     }
