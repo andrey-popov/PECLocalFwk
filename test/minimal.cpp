@@ -7,7 +7,6 @@
 #include <PECFwk/extensions/BTagEfficiencies.hpp>
 #include <PECFwk/extensions/BTagScaleFactors.hpp>
 #include <PECFwk/extensions/WeightBTag.hpp>
-#include <PECFwk/extensions/TriggerSelection.hpp>
 
 #include <PECFwk/extensions/JetFilter.hpp>
 #include <PECFwk/extensions/LeptonFilter.hpp>
@@ -17,6 +16,7 @@
 #include <PECFwk/PECReader/PECJetMETReader.hpp>
 #include <PECFwk/PECReader/PECLeptonReader.hpp>
 #include <PECFwk/PECReader/PECPileUpReader.hpp>
+#include <PECFwk/PECReader/PECTriggerFilter.hpp>
 
 #include <iostream>
 #include <memory>

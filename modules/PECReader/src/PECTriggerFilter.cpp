@@ -1,4 +1,4 @@
-#include <PECFwk/extensions/TriggerSelection.hpp>
+#include <PECFwk/PECReader/PECTriggerFilter.hpp>
 
 #include <TTree.h>
 

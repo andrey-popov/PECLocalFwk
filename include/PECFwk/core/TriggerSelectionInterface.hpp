@@ -39,7 +39,7 @@ class TTree;
  * for the current file under processing. In order to allow such behaviour, a derived class must
  * provide an implementation for method Clone.
  */
-class TriggerSelectionInterface
+class [[deprecated]] TriggerSelectionInterface
 {
 public:
     /// Constructor with no arguments

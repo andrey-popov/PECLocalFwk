@@ -1,13 +1,7 @@
-/**
- * \file TriggerSelection.hpp
- * 
- * The module implements classes to perform a trigger selection in case of real data and simulation.
- */
-
 #pragma once
 
 #include <PECFwk/core/TriggerSelectionInterface.hpp>
-#include <PECFwk/core/TriggerRange.hpp>
+#include <PECFwk/extensions/TriggerRange.hpp>
 
 #include <Rtypes.h>
 
