@@ -1,110 +1,162 @@
 #pragma once
 
-#include <PECFwk/core/TriggerSelectionInterface.hpp>
+#include <PECFwk/core/AnalysisPlugin.hpp>
+
 #include <PECFwk/extensions/TriggerRange.hpp>
 
 #include <Rtypes.h>
 
-#include <vector>
-#include <map>
-#include <memory>
-#include <utility>
 #include <stdexcept>
+#include <utility>
+#include <vector>
+
+
+class PECInputData;
+class TTree;
 
 
 /**
- * \class TriggerSelectionData
- * \brief Implements a generic trigger selection for real data
+ * \class PECTriggerFilter
+ * \brief An abstract base class to perform trigger selection
+ */
+class PECTriggerFilter: public AnalysisPlugin
+{
+public:
+    /// Creates plugin with the given name
+    PECTriggerFilter(std::string const name = "PECTriggerFilter");
+    
+    /// Default copy constructor
+    PECTriggerFilter(PECTriggerFilter const &) = default;
+    
+    /// Default move constructor
+    PECTriggerFilter(PECTriggerFilter &&) = default;
+    
+    /// Assignment operator is deleted
+    PECTriggerFilter &operator=(PECTriggerFilter const &) = delete;
+    
+    /// Trivial destructor
+    virtual ~PECTriggerFilter();
+    
+public:
+    /**
+     * \brief Requests reading of the tree with trigger information
+     * 
+     * All branches of the tree are disabled.
+     * 
+     * Reimplemented from Plugin.
+     */
+    virtual void BeginRun(Dataset const &) override;
+    
+    /**
+     * \brief Creates a newly configured clone
+     * 
+     * Overrides method from Plugin.
+     */
+    virtual Plugin *Clone() const override = 0;
+
+    /**
+     * \brief Calculates weight of the current event
+     * 
+     * In the default implementation returns 1.
+     */
+    virtual double GetWeight() const;
+    
+protected:
+    /// Name of the plugin that reads PEC files
+    std::string inputDataPluginName;
+    
+    /// Non-owning pointer to a plugin that reads PEC files
+    PECInputData const *inputDataPlugin;
+    
+    /// Name of the tree containing trigger information
+    std::string triggerTreeName;
+    
+    /// Non-owning pointer to the tree with trigger information
+    TTree *triggerTree;
+};
+
+
+
+/**
+ * \class PECTriggerFilterData
+ * \brief Implements a trigger selection for data
  * 
  * The selection is described by a collection of TriggerRange objects. They must provide a valid
  * data trigger for each event in the dataset that will be processed; if the trigger corresponding
  * to a specific event is not found in the trigger tree, an exception is thrown.
  * 
- * Only necessary branches of the trigger tree are read. The GetWeight method only performs an
- * (optinal) event selection specified in the corresponding TriggerRange object; thus, the weight
- * returned is either 0. or 1.
- * 
- * The class is not thread-safe.
+ * Only necessary branches of the trigger tree are read. The GetWeight method always returns 1.
  */
-class TriggerSelectionData: public TriggerSelectionInterface
+class PECTriggerFilterData: public PECTriggerFilter
 {
 public:
     /**
-     * \brief Constructs an instance from a collection of TriggerRange objects
+     * \brief Constructs a filter with the given name and trigger selection
      * 
-     * The argument is a reference to a collection of TriggerRange objects. The collection must
-     * be a valid container. Internally, only pointers to the TriggerRange objects are stored;
-     * therefore, the objects must be available during the lifetime of this. They are not owned
-     * by this.
-     * 
-     * The trigger ranges given to the constructor are expected not to overlap. Otherwise the
-     * behaviour of trigger selection is undefined.
+     * The trigger selection is described by an STL collection of TriggerRange objects. Internally,
+     * only pointers to the TriggerRange objects are stored; therefore, the objects must be
+     * available during the lifetime of PECTriggerFilter. They are not owned by the object. The
+     * trigger ranges are expected not to overlap. Otherwise the behaviour of trigger selection is
+     * undefined.
      */
     template<typename C>
-    TriggerSelectionData(C const &ranges);
+    PECTriggerFilterData(std::string const &name, C const &ranges);
     
-    /**
-     * \brief Constructs an instance from a vector of pointers to TriggerRange objets
+    /** 
+     * \brief Construct a filter with the given trigger selection
      * 
-     * The objects must be available during the lifetime of this. They are not owned by this.
+     * A short-cut for the above version with a default name "PECTriggerFilterData".
      */
-    TriggerSelectionData(std::vector<TriggerRange const *> const &ranges);
-
+    template<typename C>
+    PECTriggerFilterData(C const &ranges);
+    
+    /// Default copy constructor
+    PECTriggerFilterData(PECTriggerFilterData const &) = default;
+    
+    /// Default move constructor
+    PECTriggerFilterData(PECTriggerFilterData &&) = default;
+    
+    /// Assignment operator is deleted
+    PECTriggerFilterData &operator=(PECTriggerFilterData const &) = delete;
+    
+    /// Trivial destructor
+    virtual ~PECTriggerFilterData();
+    
 public:
     /**
-     * \brief Resets the pointer to the trigger tree
+     * \brief Requests reading of the tree with trigger information
      * 
-     * Consult documentation of the overridden method in the base class for a description of
-     * the purpose of this method. The value of second argument is ignored.
+     * Throws an exception if the given dataset is simulated.
      * 
-     * Implimentation in this class simply updates the pointer and corresponding counters.
+     * Reimplemented from PECTriggerFilter.
      */
-    virtual void UpdateTree(TTree *triggerTree, bool);
+    virtual void BeginRun(Dataset const &dataset) override;
     
     /**
-     * \brief Reads next event from the trigger tree
+     * \brief Creates a newly configured clone
      * 
-     * Consult documentation of the overridden method in the base class for a description of
-     * the purpose of this method.
-     * 
-     * Before reading the next entry from the tree, the method checks if the trigger range
-     * corresponding to the given event ID is different from the one used with previous event.
-     * If it is the case, it changes the branch which is read from the tree.
+     * Reimplemented from PECTriggerFilter.
      */
-    virtual bool ReadNextEvent(EventID const &eventID);
+    virtual Plugin *Clone() const override;
+    
+private:
+    /// Stores pointers to provided TriggerRange objects in the internal collection
+    template<typename C>
+    void ConstructRanges(C const &ranges);
     
     /**
-     * \brief Checks if the current event is accepted by the corresponding trigger
+     * \brief Checks if the data trigger in the current trigger range accepts the event
      * 
-     * Consult documentation of the overridden method in the base class for a description of
-     * the purpose of this method.
+     * Implemented from Plugin.
      */
-    virtual bool PassTrigger() const;
+    virtual bool ProcessEvent() override;
     
-    /**
-     * \brief Checks if an event passes an additional selection
-     * 
-     * Consult documentation of the overridden method in the base class for a description of
-     * the purpose of this method.
-     * 
-     * The method returns either 0. or 1.
-     */
-    virtual double GetWeight(PECReader const &reader) const;
-    
-    /**
-     * \brief Clones this
-     * 
-     * Consult documentation of the overridden method in the base class for a description of
-     * the purpose of this method.
-     */
-    virtual TriggerSelectionInterface *Clone() const;
-
 private:
     /**
      * \brief Pointers to TriggerRange objects that define the trigger selection
      * 
-     * The pointed-to objects must be available during the lifetime of this. They are not owned
-     * by this.
+     * The pointed-to objects must be available during the lifetime of PECTriggerFilter. They are
+     * not owned by this class.
      */
     std::vector<TriggerRange const *> ranges;
     
@@ -116,20 +168,36 @@ private:
      */
     TriggerRange const *currentRange;
     
-    /// The buffer into which results of the selected trigger are read
-    Bool_t eventAccepted;
+    /// Buffer into which decision of the selected trigger is read
+    Bool_t bfAccepted;
 };
 
 
 template<typename C>
-TriggerSelectionData::TriggerSelectionData(C const &ranges_):
-    TriggerSelectionInterface(),
+PECTriggerFilterData::PECTriggerFilterData(std::string const &name, C const &ranges_):
+    PECTriggerFilter(name),
     currentRange(nullptr)
 {
-    // First a sanity check
+    ConstructRanges(ranges_);
+}
+
+
+template<typename C>
+PECTriggerFilterData::PECTriggerFilterData(C const &ranges_):
+    PECTriggerFilter("PECTriggerFilterData"),
+    currentRange(nullptr)
+{
+    ConstructRanges(ranges_);
+}
+
+
+template<typename C>
+void PECTriggerFilterData::ConstructRanges(C const &ranges_)
+{
+    // A sanity check
     if (ranges_.size() == 0)
-        throw std::logic_error("TriggerSelectionData::TriggerSelectionData: The provided "
-         "collection of TriggerRange objects is empty.");
+        throw std::logic_error("PECTriggerFilterData::ConstructRanges: Provided collection of "
+          "TriggerRange objects is empty.");
     
     
     // Save pointers to the TriggerRange objects
@@ -140,147 +208,139 @@ TriggerSelectionData::TriggerSelectionData(C const &ranges_):
 }
 
 
+
 /**
- * \class TriggerSelectionMC
- * \brief Implements a generic trigger selection for simulation
+ * \class PECTriggerFilterMC
+ * \brief Implements a trigger selection for data
  * 
- * The selection is described by a collection of TriggerRange objects. The MC triggers specified
- * there must be available in all datasets analysed with this class; otherwise an exception is
- * thrown.
+ * The selection is described by a collection of TriggerRange objects. All provided MC triggers
+ * must be present.
  * 
- * An event passes the first step of the trigger selection if it is accepted by at least one of
- * the MC triggers. At the second step it is assigned a weight calculated as a sum of integrated
- * luminosities for all triggers that accept the event. It might further be corrected by the
- * trigger scale factors (not implemented yet). In addition, each TriggerRange object might define
- * an optional event selection, which is also evaluated when the weight is calculated.
- * 
- * The class is not thread-safe.
+ * An event passes the trigger selection if it is accepted by at least one of the MC triggers. It
+ * is assigned a weight calculated as a sum of integrated luminosities for all triggers that accept
+ * the event.
  */
-class TriggerSelectionMC: public TriggerSelectionInterface
+class PECTriggerFilterMC: public PECTriggerFilter
 {
 public:
     /**
-     * \brief Constructs an instance from a collection of TriggerRange objects
+     * \brief Constructs a filter with the given name and trigger selection
      * 
-     * The argument is a reference to a collection of TriggerRange objects. The collection must
-     * be iterable. Internally, only pointers to the TriggerRange objects are stored; therefore,
-     * the objects must be available during the lifetime of this. They are not owned by this.
+     * The trigger selection is described by an STL collection of TriggerRange objects. Internally,
+     * only pointers to the TriggerRange objects are stored; therefore, the objects must be
+     * available during the lifetime of PECTriggerFilter. They are not owned by the object.
      */
     template<typename C>
-    TriggerSelectionMC(C const &ranges);
+    PECTriggerFilterMC(std::string const &name, C const &ranges);
     
-    /**
-     * \brief Constructs an instance from a vector of pointers to TriggerRange objets
+    /** 
+     * \brief Construct a filter with the given trigger selection
      * 
-     * The objects must be available during the lifetime of this. They are not owned by this.
+     * A short-cut for the above version with a default name "PECTriggerFilterMC".
      */
-    TriggerSelectionMC(std::vector<TriggerRange const *> const &ranges);
+    template<typename C>
+    PECTriggerFilterMC(C const &ranges);
+    
+    /// Default copy constructor
+    PECTriggerFilterMC(PECTriggerFilterMC const &) = default;
+    
+    /// Default move constructor
+    PECTriggerFilterMC(PECTriggerFilterMC &&) = default;
+    
+    /// Assignment operator is deleted
+    PECTriggerFilterMC &operator=(PECTriggerFilterMC const &) = delete;
     
     /// Destructor
-    ~TriggerSelectionMC();
+    virtual ~PECTriggerFilterMC();
 
 public:
     /**
-     * \brief Resets the pointer to the trigger tree
+     * \brief Requests reading of the tree with trigger information and sets up its branches
      * 
-     * Consult documentation of the overridden method in the base class for a description of
-     * the purpose of this method. The value of second argument is ignored.
+     * Sets up the tree to read decisions of MC triggers in all registered TriggerRange objects.
+     * Throws an exception if the given dataset is data.
      * 
-     * Updates the pointer and corresponding counters. Sets addresses for branches of the
-     * new trigger tree containining information about all the MC triggers specified in the
-     * TriggerRange objects. The second argument is ignored.
+     * Reimplemented from PECTriggerFilter.
      */
-    virtual void UpdateTree(TTree *triggerTree, bool);
+    virtual void BeginRun(Dataset const &dataset) override;
     
     /**
-     * \brief Reads next event from the trigger tree
+     * \brief Creates a newly configured clone
      * 
-     * Consult documentation of the overridden method in the base class for a description of
-     * the purpose of this method.
-     * 
-     * Reads all the active branches to the corresponding buffers. Throws an exception in case
-     * the tree has not been specified. The argument is ignored.
+     * Reimplemented from PECTriggerFilter.
      */
-    virtual bool ReadNextEvent(EventID const &);
+    virtual Plugin *Clone() const override;
     
     /**
-     * \brief Checks if the current event is accepted by the corresponding triggers
-     * 
-     * Consult documentation of the overridden method in the base class for a description of
-     * the purpose of this method.
-     * 
-     * The method returns true if at least one of the specified MC triggers accepts the event.
-     */
-    virtual bool PassTrigger() const;
-    
-    /**
-     * \brief Checks if an event passes an additional selection
-     * 
-     * Consult documentation of the overridden method in the base class for a description of
-     * the purpose of this method.
+     * \brief Calculates weight of the current event taking into account integrated luminosity
      * 
      * All the TriggerRange objects are considered. The weight is calculated as a sum of
-     * integrated luminosities multiplied by the scale factors; the sum is taken over those
-     * ranges for which the event passes the additional selection and is accepted by the
-     * corresponding MC trigger. No systematical variation is implemented.
+     * integrated luminosities of those ranges for which the event is accepted by the corresponding
+     * MC triggers.
      */
-    virtual double GetWeight(PECReader const &reader) const;
+    virtual double GetWeight() const;
+    
+private:
+    /// Stores pointers to provided TriggerRange objects in the internal collection
+    template<typename C>
+    void ConstructRanges(C const &ranges);
     
     /**
-     * \brief Clones this
+     * \brief Checks decisions of all MC triggers and accepts the event if at least one trigger is
+     * satisfied
      * 
-     * Consult documentation of the overridden method in the base class for a description of
-     * the purpose of this method.
+     * Implemented from Plugin.
      */
-    virtual TriggerSelectionInterface *Clone() const;
-
-protected:
-    /**
-     * \brief Calculates the trigger scale factor
-     * 
-     * This is a placeholder which always returns 1. The user can override this method. The
-     * functionality of the class should also be extended to allow to specify arbitrary
-     * callable expression, similar to how it is done in TriggerRange class. Note the
-     * systematical variations are not implemented and are likely to require changes in the
-     * trigger interface.
-     */
-    virtual double ScaleFactor(TriggerRange const *range, PECReader const &reader) const;
-
+    virtual bool ProcessEvent() override;
+    
 private:
     /**
-     * \brief Pointers to TriggerRange objects that define the trigger selection and buffers
-     * that store trigger states
+     * \brief Non-owning pointers to TriggerRange objects that define the trigger selection and
+     * buffers that store trigger decisions
      * 
-     * The pointed-to TriggerRange objects must be available during the lifetime of this. They
-     * are not owned by this.
-     * 
-     * The buffers to which pair::second point store decisions of the corresponding MC triggers.
-     * All the buffers are allocated in a block, to which the buffer variable points. Such
-     * organisation is preferred to using Bool_t in pair::second because the same MC trigger
-     * can be specified in several trigger ranges.
+     * The buffers to which pair::second point, store decisions of the corresponding MC triggers.
+     * All the buffers are allocated in a block, to which the attribute 'buffer' points. Such
+     * organization is preferred to using Bool_t in pair::second because the same MC trigger
+     * might be specified in several trigger ranges.
      */
     std::vector<std::pair<TriggerRange const *, Bool_t *>> ranges;
     
     /**
-     * \brief Buffer into which the trigger decision are read
+     * \brief Buffer into which trigger decisions are read
      * 
-     * Points to a dinamycally allocated array. The buffers are normally accessed via pointers
-     * in ranges::value_type::second. This variable is only used to initialise them and set
-     * branches' addresses.
+     * Points to a dynamically allocated array. The buffers are normally accessed via pointers
+     * in ranges::value_type::second. This variable is only used to initialize them and set
+     * addresses of branches.
      */
     Bool_t *buffer;
 };
 
 
 template<typename C>
-TriggerSelectionMC::TriggerSelectionMC(C const &ranges_):
-    TriggerSelectionInterface(),
+PECTriggerFilterMC::PECTriggerFilterMC(std::string const &name, C const &ranges_):
+    PECTriggerFilter(name),
     buffer(nullptr)
 {
-    // First a sanity check
+    ConstructRanges(ranges_);
+}
+
+
+template<typename C>
+PECTriggerFilterMC::PECTriggerFilterMC(C const &ranges_):
+    PECTriggerFilter("PECTriggerFilterMC"),
+    buffer(nullptr)
+{
+    ConstructRanges(ranges_);
+}
+
+
+template<typename C>
+void PECTriggerFilterMC::ConstructRanges(C const &ranges_)
+{
+    // A sanity check
     if (ranges_.size() == 0)
-        throw std::logic_error("TriggerSelectionMC::TriggerSelectionMC: The provided "
-         "collection of TriggerRange objects is empty.");
+        throw std::logic_error("PECTriggerFilterMC::ConstructRanges: Provided collection of "
+          "TriggerRange objects is empty.");
     
     
     // Save pointers to the TriggerRange objects
@@ -291,121 +351,13 @@ TriggerSelectionMC::TriggerSelectionMC(C const &ranges_):
 }
 
 
-/**
- * \class TriggerSelection
- * \brief A class to perform a generic trigger selection
- * 
- * When the method UpdateTree is called, the class creates an instance of either TriggerSelectionMC
- * or TriggerSelectionData, depending on the context. Later on it works as a simple proxy for this
- * selection object. The tree pointer and corresponding counters inherited from
- * TriggerSelectionInterface are never used.
- * 
- * The class is not thread-safe.
- */
-class TriggerSelection: public TriggerSelectionInterface
+
+/// A simple short-cut to construct trigger filters for data or simulation
+template<typename... Args>
+PECTriggerFilter *BuildPECTriggerFilter(bool isData, Args... args)
 {
-public:
-    /**
-     * \brief Constructs an instance from a collection of TriggerRange objects
-     * 
-     * The argument is a reference to a collection of TriggerRange objects. The collection must
-     * be iterable. Internally, only pointers to the TriggerRange objects are stored; therefore,
-     * the objects must be available during the lifetime of this. They are not owned by this.
-     */
-    template<typename C>
-    TriggerSelection(C const &ranges);
-    
-    /**
-     * \brief Constructs an instance from a vector of pointers to TriggerRange objets
-     * 
-     * The objects must be available during the lifetime of this. They are not owned by this.
-     */
-    TriggerSelection(std::vector<TriggerRange const *> const &ranges);
-
-public:
-    /**
-     * \brief Resets the pointer to the trigger tree
-     * 
-     * Consult documentation of the overridden method in the base class for a description of
-     * the purpose of this method. The value of second argument is ignored.
-     * 
-     * Creates an object to perform the trigger selection on data or on simulation depending on
-     * the provided flag.
-     */
-    virtual void UpdateTree(TTree *triggerTree, bool isData);
-    
-    /**
-     * \brief Reads next event from the trigger tree
-     * 
-     * Consult documentation of the overridden method in the base class for a description of
-     * the purpose of this method.
-     * 
-     * Simply calls ReadNextEvent of the selection object.
-     */
-    virtual bool ReadNextEvent(EventID const &eventID);
-    
-    /**
-     * \brief Checks if the current event is accepted by the corresponding triggers
-     * 
-     * Consult documentation of the overridden method in the base class for a description of
-     * the purpose of this method.
-     * 
-     * Simply calls PassTrigger of the selection object.
-     */
-    virtual bool PassTrigger() const;
-    
-    /**
-     * \brief Checks if an event passes an additional selection
-     * 
-     * Consult documentation of the overridden method in the base class for a description of
-     * the purpose of this method.
-     * 
-     * All the TriggerRange objects are considered. The weight is calculated as a sum of
-     * integrated luminosities multiplied by the scale factors; the sum is taken over those
-     * ranges for which the event passes the additional selection and is accepted by the
-     * corresponding MC trigger. No systematical variation is implemented.
-     */
-    virtual double GetWeight(PECReader const &reader) const;
-    
-    /**
-     * \brief Clones this
-     * 
-     * Consult documentation of the overridden method in the base class for a description of
-     * the purpose of this method.
-     */
-    virtual TriggerSelectionInterface *Clone() const;
-
-private:
-    /**
-     * \brief Pointers to TriggerRange objects that define the trigger selection
-     * 
-     * The pointed-to objects must be available during the lifetime of this. They are not owned
-     * by this.
-     */
-    std::vector<TriggerRange const *> ranges;
-    
-    /**
-     * \brief An object that performs the actual trigger selection
-     * 
-     * It is an instance of either TriggerSelectionMC or TriggerSelectionData.
-     */
-    std::unique_ptr<TriggerSelectionInterface> selection;
-};
-
-
-template<typename C>
-TriggerSelection::TriggerSelection(C const &ranges_):
-    TriggerSelectionInterface()
-{
-    // First a sanity check
-    if (ranges_.size() == 0)
-        throw std::logic_error("TriggerSelection::TriggerSelection: The provided "
-         "collection of TriggerRange objects is empty.");
-    
-    
-    // Save pointers to the TriggerRange objects
-    ranges.reserve(ranges_.size());
-    
-    for (typename C::const_iterator it = ranges_.cbegin(); it != ranges_.cend(); ++it)
-        ranges.push_back(&*it);
+    if (isData)
+        return new PECTriggerFilterData(args...);
+    else
+        return new PECTriggerFilterMC(args...);
 }

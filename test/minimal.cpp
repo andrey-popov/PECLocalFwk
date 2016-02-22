@@ -94,27 +94,35 @@ int main()
     #endif
     
     
+    // Datasets
     Dataset dataTTbar({Dataset::Process::ttbar, Dataset::Process::ttSemilep},
      Dataset::Generator::MadGraph, Dataset::ShowerGenerator::Pythia);
     dataTTbar.AddFile("/gridgroup/cms/popov/Analyses/ZPrimeToTT/2016.01.15_Grid-campaign/PEC/"
      "ExampleOutputFiles/ttbar-pw_3.0.0_VmF_1.root", 1., 1);
     
     
+    // Triggers
+    list<TriggerRange> triggerRanges;
+    triggerRanges.emplace_back(0, -1, "IsoMu20", 2.2e3, "IsoMu20");
+    
+    
+    // Processor object and plugins
     Processor processor;
     
     processor.RegisterPlugin(new PECInputData);
+    processor.RegisterPlugin(BuildPECTriggerFilter(false, triggerRanges));
     processor.RegisterPlugin(new PECLeptonReader);
-    processor.RegisterPlugin(new LeptonFilter("LeptonFilter", Lepton::Flavour::Muon, 22., 2.1));
+    // processor.RegisterPlugin(new LeptonFilter("LeptonFilter", Lepton::Flavour::Muon, 22., 2.1));
     
     PECJetMETReader *jetReader = new PECJetMETReader;
     jetReader->SetSelection(30., 2.4);
     processor.RegisterPlugin(jetReader);
     
-    JetFilter *jetFilter = new JetFilter;
-    jetFilter->AddSelectionBin(4, -1, 2, 2);
-    processor.RegisterPlugin(jetFilter);
+    // JetFilter *jetFilter = new JetFilter;
+    // jetFilter->AddSelectionBin(4, -1, 2, 2);
+    // processor.RegisterPlugin(jetFilter);
     
-    processor.RegisterPlugin(new MetFilter(MetFilter::Mode::MtW, 40.));
+    // processor.RegisterPlugin(new MetFilter(MetFilter::Mode::MtW, 40.));
     processor.RegisterPlugin(new PECPileUpReader);
     processor.RegisterPlugin(new PECGeneratorReader);
     
@@ -132,7 +140,8 @@ int main()
     
     
     // Loop over few events
-    for (unsigned i = 0; i < 500; ++i)
+    // for (unsigned i = 0; i < 500; ++i)
+    for (unsigned i = 0; i < 20; ++i)
     {
         // Process a new event from the dataset
         Plugin::EventOutcome const status = processor.ProcessEvent();

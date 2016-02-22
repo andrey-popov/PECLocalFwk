@@ -1,75 +1,102 @@
 #include <PECFwk/PECReader/PECTriggerFilter.hpp>
 
-#include <TTree.h>
+#include <PECFwk/core/Processor.hpp>
+#include <PECFwk/PECReader/PECInputData.hpp>
 
 #include <algorithm>
 
 
-using namespace std;
+using namespace std::literals::string_literals;
 
 
-TriggerSelectionData::TriggerSelectionData(vector<TriggerRange const *> const &ranges_):
-    TriggerSelectionInterface(),
-    ranges(ranges_),
-    currentRange(nullptr)
+PECTriggerFilter::PECTriggerFilter(std::string const name /*= "PECTriggerFilter"*/):
+    AnalysisPlugin(name),
+    inputDataPluginName("InputData"), inputDataPlugin(nullptr),
+    triggerTreeName("pecTrigger/TriggerInfo"), triggerTree(nullptr)
+{}
+
+
+PECTriggerFilter::~PECTriggerFilter()
+{}
+
+
+void PECTriggerFilter::BeginRun(Dataset const &)
 {
-    // A sanity check
-    if (ranges_.size() == 0)
-        throw std::logic_error("TriggerSelectionData::TriggerSelectionData: The provided "
-         "collection of pointers to TriggerRange objects is empty.");
-}
-
-
-void TriggerSelectionData::UpdateTree(TTree *triggerTree_, bool)
-{
-    // Update the tree pointer and counters
-    triggerTree = triggerTree_;
-    nEntriesTree = triggerTree->GetEntries();
-    nextEntryTree = 0;
+    // Find the plugin that reads input files
+    inputDataPlugin = dynamic_cast<PECInputData const *>(
+      GetMaster().GetPluginBefore(inputDataPluginName, GetName()));
     
+    // Register reading the tree with trigger information and by default disable all branches
+    inputDataPlugin->LoadTree(triggerTreeName);
+    triggerTree = inputDataPlugin->ExposeTree(triggerTreeName);
     triggerTree->SetBranchStatus("*", false);
-    
-    
-    // Invalidate the current range
-    currentRange = nullptr;
 }
 
 
-bool TriggerSelectionData::ReadNextEvent(EventID const &eventID)
+double PECTriggerFilter::GetWeight() const
 {
-    // A sanity check
-    if (not triggerTree)
-        throw logic_error("TriggerSelectionData::ReadNextEvent: Attempting to read an unspecified "
-         "trigger tree.");
+    return 1.;
+}
+
+
+
+// PECTriggerFilterData::PECTriggerFilterData(std::string const &name, C const &ranges);
+// (Defined in the header)
+
+
+// PECTriggerFilterData::PECTriggerFilterData(C const &ranges);
+// (Defined in the header)
+
+
+PECTriggerFilterData::~PECTriggerFilterData()
+{}
+
+
+void PECTriggerFilterData::BeginRun(Dataset const &dataset)
+{
+    // Make sure this is actually data
+    if (dataset.IsMC())
+        throw std::logic_error("PECTriggerFilterData::BeginRun: This class is intended to be used "
+          "with data, but the input dataset is simulated.");
     
     
-    // Check if there are still events to read
-    if (nextEntryTree == nEntriesTree)
-        return false;
+    // Set up the pointer to PECInputData and register reading of the trigger tree
+    PECTriggerFilter::BeginRun(dataset);
+}
+
+
+Plugin *PECTriggerFilterData::Clone() const
+{
+    return new PECTriggerFilterData(*this);
+}
+
+
+// void PECTriggerFilterData::ConstructRanges(C const &ranges);
+// (Defined in the header)
+
+
+bool PECTriggerFilterData::ProcessEvent()
+{
+    // Check if the current trigger range includes the current event and update it if needed
+    auto const &eventID = inputDataPlugin->GetEventID();
     
-    
-    // Check if the current trigger range accommodates the given event ID and update it if needed
     if (not currentRange or not currentRange->InRange(eventID))
     {
-        // Find the range that contains the event with the given ID
-        auto res = find_if(ranges.begin(), ranges.end(),
+        // Find the range that contains the current event
+        auto res = std::find_if(ranges.begin(), ranges.end(),
          [&eventID](TriggerRange const *r){return (r->InRange(eventID));});
         
         if (res == ranges.end())
         // No range contains the given event ID
         {
-            // Set the state of the object such that the event will be rejected
+            // Reset the current range and reject the event
             currentRange = nullptr;
-            eventAccepted = false;
-            
-            // There is no need to actually read the event. Just update the counter
-            ++nextEntryTree;
-            return true;
+            return false;
         }
         
         
-        // A valid trigger range has been found. Get the corresponding branch of the tree and assign
-        //the buffer to it
+        // A valid trigger range has been found. Get the corresponding branch of the tree and
+        //assign the buffer to it
         currentRange = *res;
         triggerTree->SetBranchStatus("*", false);
         
@@ -77,73 +104,48 @@ bool TriggerSelectionData::ReadNextEvent(EventID const &eventID)
          triggerTree->GetBranch((currentRange->GetDataTriggerPattern() + "__accept").c_str());
         
         if (not branch)
-            throw runtime_error(string("TriggerSelectionData::ReadNextEvent: State of the "
-             "trigger \"HLT_") + currentRange->GetDataTriggerPattern() + "_v*\" is not stored in "
-             "the source tree.");
+            throw std::runtime_error("PECTriggerFilterData::ProcessEvent: State of the trigger "s +
+             "\"HLT_" + currentRange->GetDataTriggerPattern() + "_v*\" is not stored in the "
+             "source tree.");
         
         branch->SetStatus(true);
-        branch->SetAddress(&eventAccepted);
+        branch->SetAddress(&bfAccepted);
     }
     
     
-    // Finally, read the event
-    triggerTree->GetEntry(nextEntryTree);
-    ++nextEntryTree;
-    
-    return true;
-}
-
-
-bool TriggerSelectionData::PassTrigger() const
-{
-    // Everything has already been done in ReadNextEvent
-    return eventAccepted;
-}
-
-
-double TriggerSelectionData::GetWeight(PECReader const &reader) const
-{
-    return (currentRange->PassEventSelection(reader)) ? 1. : 0.;
-}
-
-
-TriggerSelectionInterface *TriggerSelectionData::Clone() const
-{
-    return new TriggerSelectionData(ranges);
-}
-
-
-
-TriggerSelectionMC::TriggerSelectionMC(std::vector<TriggerRange const *> const &ranges_):
-    TriggerSelectionInterface(),
-    buffer(nullptr)
-{
-    // A sanity check
-    if (ranges_.size() == 0)
-        throw std::logic_error("TriggerSelectionMC::TriggerSelectionMC: The provided "
-         "collection of pointers to TriggerRange objects is empty.");
+    // Now as the tree has been set up propertly, read it
+    inputDataPlugin->ReadEventFromTree(triggerTreeName);
     
     
-    // Save pointers to the TriggerRange objects
-    ranges.reserve(ranges_.size());
-    
-    for (auto const &r: ranges_)
-        ranges.emplace_back(r, nullptr);
+    return bfAccepted;
 }
 
 
-TriggerSelectionMC::~TriggerSelectionMC()
+
+// PECTriggerFilterMC(std::string const &name, C const &ranges);
+// (Defined in the header)
+
+
+// PECTriggerFilterMC(C const &ranges);
+// (Defined in the header)
+
+
+PECTriggerFilterMC::~PECTriggerFilterMC()
 {
     delete [] buffer;
 }
 
 
-void TriggerSelectionMC::UpdateTree(TTree *triggerTree_, bool)
+void PECTriggerFilterMC::BeginRun(Dataset const &dataset)
 {
-    // Update the tree pointer and counters
-    triggerTree = triggerTree_;
-    nEntriesTree = triggerTree->GetEntries();
-    nextEntryTree = 0;
+    // Make sure this is actually data
+    if (not dataset.IsMC())
+        throw std::logic_error("PECTriggerFilterMC::BeginRun: This class is intended to be used "
+          "with simulation, but the input dataset is data.");
+    
+    
+    // Set up the pointer to PECInputData and register reading of the trigger tree
+    PECTriggerFilter::BeginRun(dataset);
     
     
     // Create buffers into which the trigger decision will be read. They are allocated in a single
@@ -154,34 +156,33 @@ void TriggerSelectionMC::UpdateTree(TTree *triggerTree_, bool)
     buffer = new Bool_t[ranges.size()];
     
     
-    // Set statuses and addresses of relevant branches of the trigger tree. A certain complication
-    //is caused by the fact that the same trigger might be specified in several trigger ranges
+    // Set statuses and addresses of relevant branches of the trigger tree. Take into account that
+    //the same trigger might be specified in several trigger ranges
     triggerTree->SetBranchStatus("*", false);
     unsigned curBufferIndex = 0;
     
     for (unsigned i = 0; i < ranges.size(); ++i)
     {
-        string const &curTriggerName = ranges.at(i).first->GetMCTriggerPattern();
+        std::string const &curTriggerName = ranges.at(i).first->GetMCTriggerPattern();
         
         
         // Try to find name of the current trigger in previous ranges
         unsigned iPrev = 0;
         
         for (; iPrev < i; ++iPrev)
-            if (curTriggerName == ranges.at(iPrev).first->GetMCTriggerPattern())
+            if (ranges.at(iPrev).first->GetMCTriggerPattern() == curTriggerName)
                 break;
         
         
         if (iPrev == i)
-        //^ It means that the current trigger was not encountered before
+        //^ This means that the current trigger has not been encountered before
         {
             // Get the corresponding branch of the tree
-            TBranch *branch =
-             triggerTree->GetBranch((curTriggerName + "__accept").c_str());
+            TBranch *branch = triggerTree->GetBranch((curTriggerName + "__accept").c_str());
             
             if (not branch)
-                throw runtime_error(string("TriggerSelectionMC::UpdateTree: State of the "
-                 "trigger \"HLT_") + curTriggerName + "_v*\" is not stored in the source tree.");
+                throw std::runtime_error("PECTriggerFilterMC::BeginRun: State of the trigger "s +
+                 "\"HLT_" + curTriggerName + "_v*\" is not stored in the source tree.");
             
             
             // Set the status and address of the branch
@@ -196,7 +197,7 @@ void TriggerSelectionMC::UpdateTree(TTree *triggerTree_, bool)
             ++curBufferIndex;
         }
         else
-        //^ The trigger has already been encountered. The tree had been adjusted
+        //^ The trigger has already been encountered, the tree had already been adjusted
         {
             // Only need to set the pointer to buffer in ranges
             ranges.at(i).second = ranges.at(iPrev).second;
@@ -205,120 +206,38 @@ void TriggerSelectionMC::UpdateTree(TTree *triggerTree_, bool)
 }
 
 
-bool TriggerSelectionMC::ReadNextEvent(EventID const &)
+Plugin *PECTriggerFilterMC::Clone() const
 {
-    // A sanity check
-    if (not triggerTree)
-        throw logic_error("TriggerSelectionMC::ReadNextEvent: Attempting to read an unspecified "
-         "trigger tree.");
-    
-    
-    // Check if there are still events to read
-    if (nextEntryTree == nEntriesTree)
-        return false;
-    
-    
-    // Read the next entry
-    triggerTree->GetEntry(nextEntryTree);
-    ++nextEntryTree;
-    
-    return true;
+    return new PECTriggerFilterMC(*this);
 }
 
 
-bool TriggerSelectionMC::PassTrigger() const
-{
-    // Check all the requested triggers
-    for (auto const &r: ranges)
-        if (*r.second)  // the event is accepted by the MC trigger in this range
-            return true;
-    
-    // The workflow reaches this point if only no trigger accepts the event
-    return false;
-}
-
-
-double TriggerSelectionMC::GetWeight(PECReader const &reader) const
+double PECTriggerFilterMC::GetWeight() const
 {
     double weight = 0.;
     
     for (auto const &r: ranges)
-    {
-        if (*r.second and r.first->PassEventSelection(reader))
-            weight += r.first->GetLuminosity() * ScaleFactor(r.first, reader);
-    }
+        if (*r.second)
+        //^ The trigger in this range has fired
+        {
+            weight += r.first->GetLuminosity();
+            //^ It is also possible to account for the trigger scale factor here, multiplying the
+            //effective luminosity by it
+        }
     
     
     return weight;
 }
 
 
-double TriggerSelectionMC::ScaleFactor(TriggerRange const *, PECReader const &) const
+bool PECTriggerFilterMC::ProcessEvent()
 {
-    return 1.;
-}
-
-
-TriggerSelectionInterface *TriggerSelectionMC::Clone() const
-{
-    // Make a vector of pointers to the TriggerRange objects
-    vector<TriggerRange const *> pureRanges;
-    pureRanges.reserve(ranges.size());
-    
+    // Check all the requested triggers
     for (auto const &r: ranges)
-        pureRanges.emplace_back(r.first);
+        if (*r.second)
+        //^ The event is accepted by the MC trigger in this range
+            return true;
     
-    
-    // Feed it to the appropriate constructor
-    return new TriggerSelectionMC(pureRanges);
-}
-
-
-
-TriggerSelection::TriggerSelection(vector<TriggerRange const *> const &ranges_):
-    TriggerSelectionInterface(),
-    ranges(ranges_)
-{}
-
-
-void TriggerSelection::UpdateTree(TTree *triggerTree_, bool isData)
-{
-    // Create a new object to perform the trigger selection
-    if (isData)
-        selection.reset(new TriggerSelectionData(ranges));
-    else
-        selection.reset(new TriggerSelectionMC(ranges));
-    
-    
-    // Set the trigger tree in the selection object
-    selection->UpdateTree(triggerTree_, isData);
-}
-
-
-bool TriggerSelection::ReadNextEvent(EventID const &eventID)
-{
-    // A sanity check
-    if (not selection)
-        throw logic_error("TriggerSelection::ReadNextEvent: Attempting to read an unspecified "
-         "trigger tree.");
-    
-    return selection->ReadNextEvent(eventID);
-}
-
-
-bool TriggerSelection::PassTrigger() const
-{
-    return selection->PassTrigger();
-}
-
-
-double TriggerSelection::GetWeight(PECReader const &reader) const
-{
-    return selection->GetWeight(reader);
-}
-
-
-TriggerSelectionInterface *TriggerSelection::Clone() const
-{
-    return new TriggerSelection(ranges);
+    // The workflow reaches this point if only no trigger accepts the event
+    return false;
 }
