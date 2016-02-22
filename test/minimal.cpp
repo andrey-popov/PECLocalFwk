@@ -11,6 +11,7 @@
 
 #include <PECFwk/extensions/JetFilter.hpp>
 #include <PECFwk/extensions/LeptonFilter.hpp>
+#include <PECFwk/extensions/MetFilter.hpp>
 #include <PECFwk/PECReader/PECGeneratorReader.hpp>
 #include <PECFwk/PECReader/PECInputData.hpp>
 #include <PECFwk/PECReader/PECJetMETReader.hpp>
@@ -113,6 +114,7 @@ int main()
     jetFilter->AddSelectionBin(4, -1, 2, 2);
     processor.RegisterPlugin(jetFilter);
     
+    processor.RegisterPlugin(new MetFilter(MetFilter::Mode::MtW, 40.));
     processor.RegisterPlugin(new PECPileUpReader);
     processor.RegisterPlugin(new PECGeneratorReader);
     
@@ -130,7 +132,7 @@ int main()
     
     
     // Loop over few events
-    for (unsigned i = 0; i < 100; ++i)
+    for (unsigned i = 0; i < 500; ++i)
     {
         // Process a new event from the dataset
         Plugin::EventOutcome const status = processor.ProcessEvent();
