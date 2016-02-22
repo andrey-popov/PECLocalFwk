@@ -14,7 +14,7 @@ JetFunctorFilter::JetFunctorFilter(string const &name_,
   function<bool(Jet const &)> const &selector_,
   unsigned minNumJets_, unsigned maxNumJets_ /*= -1*/) noexcept:
     AnalysisPlugin(name_),
-    jetPluginName("JetMET"),
+    jetPluginName("JetMET"), jetPlugin(nullptr),
     selector(selector_),
     minNumJets(minNumJets_), maxNumJets(maxNumJets_)
 {}
@@ -23,7 +23,7 @@ JetFunctorFilter::JetFunctorFilter(string const &name_,
 JetFunctorFilter::JetFunctorFilter(function<bool(Jet const &)> const &selector_,
   unsigned minNumJets_, unsigned maxNumJets_ /*= -1*/) noexcept:
     AnalysisPlugin("JetFunctorFilter"),
-    jetPluginName("JetMET"),
+    jetPluginName("JetMET"), jetPlugin(nullptr),
     selector(selector_),
     minNumJets(minNumJets_), maxNumJets(maxNumJets_)
 {}

@@ -21,7 +21,7 @@ bool JetFilter::SelectionBin::Contains(unsigned nJets, unsigned nTags) const
 
 JetFilter::JetFilter(std::string const name /*= "JetFilter"*/) noexcept:
     AnalysisPlugin(name),
-    jetPluginName("JetMET"),
+    jetPluginName("JetMET"), jetPlugin(nullptr),
     minPt(0.)
 {}
 
