@@ -1,29 +1,26 @@
-/**
- * \file MetFilterPlugin.hpp
- *
- * Defines a simple plugin to perform additional filtering on value of MET.
- */
-
 #pragma once
 
 #include <PECFwk/core/AnalysisPlugin.hpp>
 
-#include <PECFwk/core/PECReaderPlugin.hpp>
+#include <PECFwk/core/PhysicsObjects.hpp>
+
+
+class JetMETReader;
 
 
 /**
- * \class MetFilterPlugin
+ * \class MetFilter
  * \brief Performs additional selection on value of MET
  * 
  * The plugin checks that the value of MET in an event is larger than the given threshold.
  */
-class MetFilterPlugin: public AnalysisPlugin
+class MetFilter: public AnalysisPlugin
 {
 public:
     /**
      * \brief Constructor
      */
-    MetFilterPlugin(double threshold);
+    MetFilter(double threshold);
     
 public:
     /**
@@ -45,8 +42,11 @@ private:
     bool ProcessEvent();
     
 private:
-    /// Pointer to the reader plugin
-    PECReaderPlugin const *reader;
+    /// Name of the plugin that produces MET
+    std::string metPluginName;
+    
+    /// Non-owning pointer to a plugin that produces MET
+    JetMETReader const *metPlugin;
     
     /// Threshold on MET
     double threshold;

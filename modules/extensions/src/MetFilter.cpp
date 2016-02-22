@@ -1,5 +1,6 @@
-#include <PECFwk/extensions/MetFilterPlugin.hpp>
+#include <PECFwk/extensions/MetFilter.hpp>
 
+#include <PECFwk/core/JetMETReader.hpp>
 #include <PECFwk/core/Processor.hpp>
 
 #include <string>
@@ -23,28 +24,30 @@ string BuildPluginName(string const &baseName, double met)
 }
 
 
-MetFilterPlugin::MetFilterPlugin(double threshold_):
+MetFilter::MetFilter(double threshold_):
     AnalysisPlugin(BuildPluginName("MetFilter", threshold_)),
+    metPluginName("JetMET"),
     threshold(threshold_)
 {}
 
 
-Plugin *MetFilterPlugin::Clone() const
+Plugin *MetFilter::Clone() const
 {
-    return new MetFilterPlugin(threshold);
+    return new MetFilter(threshold);
 }
 
 
-void MetFilterPlugin::BeginRun(Dataset const &)
+void MetFilter::BeginRun(Dataset const &)
 {
-    // Save pointer to the reader plugin
-    reader = dynamic_cast<PECReaderPlugin const *>(master->GetPluginBefore("Reader", name));
+    // Save pointer to plugin that produces jets
+    metPlugin = dynamic_cast<JetMETReader const *>(
+      GetMaster().GetPluginBefore(metPluginName, GetName()));
 }
 
 
-bool MetFilterPlugin::ProcessEvent()
+bool MetFilter::ProcessEvent()
 {
-    Candidate const &met = (*reader)->GetMET();
+    MET const &met = metPlugin->GetMET();
     
     return (met.Pt() > threshold);
 }
