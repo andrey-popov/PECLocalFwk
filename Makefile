@@ -25,8 +25,9 @@ MODULES_DIR := modules
 MODULES_STATIC := core extensions
 MODULE_STATIC_LIBS := $(shell for m in $(MODULES_STATIC); \
 	do echo $(MODULES_DIR)/$$m/lib/$$m.a; done)
-MODULES_STATIC += external/JERC
+MODULES_STATIC += external/JERC external/BTagCalibration
 MODULE_STATIC_LIBS += $(MODULES_DIR)/external/JERC/lib/JERC.a
+MODULE_STATIC_LIBS += $(MODULES_DIR)/external/BTagCalibration/lib/BTagCalibration.a
 
 MODULES_SHARED := PECReader
 MODULE_SHARED_LIBS := $(shell for m in $(MODULES_SHARED); \
