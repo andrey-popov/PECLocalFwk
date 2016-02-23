@@ -1,12 +1,12 @@
 #include <PECFwk/core/Dataset.hpp>
 #include <PECFwk/core/Processor.hpp>
 
-#include <PECFwk/core/BTagger.hpp>
 #include <PECFwk/extensions/GenericEventSelection.hpp>
 #include <PECFwk/extensions/BTagEfficiencies.hpp>
 #include <PECFwk/extensions/BTagScaleFactors.hpp>
 #include <PECFwk/extensions/WeightBTag.hpp>
 
+#include <PECFwk/core/BTagWPService.hpp>
 #include <PECFwk/extensions/JetFilter.hpp>
 #include <PECFwk/extensions/LeptonFilter.hpp>
 #include <PECFwk/extensions/MetFilter.hpp>
@@ -105,9 +105,15 @@ int main()
     triggerRanges.emplace_back(0, -1, "IsoMu20", 2.2e3, "IsoMu20");
     
     
-    // Processor object and plugins
+    // Processor object
     Processor processor;
     
+    
+    // Register services
+    processor.RegisterService(new BTagWPService);
+    
+    
+    // Register plugins
     processor.RegisterPlugin(new PECInputData);
     processor.RegisterPlugin(BuildPECTriggerFilter(false, triggerRanges));
     processor.RegisterPlugin(new PECLeptonReader);
@@ -117,15 +123,14 @@ int main()
     jetReader->SetSelection(30., 2.4);
     processor.RegisterPlugin(jetReader);
     
-    JetFilter *jetFilter = new JetFilter;
+    JetFilter *jetFilter =
+      new JetFilter(0., BTagger(BTagger::Algorithm::CSV, BTagger::WorkingPoint::Tight));
     jetFilter->AddSelectionBin(4, -1, 2, 2);
     processor.RegisterPlugin(jetFilter);
     
     processor.RegisterPlugin(new MetFilter(MetFilter::Mode::MtW, 40.));
     processor.RegisterPlugin(new PECPileUpReader);
     processor.RegisterPlugin(new PECGeneratorReader);
-    
-    processor.OpenDataset(dataTTbar);
     
     
     PECInputData const *inputData =
@@ -136,6 +141,10 @@ int main()
       dynamic_cast<PileUpReader const *>(processor.GetPlugin("PileUp"));
     PECGeneratorReader const *generatorReader =
       dynamic_cast<PECGeneratorReader const *>(processor.GetPlugin("Generator"));
+    
+    
+    // Open the input dataset
+    processor.OpenDataset(dataTTbar);
     
     
     // Loop over few events

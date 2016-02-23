@@ -2,10 +2,13 @@
 
 #include <PECFwk/core/AnalysisPlugin.hpp>
 
+#include <PECFwk/core/BTagger.hpp>
+
 #include <string>
 #include <vector>
 
 
+class BTagWPService;
 class JetMETReader;
 
 
@@ -13,9 +16,13 @@ class JetMETReader;
  * \class JetFilter
  * \brief Filter to perform event selection based on jet multiplicity
  * 
- * (Documentation is to be added.)
+ * The filter counts jets above a user-defined pt threshold. Out of the selected jets, it also
+ * counts those that are b-tagged according to the provided algorithm and working point. The event
+ * is accepted if these two multiplicities fall into one of 2D regions of acceptance (selection
+ * bins)provided by the user.
  * 
- * The filter relies on the presence of a JetMETReader. The default name is "JetMET".
+ * The filter relies on the presence of a JetMETReader and a BTagWPService. The default names are
+ * "JetMET" and "BTagWPService" respectively.
  */
 class JetFilter: public AnalysisPlugin
 {
@@ -50,8 +57,16 @@ private:
     };
     
 public:
-    /// Creates filter plugin with the given name
-    JetFilter(std::string const name = "JetFilter") noexcept;
+    /**
+     * \brief Creates filter with the given name and parameters for jet counting
+     * 
+     * Only jets with transverse momenta larger than the given threshold are considered. Among
+     * them, b-tagged jets are defined by the given b tagger.
+     */
+    JetFilter(std::string const name, double minPt, BTagger const &bTagger) noexcept;
+    
+    /// A short-cut for the above version with default name "JetFilter"
+    JetFilter(double minPt, BTagger const &bTagger) noexcept;
     
     // Default copy constructor
     JetFilter(JetFilter const &) = default;
@@ -102,11 +117,20 @@ private:
     /// Name of the plugin that produces jets
     std::string jetPluginName;
     
-    /// Non-owning pointer to a plugin that produces jets
+    /// Non-owning pointer to the plugin that produces jets
     JetMETReader const *jetPlugin;
+    
+    /// Name of the service that provides b-tagging thresholds
+    std::string bTagWPServiceName;
+    
+    /// Non-owning pointer to the service that provides b-tagging thresholds
+    BTagWPService const *bTagWPService;
     
     /// Selection on jet transverse momentum
     double minPt;
+    
+    /// Definition of a b-tagged jet
+    BTagger bTagger;
     
     /**
      * \brief Registered selection bins

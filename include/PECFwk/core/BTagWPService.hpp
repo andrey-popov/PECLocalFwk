@@ -47,6 +47,16 @@ public:
 
 public:
     /**
+     * \brief Creates a newly configured clone
+     * 
+     * Implemented from Service.
+     */
+    virtual Service *Clone() const override;
+    
+    /// Returns numeric threshold for the given b tagger
+    double GetThreshold(BTagger const &tagger) const;
+    
+    /**
      * \brief Checks if a jet is b-tagged according to the given tagger
      * 
      * Returns false if the jet is outside a pseudorapidity acceptance defined according to

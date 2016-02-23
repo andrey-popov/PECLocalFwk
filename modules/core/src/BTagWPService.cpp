@@ -24,14 +24,14 @@ BTagWPService::~BTagWPService() noexcept
 {}
 
 
-bool BTagWPService::IsTagged(BTagger const &tagger, Jet const &jet) const
+Service *BTagWPService::Clone() const
 {
-    // First, check the jet pseudorapidity makes sense
-    if (fabs(jet.Eta()) > BTagSFInterface::GetMaxPseudorapidity())
-        // There is a very small number of tagged jets with |eta| just above 2.4
-        return false;
-    
-    
+    return new BTagWPService(*this);
+}
+
+
+double BTagWPService::GetThreshold(BTagger const &tagger) const
+{
     // Find the threshold for the given working point
     auto thresholdIt = thresholds.find(tagger);
     
@@ -45,8 +45,20 @@ bool BTagWPService::IsTagged(BTagger const &tagger, Jet const &jet) const
     }
     
     
-    // Compare discriminator value with the threshold
-    return (jet.BTag(tagger.GetAlgorithm()) > thresholdIt->second);
+    return thresholdIt->second;
+}
+
+
+bool BTagWPService::IsTagged(BTagger const &tagger, Jet const &jet) const
+{
+    // First, check the jet pseudorapidity makes sense
+    if (fabs(jet.Eta()) > BTagSFInterface::GetMaxPseudorapidity())
+        // There is a very small number of tagged jets with |eta| just above 2.4
+        return false;
+    
+    
+    // Compare discriminator value to the threshold
+    return (jet.BTag(tagger.GetAlgorithm()) > GetThreshold(tagger));
 }
 
 

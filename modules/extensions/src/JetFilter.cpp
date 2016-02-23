@@ -1,5 +1,6 @@
 #include <PECFwk/extensions/JetFilter.hpp>
 
+#include <PECFwk/core/BTagWPService.hpp>
 #include <PECFwk/core/JetMETReader.hpp>
 #include <PECFwk/core/PhysicsObjects.hpp>
 #include <PECFwk/core/Processor.hpp>
@@ -19,10 +20,19 @@ bool JetFilter::SelectionBin::Contains(unsigned nJets, unsigned nTags) const
 
 
 
-JetFilter::JetFilter(std::string const name /*= "JetFilter"*/) noexcept:
+JetFilter::JetFilter(std::string const name, double minPt_, BTagger const &bTagger_) noexcept:
     AnalysisPlugin(name),
     jetPluginName("JetMET"), jetPlugin(nullptr),
-    minPt(0.)
+    bTagWPServiceName("BTagWPService"), bTagWPService(nullptr),
+    minPt(minPt_), bTagger(bTagger_)
+{}
+
+
+JetFilter::JetFilter(double minPt_, BTagger const &bTagger_) noexcept:
+    AnalysisPlugin("JetFilter"),
+    jetPluginName("JetMET"), jetPlugin(nullptr),
+    bTagWPServiceName("BTagWPService"), bTagWPService(nullptr),
+    minPt(minPt_), bTagger(bTagger_)
 {}
 
 
@@ -48,6 +58,9 @@ void JetFilter::BeginRun(Dataset const &)
     // Save pointer to plugin that produces jets
     jetPlugin = dynamic_cast<JetMETReader const *>(
       GetMaster().GetPluginBefore(jetPluginName, GetName()));
+    
+    // Save pointer to service that provides b-tagging thresholds
+    bTagWPService = dynamic_cast<BTagWPService const *>(GetMaster().GetService(bTagWPServiceName));
 }
 
 
@@ -72,8 +85,7 @@ bool JetFilter::ProcessEvent()
         
         ++nJets;
         
-        if (j.CSV() > 0.970)
-        //^ For the time being, hard-code definition of a b-tagged jet
+        if (bTagWPService->IsTagged(bTagger, j))
             ++nTags;
     }
     
