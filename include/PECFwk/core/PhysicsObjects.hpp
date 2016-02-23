@@ -6,7 +6,11 @@
 
 #pragma once
 
+#include <PECFwk/core/BTagger.hpp>
+
 #include <TLorentzVector.h>
+
+#include <map>
 
 
 // Forward declarations
@@ -148,17 +152,8 @@ public:
      */
     void SetCorrectedP4(TLorentzVector const &correctedP4, double rawMomentumSF) noexcept;
     
-    /// Sets the values of the b-tagging discriminators
-    void SetBTags(double CSV, double JP, double TCHP) noexcept;
-    
-    /// Sets the value of the CSV b-tagging discriminator
-    void SetCSV(double CSV) noexcept;
-    
-    /// Sets the value of the JP b-tagging discriminator
-    void SetJP(double JP) noexcept;
-    
-    /// Sets the value of the TCHP b-tagging discriminator
-    void SetTCHP(double TCHP) noexcept;
+    /// Sets value of a b-tagging discriminator
+    void SetBTag(BTagger::Algorithm algo, double value) noexcept;
     
     /// Sets the parent's PDF ID
     void SetParentID(int pdgID) noexcept;
@@ -181,14 +176,16 @@ public:
     /// Returns raw momentum
     TLorentzVector RawP4() const noexcept;
     
+    /// Returns value of the requested b-tagging discriminator
+    double BTag(BTagger::Algorithm algo) const;
+    
     /// Gets the value of the CSV b-tagging discriminator
-    double CSV() const noexcept;
+    [[deprecated("Use Jet::BTag instead")]]
+    double CSV() const;
     
     /// Gets the value of the JP b-tagging discriminator
-    double JP() const noexcept;
-    
-    /// Gets the value of the TCHP b-tagging discriminator
-    double TCHP() const noexcept;
+    [[deprecated("Use Jet::BTag instead")]]
+    double JP() const;
     
     /// Gets the parent's PDG ID
     int GetParentID() const noexcept;
@@ -216,9 +213,9 @@ private:
     /// A scale factor to build raw four-momentum
     double rawMomentumSF;
     
-    double CSVValue;   ///< CSV b-tagging discriminator
-    double JPValue;    ///< JP b-tagging discriminator
-    double TCHPValue;  ///< TCHP b-tagging discriminator
+    /// Values of b-tagging discriminators
+    std::map<BTagger::Algorithm, double> bTagValues;
+    
     int parentPDGID;  ///< PDG ID of the parent
     double charge;  ///< Electric charge
     double pullAngle;  ///< "Pull angle" (characterises the colour flow)

@@ -1,6 +1,7 @@
 #include <PECFwk/core/PhysicsObjects.hpp>
 
 #include <limits>
+#include <stdexcept>
 
 
 using namespace std;
@@ -137,9 +138,6 @@ int Lepton::Charge() const noexcept
 Jet::Jet() noexcept:
     Candidate(),
     rawMomentumSF(0.),
-    CSVValue(-numeric_limits<double>::infinity()),
-    JPValue(-numeric_limits<double>::infinity()),
-    TCHPValue(-numeric_limits<double>::infinity()),
     parentPDGID(0),
     charge(-10.), pullAngle(-10.),
     rawPileUpID(0),
@@ -150,9 +148,6 @@ Jet::Jet() noexcept:
 Jet::Jet(TLorentzVector const &correctedP4) noexcept:
     Candidate(correctedP4),
     rawMomentumSF(0.),
-    CSVValue(-numeric_limits<double>::infinity()),
-    JPValue(-numeric_limits<double>::infinity()),
-    TCHPValue(-numeric_limits<double>::infinity()),
     parentPDGID(0),
     charge(-10.), pullAngle(-10.),
     rawPileUpID(0),
@@ -163,9 +158,6 @@ Jet::Jet(TLorentzVector const &correctedP4) noexcept:
 Jet::Jet(TLorentzVector const &rawP4, double corrSF) noexcept:
     Candidate(rawP4 * corrSF),
     rawMomentumSF(1. / corrSF),
-    CSVValue(-numeric_limits<double>::infinity()),
-    JPValue(-numeric_limits<double>::infinity()),
-    TCHPValue(-numeric_limits<double>::infinity()),
     parentPDGID(0),
     charge(-10.), pullAngle(-10.),
     rawPileUpID(0),
@@ -180,29 +172,9 @@ void Jet::SetCorrectedP4(TLorentzVector const &correctedP4, double rawMomentumSF
 }
 
 
-void Jet::SetBTags(double CSV, double JP, double TCHP) noexcept
+void Jet::SetBTag(BTagger::Algorithm algo, double value) noexcept
 {
-    CSVValue = CSV;
-    JPValue = JP;
-    TCHPValue = TCHP;
-}
-
-
-void Jet::SetCSV(double CSV) noexcept
-{
-    CSVValue = CSV;
-}
-
-
-void Jet::SetJP(double JP) noexcept
-{
-    JPValue = JP;
-}
-
-
-void Jet::SetTCHP(double TCHP) noexcept
-{
-    TCHPValue = TCHP;
+    bTagValues[algo] = value;
 }
 
 
@@ -248,21 +220,27 @@ TLorentzVector Jet::RawP4() const noexcept
 }
 
 
-double Jet::CSV() const noexcept
+double Jet::BTag(BTagger::Algorithm algo) const
 {
-    return CSVValue;
+    auto const res = bTagValues.find(algo);
+    
+    if (res == bTagValues.end())
+        throw std::runtime_error("Jet::BTag: No value of b-tagging discriminator is available "s +
+          "for algorithm " + BTagger::AlgorithmToTextCode(algo) + ".");
+    
+    return res->second;
 }
 
 
-double Jet::JP() const noexcept
+double Jet::CSV() const
 {
-    return JPValue;
+    return BTag(BTagger::Algorithm::CSV);
 }
 
 
-double Jet::TCHP() const noexcept
+double Jet::JP() const
 {
-    return TCHPValue;
+    return BTag(BTagger::Algorithm::JP);
 }
 
 

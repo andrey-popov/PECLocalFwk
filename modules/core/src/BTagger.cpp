@@ -1,136 +1,37 @@
 #include <PECFwk/core/BTagger.hpp>
 
-#include <PECFwk/core/BTagSFInterface.hpp>
-
 #include <stdexcept>
-#include <sstream>
 
 
-using namespace std;
+using namespace std::literals::string_literals;
 
 
-BTagger::BTagger(Algorithm algo_, WorkingPoint defaultWP_ /*= WorkingPoint::Tight*/):
-    algo(algo_), defaultWP(defaultWP_),
-    bTagMethod(nullptr)
-{
-    // Set thresholds corresponding to official working points [1]
-    //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/BTagPerformanceOP
-    switch (algo)
-    {
-        case Algorithm::CSV:
-            thresholds[WorkingPoint::Tight] = 0.898;
-            thresholds[WorkingPoint::Medium] = 0.679;
-            thresholds[WorkingPoint::Loose] = 0.244;
-            break;
-        
-        case Algorithm::JP:
-            thresholds[WorkingPoint::Tight] = 0.790;
-            thresholds[WorkingPoint::Medium] = 0.545;
-            thresholds[WorkingPoint::Loose] = 0.275;
-            break;
-        
-        case Algorithm::TCHP:
-            thresholds[WorkingPoint::Tight] = 3.41;
-            break;
-        
-        case Algorithm::CSVV1:
-        case Algorithm::CSVSLV1:
-            throw logic_error("BTagger::BTagger: Algorithms CSVV1 and CSVSLV1 are not supported "
-             "yet.");
-    }
-    
-    
-    // Set the pointer to the method to assess the b-tagging discriminator's value
-    switch (algo)
-    {
-        case Algorithm::CSV:
-            bTagMethod = &Jet::CSV;
-            break;
-        
-        case Algorithm::JP:
-            bTagMethod = &Jet::JP;
-            break;
-        
-        case Algorithm::TCHP:
-            bTagMethod = &Jet::TCHP;
-            break;
-        
-        case Algorithm::CSVV1:
-        case Algorithm::CSVSLV1:
-            throw logic_error("BTagger::BTagger: Algorithms CSVV1 and CSVSLV1 are not supported "
-             "yet.");
-    }
-}
+// A static constant attribute
+unsigned const BTagger::numWP;
 
 
-BTagger::BTagger(BTagger const &src):
-    algo(src.algo),
-    defaultWP(src.defaultWP),
-    thresholds(src.thresholds),
-    bTagMethod(src.bTagMethod)
+BTagger::BTagger(Algorithm algo_, WorkingPoint wp_):
+    algo(algo_), wp(wp_)
 {}
 
 
-BTagger::BTagger(BTagger &&src):
-    algo(src.algo),
-    defaultWP(src.defaultWP),
-    thresholds(move(src.thresholds)),
-    bTagMethod(src.bTagMethod)
-{}
-
-
-BTagger &BTagger::operator=(BTagger const &rhs)
+std::string BTagger::AlgorithmToTextCode(Algorithm algo)
 {
-    algo = rhs.algo;
-    defaultWP = rhs.defaultWP;
-    thresholds = rhs.thresholds;
-    bTagMethod = rhs.bTagMethod;
-    
-    return *this;
-}
-
-
-bool BTagger::IsTagged(WorkingPoint wp, Jet const &jet) const
-{
-    // First, check the jet pseudorapidity makes sense
-    if (fabs(jet.Eta()) > BTagSFInterface::GetMaxPseudorapidity())
-        // There is a very small number of tagged jets with |eta| just above 2.4
-        return false;
-    
-    
-    // Find the threshold for the given working point
-    auto thresholdIt = thresholds.find(wp);
-    
-    if (thresholdIt == thresholds.end())
+    switch (algo)
     {
-        ostringstream ost;
-        ost << "BTagger::IsTagged: Working point " << int(wp) << " is not supported for "
-         "b-tagger " << int(algo) << ".";
+        case Algorithm::CSV:
+            return "CSVv2";
         
-        throw runtime_error(ost.str());
+        case Algorithm::JP:
+            return "JP";
+        
+        case Algorithm::CMVA:
+            return "CMVAv2";
+        
+        default:
+            throw std::runtime_error("BTagger::AlgorithmToTextCode: Unsupported algorithm code "s +
+              std::to_string(unsigned(algo)) + ".");
     }
-    
-    
-    // Compare discriminator value with the threshold
-    return ((jet.*bTagMethod)() > thresholdIt->second);
-}
-
-
-bool BTagger::IsTagged(Jet const &jet) const
-{
-    return IsTagged(defaultWP, jet);
-}
-
-
-bool BTagger::operator()(WorkingPoint wp, Jet const &jet) const
-{
-    return IsTagged(wp, jet);
-}
-
-
-bool BTagger::operator()(Jet const &jet) const
-{
-    return IsTagged(defaultWP, jet);
 }
 
 
@@ -140,59 +41,39 @@ BTagger::Algorithm BTagger::GetAlgorithm() const
 }
 
 
-BTagger::WorkingPoint BTagger::GetDefaultWorkingPoint() const
+std::string BTagger::GetTextCode() const
 {
-    return defaultWP;
+    return AlgorithmToTextCode(algo) + WorkingPointToTextCode(wp);;
 }
 
 
 BTagger::WorkingPoint BTagger::GetWorkingPoint() const
 {
-    return defaultWP;
+    return wp;
 }
 
-string BTagger::GetTextCode() const
+
+bool BTagger::operator==(BTagger const &other) const
 {
-    string code;
-    
-    switch (algo)
-    {
-        case Algorithm::CSV:
-            code += "CSV";
-            break;
-        
-        case Algorithm::JP:
-            code += "JP";
-            break;
-        
-        case Algorithm::TCHP:
-            code += "TCHP";
-            break;
-        
-        case Algorithm::CSVV1:
-            code += "CSVV1";
-            break;
-        
-        case Algorithm::CSVSLV1:
-            code += "CSVSLV1";
-            break;
-    }
-    
-    switch (defaultWP)
+    return (other.algo == algo and other.wp == wp);
+}
+
+
+std::string BTagger::WorkingPointToTextCode(WorkingPoint wp)
+{
+    switch (wp)
     {
         case WorkingPoint::Tight:
-            code += "T";
-            break;
+            return "T";
         
         case WorkingPoint::Medium:
-            code += "M";
-            break;
+            return "M";
         
         case WorkingPoint::Loose:
-            code += "L";
-            break;
+            return "L";
+        
+        default:
+            throw std::runtime_error("BTagger::WorkingPointToTextCode: Unsupported working "s +
+              "point code " + std::to_string(unsigned(wp)) + ".");
     }
-    
-    
-    return code;
 }

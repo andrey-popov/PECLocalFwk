@@ -1,122 +1,115 @@
-/**
- * \file BTagger.hpp
- * 
- * The module provides means to perform b-tagging.
- */
-
 #pragma once 
 
-#include <PECFwk/core/PhysicsObjects.hpp>
-
+#include <functional>
 #include <string>
-#include <map>
+
+
+// Forward declarations needed to provide a specialization of std::hash for BTagger
+class BTagger;
+
+namespace std
+{
+template<>
+struct hash<BTagger>;
+};
 
 
 /**
  * \class BTagger
- * \brief A class to perform b-tagging
+ * \brief A light-weight class to define selection on b-tagging
  * 
- * The class provides methods to check if a jet is b-tagged. Although the check can be performed
- * for any supported working point, short-cuts that use a default working point are provided. In
- * addition, the class declares enumerations to specify b-tagging algorithm and working point; they
- * are expected to be used in other classes related to b-tagging.
- * 
- * It is recommended that b-tagging is performed by the means of this class only but never using
- * values of b-tagging discriminators provided by class Jet.
- * 
- * The class provides valid copy and move constructors and assignment operator. Is is thread-safe.
+ * The class stores selected b-tagging algorithm and working point. It is strongly recommended to
+ * defined b-tagged jets with the help of this class instead of explicit cuts on values of
+ * b-tagging disriminators.
  */
 class BTagger
 {
 public:
     /// Supported b-tagging algorithms
-    enum class Algorithm
+    enum class Algorithm: unsigned
     {
-        CSV,     ///< Combined secondary vertex
-        JP,      ///< Jet probability
-        TCHP,    ///< Track counting high purity
-        CSVV1,   ///< Retrained CSV
-        CSVSLV1  ///< A version of CSV with additional information on soft leptons exploited
+        CSV,  ///< Combined secondary vertex, v2
+        JP,   ///< Jet probability
+        CMVA  ///< Combined MVA, v2
     };
     
-    /// Supported working points for the b-tagging algorithms
+    /// Supported working points for b-tagging algorithms
     enum class WorkingPoint
     {
         Tight,
         Medium,
         Loose
     };
-
+    
 public:
-    /**
-     * \brief Constructor
-     * 
-     * The arguments specify the desired b-tagging algorithm and default working point
-     */
-    BTagger(Algorithm algo, WorkingPoint defaultWP = WorkingPoint::Tight);
+    /// Constructor with full initialization
+    BTagger(Algorithm algo, WorkingPoint wp);
     
-    /// Copy constructor
-    BTagger(BTagger const &src);
+    /// Default copy constructor
+    BTagger(BTagger const &) = default;
     
-    /// Move constructor
-    BTagger(BTagger &&src);
+    /// Default move constructor
+    BTagger(BTagger &&) = default;
     
-    /// Assignment operator
-    BTagger &operator=(BTagger const &rhs);
-
+    /// Default assignment operator
+    BTagger &operator=(BTagger const &) = default;
+    
 public:
-    /**
-     * \brief Checks if a jet is b-tagged according to the given working point
-     * 
-     * Returns false if the jet is outside a pseudorapidity acceptance defined according to
-     * BTagSFInterface::GetMaxPseudorapidity(). If the requested working point is not supported, an
-     * exception is thrown.
-     */
-    bool IsTagged(WorkingPoint wp, Jet const &jet) const;
-    
-    /**
-     * \brief Checks if a jet is b-tagged according to the default working point
-     * 
-     * Internally calls IsTagged(WorkingPoint, Jet const &).
-     */
-    bool IsTagged(Jet const &jet) const;
-    
-    /**
-     * \brief A short-cut for IsTagged method
-     * 
-     * Internally calls IsTagged(WorkingPoint, Jet const &).
-     */
-    bool operator()(WorkingPoint wp, Jet const &jet) const;
-    
-    /**
-     * \brief A short-cut for IsTagged method
-     * 
-     * Internally calls IsTagged(WorkingPoint, Jet const &).
-     */
-    bool operator()(Jet const &jet) const;
+    /// Converts algorithm ID to a text code
+    static std::string AlgorithmToTextCode(Algorithm algo);
     
     /// Returns the b-tagging algorithm in use
     Algorithm GetAlgorithm() const;
     
-    /// Returns the default working point
-    WorkingPoint GetDefaultWorkingPoint() const;
-    
-    /// (Depricated. Do not use this method)
-    WorkingPoint GetWorkingPoint() const;
-    
     /// Returns a string that encodes the algorithm and the working point
     std::string GetTextCode() const;
     
+    /// Returns the working point in use
+    WorkingPoint GetWorkingPoint() const;
+    
+    /// Equality operator
+    bool operator==(BTagger const &other) const;
+    
+    /// Converts working point ID to a text code
+    static std::string WorkingPointToTextCode(WorkingPoint wp);
+    
 private:
-    /// Chosen b-tagging algorithm
+    /// Selected b-tagging algorithm
     Algorithm algo;
     
-    /// Default working point of the b-tagging algorithm
-    WorkingPoint defaultWP;
+    /// Selected working point
+    WorkingPoint wp;
     
-    /// Numerical thresholds for the chosen b-tagging algorithm
-    std::map<WorkingPoint, double> thresholds;
+    /**
+     * \brief Number of supported working points
+     * 
+     * This constant is needed to calculate hash value of the object.
+     */
+    static unsigned const numWP = 3;
     
-    /// Pointer to a method of class Jet to access an appropriate b-tagging discriminator
-    double (Jet::*bTagMethod)() const;
+    
+/**
+ * \brief Specialization of std::hash
+ * 
+ * Needed to use this class in an unordered map.
+ */
+friend class std::hash<BTagger>;
+};
+
+
+
+namespace std
+{
+/**
+ * \struct std::hash<BTagger>
+ * \brief Specialization of std::hash for the b-tagger
+ */
+template<>
+struct hash<BTagger>
+{
+    std::size_t operator()(BTagger const &tagger) const
+    {
+        return unsigned(tagger.algo) * BTagger::numWP + unsigned(tagger.wp);
+    }
+};
 };

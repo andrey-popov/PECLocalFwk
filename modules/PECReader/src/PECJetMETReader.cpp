@@ -121,7 +121,7 @@ bool PECJetMETReader::ProcessEvent()
         // Build the jet object
         Jet jet(p4);  // Here the momentum is assumed to be fully corrected
         
-        jet.SetCSV(j.BTagCSV());
+        jet.SetBTag(BTagger::Algorithm::CSV, j.BTagCSV());
         jet.SetArea(j.Area());
         jet.SetCharge(j.Charge());
         jet.SetPullAngle(j.PullAngle());
