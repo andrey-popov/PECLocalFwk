@@ -4,6 +4,7 @@
 #include <PECFwk/PECReader/PECInputData.hpp>
 
 #include <algorithm>
+/**/#include <iostream>
 
 
 using namespace std::literals::string_literals;
@@ -232,6 +233,9 @@ double PECTriggerFilterMC::GetWeight() const
 
 bool PECTriggerFilterMC::ProcessEvent()
 {
+    // Read branches with trigger decisions
+    inputDataPlugin->ReadEventFromTree(triggerTreeName);
+    
     // Check all the requested triggers
     for (auto const &r: ranges)
         if (*r.second)
