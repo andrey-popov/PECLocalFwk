@@ -30,8 +30,7 @@ BTagEffService::BTagEffService(BTagEffService const &src):
     Service(src),
     srcFile(src.srcFile),   // shared
     inFileDirectory(src.inFileDirectory),
-    processLabels(src.processLabels),
-    processMap(src.processMap),
+    processLabelMap(src.processLabelMap),
     defaultProcessLabel(src.defaultProcessLabel),
     effHists(src.effHists)  // histograms are shared
 {}
@@ -53,13 +52,14 @@ void BTagEffService::BeginRun(Dataset const &dataset)
     effHists.clear();
     
     
-    // Find the text label corresponding to the process in the dataset
+    // Find the label corresponding to the process in the dataset
     std::string curProcessLabel;
-    auto mapRuleIt = std::find_if(processMap.begin(), processMap.end(),
-     [&dataset](decltype(*processMap.cbegin()) &rule){return dataset.TestProcess(rule.first);});
+    auto const mapRuleIt = std::find_if(processLabelMap.begin(), processLabelMap.end(),
+      [&dataset](decltype(*processLabelMap.cbegin()) &rule){
+        return dataset.TestProcess(rule.first);});
     
-    if (mapRuleIt != processMap.end())
-        curProcessLabel = processLabels.at(mapRuleIt->second);
+    if (mapRuleIt != processLabelMap.end())
+        curProcessLabel = mapRuleIt->second;
     else
     {
         // No label is defined for this dataset. Check if the default one is available
@@ -167,31 +167,20 @@ void BTagEffService::SetDefaultProcessLabel(std::string const &label)
 
 void BTagEffService::SetProcessLabel(Dataset::Process code, std::string const &label)
 {
-    // Try to find the given process code among already registered ones
-    auto mapRuleIt = std::find_if(processMap.begin(), processMap.end(),
-     [code](decltype(*processMap.cbegin()) &rule){return (rule.first == code);});
+    // Check if the given process code has already been registered
+    auto const mapRuleIt = std::find_if(processLabelMap.begin(), processLabelMap.end(),
+     [code](decltype(*processLabelMap.cbegin()) &rule){return (rule.first == code);});
     
     
-    // Try to find the given label among already registered ones
-    auto labelIt = std::find(processLabels.begin(), processLabels.end(), label);
-    int labelIndex = std::distance(processLabels.begin(), labelIt);
-    
-    // Add label to the container if it was not found there. After this operation labelIndex refers
-    //to the correct position
-    if (labelIt == processLabels.end())
-        processLabels.push_back(label);
-    
-    
-    // Check if the given process code is a new one
-    if (mapRuleIt == processMap.end())
+    if (mapRuleIt == processLabelMap.end())
     {
-        // Add a new map rule
-        processMap.emplace_back(code, labelIndex);
+        // Add a new mapping rule
+        processLabelMap.emplace_back(code, label);
     }
     else
     {
-        // Reset label registered for the process code
-        mapRuleIt->second = labelIndex;
+        // Reset the label registered for this process code
+        mapRuleIt->second = label;
     }
 }
 

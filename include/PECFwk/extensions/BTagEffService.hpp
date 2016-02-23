@@ -167,26 +167,13 @@ private:
     std::string inFileDirectory;
     
     /**
-     * \brief All process labels registered with the help of SetProcessLabel
+     * \brief Correspondance between process codes and labels of efficiency histograms
      * 
-     * These labels represent fragments of names of histograms with efficiencies. The labels are
-     * accessed by index, which is stored in processMap.
+     * The labels are used to build names of histograms with efficiencies. The container is sorted
+     * in the order in which process codes were registered with SetProcessLabel (and for this
+     * reason it cannot be implemented as an std::map). Process codes must not repeat.
      */
-    std::vector<std::string> processLabels;
-    
-    /**
-     * \brief Correspondance between process codes and indices in container processLabels
-     * 
-     * The container is sorted in process codes in the order of their appearance (and for this
-     * reason cannot be implemented as an std::map). Process codes must not repeat. The second
-     * value in the pair is an index of process label in the container processLabels. The label is
-     * not stored directly here in order to save memory as many process codes are expected to refer
-     * to the same label.
-     * 
-     * An alternative to deal with tightly connected processLabels and processMap would be to save
-     * process labels with the help of shared pointers as it is done for efficiency histograms.
-     */
-    std::list<std::pair<Dataset::Process, int>> processMap;
+    std::list<std::pair<Dataset::Process, std::string>> processLabelMap;
     
     /// Label to be used with process codes for which no mapping rule is defined in processMap
     std::string defaultProcessLabel;
