@@ -354,7 +354,7 @@ void PECTriggerFilterMC::ConstructRanges(C const &ranges_)
 
 /// A simple short-cut to construct trigger filters for data or simulation
 template<typename... Args>
-PECTriggerFilter *BuildPECTriggerFilter(bool isData, Args... args)
+PECTriggerFilter *BuildPECTriggerFilter(bool isData, Args const & ...args)
 {
     if (isData)
         return new PECTriggerFilterData(args...);
