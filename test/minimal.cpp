@@ -1,7 +1,6 @@
 #include <PECFwk/core/Dataset.hpp>
 #include <PECFwk/core/Processor.hpp>
 
-#include <PECFwk/core/PECReader.hpp>
 #include <PECFwk/core/BTagger.hpp>
 #include <PECFwk/extensions/GenericEventSelection.hpp>
 #include <PECFwk/extensions/BTagEfficiencies.hpp>
@@ -112,17 +111,17 @@ int main()
     processor.RegisterPlugin(new PECInputData);
     processor.RegisterPlugin(BuildPECTriggerFilter(false, triggerRanges));
     processor.RegisterPlugin(new PECLeptonReader);
-    // processor.RegisterPlugin(new LeptonFilter("LeptonFilter", Lepton::Flavour::Muon, 22., 2.1));
+    processor.RegisterPlugin(new LeptonFilter("LeptonFilter", Lepton::Flavour::Muon, 22., 2.1));
     
     PECJetMETReader *jetReader = new PECJetMETReader;
     jetReader->SetSelection(30., 2.4);
     processor.RegisterPlugin(jetReader);
     
-    // JetFilter *jetFilter = new JetFilter;
-    // jetFilter->AddSelectionBin(4, -1, 2, 2);
-    // processor.RegisterPlugin(jetFilter);
+    JetFilter *jetFilter = new JetFilter;
+    jetFilter->AddSelectionBin(4, -1, 2, 2);
+    processor.RegisterPlugin(jetFilter);
     
-    // processor.RegisterPlugin(new MetFilter(MetFilter::Mode::MtW, 40.));
+    processor.RegisterPlugin(new MetFilter(MetFilter::Mode::MtW, 40.));
     processor.RegisterPlugin(new PECPileUpReader);
     processor.RegisterPlugin(new PECGeneratorReader);
     
@@ -140,8 +139,7 @@ int main()
     
     
     // Loop over few events
-    // for (unsigned i = 0; i < 500; ++i)
-    for (unsigned i = 0; i < 20; ++i)
+    for (unsigned i = 0; i < 500; ++i)
     {
         // Process a new event from the dataset
         Plugin::EventOutcome const status = processor.ProcessEvent();
