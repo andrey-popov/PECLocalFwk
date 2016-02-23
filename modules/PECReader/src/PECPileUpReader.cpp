@@ -27,7 +27,7 @@ void PECPileUpReader::BeginRun(Dataset const &)
     //used are not read
     inputDataPlugin->LoadTree(treeName);
     TTree *tree = inputDataPlugin->ExposeTree(treeName);
-    tree->SetBranchStatus("puInfo.inTimePU", false);
+    tree->SetBranchStatus("inTimeNumPU", false);
     tree->SetBranchAddress("puInfo", &bfPileUpInfoPointer);
 }
 

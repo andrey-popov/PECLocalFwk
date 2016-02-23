@@ -38,9 +38,9 @@ void PECGeneratorReader::BeginRun(Dataset const &dataset)
     inputDataPlugin->LoadTree(treeName);
     TTree *tree = inputDataPlugin->ExposeTree(treeName);
     
-    tree->SetBranchStatus("generator.*", false);
-    tree->SetBranchStatus("generator.processId", true);
-    tree->SetBranchStatus("generator.nominalWeight", true);
+    tree->SetBranchStatus("*", false);
+    tree->SetBranchStatus("processId", true);
+    tree->SetBranchStatus("nominalWeight", true);
     
     tree->SetBranchAddress("generator", &bfGeneratorPointer);
 }
