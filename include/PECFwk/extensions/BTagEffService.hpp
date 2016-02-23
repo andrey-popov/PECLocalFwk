@@ -1,29 +1,27 @@
-/**
- * \file BTagEfficiencies.hpp
- * 
- * Defines a class to access b-tagging efficiencies.
- */
-
 #pragma once
 
-#include <PECFwk/core/BTagEffInterface.hpp>
+#include <PECFwk/core/Service.hpp>
 
+#include <PECFwk/core/BTagger.hpp>
 #include <PECFwk/core/Dataset.hpp>
 
 #include <TFile.h>
 #include <TH2D.h>
 
-#include <string>
-#include <vector>
 #include <list>
 #include <map>
 #include <memory>
+#include <string>
+#include <vector>
 #include <utility>
 
 
+class Candidate;
+
+
 /**
- * \class BTagEfficiencies
- * \brief Accesses b-tagging efficiencies stored in a ROOT file
+ * \class BTagEffService
+ * \brief Service to accesses b-tagging efficiencies stored in a ROOT file
  * 
  * The class implements an access to b-tagging efficiencies in a generic way. The efficiencies are
  * stored in a ROOT file in the form of 2D histograms in jet transverse momentum and pseudorapidity.
@@ -57,70 +55,52 @@
  * 
  * The class provides valid copy and move constructors. It is not thread-safe; however, the ROOT
  * file and histograms with b-tagging efficiences are safe be shared among several threads.
- * 
- * Consult documentation on the base class to get additional details about overriden methods.
  */
-class BTagEfficiencies: public BTagEffInterface
+class BTagEffService: public Service
 {
 public:
     /**
-     * \brief Constructor
+     * \brief Creates a service with the given name
      * 
-     * The arguments are a path to a ROOT file with b-tagging efficiencies and an (optional)
+     * The arguments are the path to a ROOT file with b-tagging efficiencies and an (optional)
      * name of directory with efficiency histograms in the file. The file name is resolved with
      * the help of FileInPath class adding a postfix "BTag/" to the standard location. If the file
      * is not found, an exception is thrown.
      */
-    BTagEfficiencies(std::string const &fileName, std::string const &directory = "");
+    BTagEffService(std::string const &name, std::string const &fileName,
+      std::string const &directory = "");
+    
+    /// A short-cut for the above version with a default name "BTagEffService"
+    BTagEffService(std::string const &fileName, std::string const &directory = "");
     
     /**
      * \brief Copy constructor
      * 
      * The source file and efficiency histograms are shared with src. Although copying is expected
-     * to be done before the first call to LoadPayload only, the constructor should work correctly
-     * at any moment.
+     * to be done before the first call to BeginRun only, the constructor is expected work
+     * correctly at any moment.
      */
-    BTagEfficiencies(BTagEfficiencies const &src);
+    BTagEffService(BTagEffService const &src);
     
-    /// Move constructor
-    BTagEfficiencies(BTagEfficiencies &&src) noexcept;
+    /// Default move constructor
+    BTagEffService(BTagEffService &&) = default;
     
-    /**
-     * \brief Assignment operator
-     * 
-     * The source file and efficiency histograms are shared with rhs.
-     */
-    BTagEfficiencies &operator=(BTagEfficiencies const &rhs);
+    /// Assignment operator is deleted
+    BTagEffService &operator=(BTagEffService const &) = delete;
     
     /// Trivial virtual destructor
-    virtual ~BTagEfficiencies() noexcept;
+    virtual ~BTagEffService() noexcept;
     
 public:
     /**
-     * \brief Specifies a text label to which the given process code should be mapped
+     * \brief Creates a newly configured clone
      * 
-     * The label is later used to construct the name of a histogram with efficiencies as described
-     * in the documentation of the class. The method can be called several times to specify mapping
-     * of different process codes. The mapping rules are stored in the order of specification. If
-     * the method is called for a process code that is already mapped, the corresponding label is
-     * updated.
+     * Implemented from Service.
      */
-    void SetProcessLabel(Dataset::Process code, std::string const &label);
+    virtual Service *Clone() const override;
     
     /**
-     * \brief Sequentially calls the overload with a single process code for all provided values,
-     * in the order of their appearance.
-     */
-    void SetProcessLabel(std::list<Dataset::Process> const &codes, std::string const &label);
-    
-    /// Sets a default label to be used when no label is specied for a process code
-    void SetDefaultProcessLabel(std::string const &label);
-    
-    /// Returns a newly allocated copy of *this created with the copy constructor
-    virtual BTagEffInterface *Clone() const;
-    
-    /**
-     * \brief Loads b-tagging efficiencies for a given dataset
+     * \brief Loads b-tagging efficiencies for the given dataset
      * 
      * The method must be executed before the first call to GetEfficiency and after the last call to
      * SetProcessLabel. It reads from the source file all histograms available for the given
@@ -135,11 +115,13 @@ public:
      * If an expected histogram is not found in the source file, it is skipped. The method does not
      * check wheather a meaningful set of histograms has been read. Instead, it delegates such
      * examination to the GetEfficiency method.
+     * 
+     * Reimplemented from Service.
      */
-    virtual void LoadPayload(Dataset const &dataset);
+    virtual void BeginRun(Dataset const &dataset) override;
     
     /**
-     * \brief Returns b-tagging efficiency for a given working point and given jet momentum and
+     * \brief Returns b-tagging efficiency for the given working point and given jet momentum and
      * flavour
      * 
      * The efficiency is read from a histogram selected according to jet flavour and requested
@@ -147,30 +129,47 @@ public:
      * (signed) pseudorapidity; overflow bins are expected to be filled in a meaningful way. If
      * required histogram is not found, an exception is thrown.
      */
-    virtual double GetEfficiency(BTagger::WorkingPoint wp, Candidate const &jet, int flavour) const;
+    double GetEfficiency(BTagger::WorkingPoint wp, Candidate const &jet, int flavour) const;
+    
+    /// Sets the default label to be used when no label is found for a process code
+    void SetDefaultProcessLabel(std::string const &label);
     
     /**
-     * \brief Returns a text label for a b-tagging working point
+     * \brief Specifies a label to which the given process code should be mapped
      * 
-     * The label is used to build names of histograms with b-tagging efficiencies.
+     * The label is later used to construct the name of the histogram with efficiencies as
+     * described in the documentation of the class. The method can be called several times to
+     * specify mapping of different process codes. The mapping rules are stored in the order of
+     * their specification. If the method is called for a process code that has already been
+     * mapped, the corresponding label is updated.
      */
-    static std::string WorkingPointToText(BTagger::WorkingPoint wp);
+    void SetProcessLabel(Dataset::Process code, std::string const &label);
+    
+    /**
+     * \brief Sequentially calls the overloaded version with a single process code for all provided
+     * values, in the order of their appearance.
+     */
+    void SetProcessLabel(std::list<Dataset::Process> const &codes, std::string const &label);
+    
+private:
+    /// Opens input file and adjusts name of the in-file directory
+    void OpenInputFile(std::string const &fileName);
     
 private:
     /**
-     * \brief Source ROOT file with b-tagging efficiencies
+     * \brief Input ROOT file with b-tagging efficiencies
      * 
-     * The file is shared among all copies of *this.
+     * The file is shared among all clones of this.
      */
     std::shared_ptr<TFile> srcFile;
     
-    /// Directory in the source ROOT file that contains histograms with b-tagging efficiencies
+    /// Directory in the input ROOT file that contains histograms with b-tagging efficiencies
     std::string inFileDirectory;
     
     /**
      * \brief All process labels registered with the help of SetProcessLabel
      * 
-     * Labels are the parts of efficiency histograms' names that depend on process. The labels are
+     * These labels represent fragments of names of histograms with efficiencies. The labels are
      * accessed by index, which is stored in processMap.
      */
     std::vector<std::string> processLabels;
@@ -179,10 +178,10 @@ private:
      * \brief Correspondance between process codes and indices in container processLabels
      * 
      * The container is sorted in process codes in the order of their appearance (and for this
-     * reason cannot be implemented as an std::map). Process codes must not repeat. The second value
-     * in the pair is an index of process label in the container processLabels. The label is not
-     * stored directly here in order to save memory as many process codes are expected to refer to
-     * the same label.
+     * reason cannot be implemented as an std::map). Process codes must not repeat. The second
+     * value in the pair is an index of process label in the container processLabels. The label is
+     * not stored directly here in order to save memory as many process codes are expected to refer
+     * to the same label.
      * 
      * An alternative to deal with tightly connected processLabels and processMap would be to save
      * process labels with the help of shared pointers as it is done for efficiency histograms.
