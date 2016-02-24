@@ -61,6 +61,15 @@ public:
     /// Returns the b-tagging algorithm in use
     Algorithm GetAlgorithm() const;
     
+    /**
+     * \brief Returns maximal jet pseudorapidity for which b-tagging is supported
+     * 
+     * A very small fraction of jets with larger pseudorapidity can be b-tagged, but they should
+     * not be considered as such in an analysis. One reasons is that scale factors are always
+     * constrained to |eta| < 2.4.
+     */
+    static constexpr double GetMaxPseudorapidity();
+    
     /// Returns a string that encodes the algorithm and the working point
     std::string GetTextCode() const;
     
@@ -113,3 +122,11 @@ struct hash<BTagger>
     }
 };
 };
+
+
+// Must define constexpr functions in the header since they are implicitly inlined
+constexpr double BTagger::GetMaxPseudorapidity()
+{
+    return 2.4;
+}
+

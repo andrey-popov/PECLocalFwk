@@ -1,7 +1,5 @@
 #include <PECFwk/core/BTagWPService.hpp>
 
-#include <PECFwk/core/BTagSFInterface.hpp>
-
 #include <stdexcept>
 #include <sstream>
 
@@ -52,7 +50,7 @@ double BTagWPService::GetThreshold(BTagger const &tagger) const
 bool BTagWPService::IsTagged(BTagger const &tagger, Jet const &jet) const
 {
     // First, check the jet pseudorapidity makes sense
-    if (fabs(jet.Eta()) > BTagSFInterface::GetMaxPseudorapidity())
+    if (fabs(jet.Eta()) > BTagger::GetMaxPseudorapidity())
         // There is a very small number of tagged jets with |eta| just above 2.4
         return false;
     
