@@ -1,7 +1,5 @@
 #include <PECFwk/core/PECReader.hpp>
 
-#include <PECFwk/core/PECReaderConfig.hpp>
-
 #include <PECFwk/extensions/CalculatePzNu.hpp>
 #include <PECFwk/core/ROOTLock.hpp>
 #include <PECFwk/core/Logger.hpp>
@@ -26,67 +24,11 @@ unsigned const PECReader::maxSize;
 PECReader::PECReader(Dataset const &dataset_):
     dataset(dataset_),
     isInitialized(false),
-    triggerSelection(nullptr), eventSelection(nullptr),
-    bTagReweighter(nullptr), puReweighter(nullptr), jercCorrector(nullptr),
+    jercCorrector(nullptr),
     readHardParticles(false), readGenJets(false), readPartonShower(false),
     sourceFile(nullptr),
     eventIDTree(nullptr), triggerTree(nullptr), generalTree(nullptr)
 {}
-
-
-PECReader::PECReader(Dataset const &dataset, PECReaderConfig const &config):
-    PECReader(dataset)
-{
-    Configure(config);
-}
-
-
-void PECReader::Configure(PECReaderConfig const &config)
-{
-    if (config.IsSetTriggerSelection())
-        SetTriggerSelection(config.GetTriggerSelection());
-    
-    if (config.IsSetEventSelection())
-        SetEventSelection(config.GetEventSelection());
-    
-    if (config.IsSetBTagReweighter())
-        SetBTagReweighter(config.GetBTagReweighter());
-    
-    if (config.IsSetPileUpReweighter())
-        SetPileUpReweighter(config.GetPileUpReweighter());
-    
-    if (config.IsSetJERCCorrector())
-        SetJERCCorrector(config.GetJERCCorrector());
-    
-    SetReadHardInteraction(config.GetReadHardInteraction());
-    SetReadGenJets(config.GetReadGenJets());
-    SetReadPartonShower(config.GetReadPartonShower());
-    SetSystematics(config.GetSystematics());
-}
-
-
-void PECReader::SetTriggerSelection(TriggerSelectionInterface *triggerSelection_)
-{
-    triggerSelection = triggerSelection_;
-}
-
-
-void PECReader::SetEventSelection(EventSelectionInterface const *eventSelection_)
-{
-    eventSelection = eventSelection_;
-}
-
-
-void PECReader::SetBTagReweighter(WeightBTagInterface *bTagReweighter_)
-{
-    bTagReweighter = bTagReweighter_;
-}
-
-
-void PECReader::SetPileUpReweighter(WeightPileUpInterface const *puReweighter_)
-{
-    puReweighter = puReweighter_;
-}
 
 
 void PECReader::SetJERCCorrector(JetCorrectorInterface *jercCorrector_)
@@ -170,6 +112,7 @@ bool PECReader::NextEvent()
         
         
         // Update the event in the trigger-selection object and check if it passes the selection
+        #if 0
         if (triggerSelection)
         {
             triggerSelection->ReadNextEvent(eventID);
@@ -180,6 +123,7 @@ bool PECReader::NextEvent()
                 continue;
             }
         }
+        #endif
         
         
         // Read the rest of event
@@ -348,32 +292,6 @@ vector<ShowerParton> const &PECReader::GetShowerPartons() const
 
 void PECReader::Initialize()
 {
-    // Verify that all the needed configuration modules have been specified
-    if (not triggerSelection)
-        logger << "Warning in PECReader::Initialize: No trigger selection has been specified." <<
-         eom;
-    
-    if (not eventSelection)
-        logger << "Warning in PECReader::Initialize: No event selection has been specified." << eom;
-    
-    if (not jercCorrector)
-        logger << "Warning in PECReader::Initialize: No JEC or JER smearing have been " <<
-         "specified. Jets will not be corrected." << eom;
-    
-    if (dataset.IsMC())
-    {
-        if (not bTagReweighter)
-            logger << "Warning in PECReader::Initialize: No object to propagate b-tagging scale " <<
-             "factors has been specified. Simulation will not be reweighted for this effect." <<
-             eom;
-        
-        if (not puReweighter)
-            logger << "Warning in PECReader::Initialize: No object to reweight simulation for " <<
-             "pile-up has been specified. Simulation will not be reweighted for this effect." <<
-             eom;
-    }
-    
-    
     // Perform remaining initialization
     sourceFileIt = dataset.GetFiles().begin();
     
@@ -408,12 +326,6 @@ void PECReader::OpenSourceFile()
     
     // Get the trees
     eventIDTree = dynamic_cast<TTree *>(sourceFile->Get("eventContent/EventID"));
-    
-    if (triggerSelection)
-    {
-        triggerTree = dynamic_cast<TTree *>(sourceFile->Get("trigger/TriggerInfo"));
-        triggerSelection->UpdateTree(triggerTree, not dataset.IsMC());
-    }
     
     generalTree = dynamic_cast<TTree *>(sourceFile->Get("eventContent/BasicInfo"));
     //generalTree->AddFriend("eventContent/IntegralProperties");
@@ -694,8 +606,10 @@ bool PECReader::BuildAndSelectEvent()
     
     
     // Leptonic step of the event selection
+    #if 0
     if (eventSelection and not eventSelection->PassLeptonStep(tightLeptons, looseLeptons))
         return false;
+    #endif
     
     
     // Loop over the jets
@@ -709,8 +623,7 @@ bool PECReader::BuildAndSelectEvent()
         Jet jet;
         jet.SetCorrectedP4(p4, 1.);  // the momentum will be corrected below
         
-        jet.SetCSV(jetCSV[i]);
-        jet.SetTCHP(jetTCHP[i]);
+        jet.SetBTag(BTagger::Algorithm::CSV, jetCSV[i]);
         
         jet.SetCharge(jetCharge[i]);
         jet.SetPullAngle(jetPullAngle[i]);
@@ -760,10 +673,12 @@ bool PECReader::BuildAndSelectEvent()
         
         
         // Add the jet to the collection
+        #if 0
         if (not eventSelection or eventSelection->IsAnalysisJet(jet))
             goodJets.push_back(jet);
         else
             additionalJets.push_back(jet);
+        #endif
     }
     
         
@@ -773,8 +688,10 @@ bool PECReader::BuildAndSelectEvent()
     sort(additionalJets.rbegin(), additionalJets.rend());
     
     // Event selection on the number of jets and tags
+    #if 0
     if (eventSelection and not eventSelection->PassJetStep(goodJets))
         return false;
+    #endif
     
     
     // Several versions of MET are stored in a PEC file
@@ -841,18 +758,10 @@ void PECReader::CalculateEventWeights()
     // Calculate weight due to trigger selection. This is the only event weight that can make
     //sense for real data (e.g. if there is an additional selection specified in a TriggerRange
     //object). However, with real data this weight is either 0. or 1.
-    double const weightTrigger = (triggerSelection) ? triggerSelection->GetWeight(*this) : 1.;
-    
-    if (not dataset.IsMC())
-    {
-        // Don't forget to update the central weight
-        weightCentral = weightTrigger;
-        
-        return;
-    }
     
     
     // Reweighting for the pile-up
+    #if 0
     WeightPileUpInterface::Weights weightPileUp;
     
     if (puReweighter)
@@ -901,6 +810,7 @@ void PECReader::CalculateEventWeights()
         systWeightMistagRate.back().down = weightButBTagging *
          bTagReweighter->CalcWeight(goodJets, WeightBTagInterface::Variation::MistagRateDown);
     }
+    #endif
 }
 
 

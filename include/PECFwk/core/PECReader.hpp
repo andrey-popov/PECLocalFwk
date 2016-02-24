@@ -6,17 +6,10 @@
 
 #pragma once
 
-#include <PECFwk/core/PECReaderForward.hpp>
- 
-#include <PECFwk/core/PECReaderConfigForward.hpp>
 #include <PECFwk/core/PhysicsObjects.hpp>
 #include <PECFwk/core/Dataset.hpp>
 #include <PECFwk/core/EventID.hpp>
 #include <PECFwk/core/GenParticle.hpp>
-#include <PECFwk/core/TriggerSelectionInterface.hpp>
-#include <PECFwk/core/EventSelectionInterface.hpp>
-#include <PECFwk/core/WeightBTagInterface.hpp>
-#include <PECFwk/core/WeightPileUpInterface.hpp>
 #include <PECFwk/core/JetCorrectorInterface.hpp>
 #include <PECFwk/core/SystDefinition.hpp>
 
@@ -34,6 +27,8 @@
 /**
  * \class PECReader
  * \brief Class to read files in PlainEventContent (PEC) format
+ * 
+ * THIS CLASS IS BEING ELIMINATED FROM THE FRAMEWORK.
  * 
  * This is the core class of the package. It reads a set of files in PEC format [1] as specified by
  * an instance of class Dataset. It performs an event selection requested by the user with the help
@@ -58,7 +53,7 @@
  * 
  * The class is non-copyable. No move constructor is implemented.
  */
-class PECReader
+class [[deprecated]] PECReader
 {
 public:
     /**
@@ -67,14 +62,6 @@ public:
      * The user must set configuration parameters afterwards.
      */
     PECReader(Dataset const &dataset);
-    
-    /**
-     * \brief Constructor from a dataset and a configuration
-     * 
-     * A local copy of provided configuration is kept in the object. The user can modify the
-     * copy later.
-     */
-    PECReader(Dataset const &dataset, PECReaderConfig const &config);
     
     /// Copy constructor is deleted
     PECReader(PECReader const &) = delete;
@@ -89,29 +76,6 @@ public:
     ~PECReader() = default;
 
 public:
-    /// Configures this from a configuration object
-    void Configure(PECReaderConfig const &config);
-    
-    /// Sets the trigger selection
-    void SetTriggerSelection(TriggerSelectionInterface *triggerSelection);
-    
-    /// Sets event selection
-    void SetEventSelection(EventSelectionInterface const *eventSelection);
-    
-    /**
-     * \brief Sets b-tagging configuration
-     * 
-     * This action has no effect on real data.
-     */
-    void SetBTagReweighter(WeightBTagInterface *bTagReweighter);
-    
-    /**
-     * \brief Sets object to reweight simulation for pile-up
-     * 
-     * This action has no effect on real data.
-     */
-    void SetPileUpReweighter(WeightPileUpInterface const *puReweigher);
-    
     /// Sets an object to apply JEC and perform JER smearing
     void SetJERCCorrector(JetCorrectorInterface *jercCorrector);
     
@@ -318,18 +282,6 @@ private:
     
     /// Specifies whether the object is fully configured
     bool isInitialized;
-    
-    /// Pointer to an object to perform trigger selection
-    TriggerSelectionInterface *triggerSelection;
-    
-    /// Pointer to an object to perform event selection
-    EventSelectionInterface const *eventSelection;
-    
-    /// An object to reweight event for b-tagging scale factors
-    WeightBTagInterface *bTagReweighter;
-    
-    /// Pointer to an object to perform pile-up reweighting (set for a simulation dataset only)
-    WeightPileUpInterface const *puReweighter;
     
     /// An object to apply JEC and perform JER smearing
     JetCorrectorInterface *jercCorrector;
