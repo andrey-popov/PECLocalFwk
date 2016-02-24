@@ -1,13 +1,6 @@
-/**
- * \file BasicKinematicsPlugin.hpp
- * 
- * The module defines a plugin to store basic kinematical information.
- */
-
 #pragma once
 
 #include <PECFwk/core/AnalysisPlugin.hpp>
-#include <PECFwk/core/PECReaderPlugin.hpp>
 
 #include <TFile.h>
 #include <TTree.h>
@@ -15,52 +8,90 @@
 #include <string>
 
 
+class LeptonReader;
+class JetMETReader;
+class PileUpReader;
+
+
 /**
  * \class BasicKinematicsPlugin
  * \brief A plugin to store basic kinematical information
  * 
- * The class is provided more as an illustration of the plugin concept rather than is expected to
- * be used in a real-life analysis.
+ * This plugin represents an example of producing custom trees with some representative
+ * observables.
  */
 class BasicKinematicsPlugin: public AnalysisPlugin
 {
 public:
     /// Constructor
+    BasicKinematicsPlugin(std::string const &name, std::string const &outDirectory);
+    
+    /// A short-cut for the above version with a default name "BasicKinematics"
     BasicKinematicsPlugin(std::string const &outDirectory);
+    
+    /// Default copy constructor
+    BasicKinematicsPlugin(BasicKinematicsPlugin const &) = default;
+    
+    /// Default move constructor
+    BasicKinematicsPlugin(BasicKinematicsPlugin &&) = default;
+    
+    /// Assignment operator is deleted
+    BasicKinematicsPlugin &operator=(BasicKinematicsPlugin const &) = delete;
+    
+    /// Trivial destructor
+    virtual ~BasicKinematicsPlugin() noexcept;
 
 public:
     /**
-     * \brief Creates a newly-initialized copy
+     * \brief Creates a new output file and sets up a tree
      * 
-     * Consult documentation of the overriden method for details.
+     * Reimplemented from Plugin.
      */
-    Plugin *Clone() const;
+    virtual void BeginRun(Dataset const &dataset) override;
     
     /**
-     * \brief Notifies this that a dataset has been opened
+     * \brief Creates a newly configured clone
      * 
-     * Consult documentation of the overriden method for details.
+     * Implemented from Plugin.
      */
-    void BeginRun(Dataset const &dataset);
+    virtual Plugin *Clone() const override;
     
     /**
-     * \brief Notifies this that a dataset has been closed
+     * \brief Writes the output tree
      * 
-     * Consult documentation of the overriden method for details.
+     * Reimplemented from Plugin.
      */
-    void EndRun();
+    virtual void EndRun() override;
 
 private:
+    /// Creates output directory if it does not exist
+    void CreateOutputDirectory();
+    
     /**
-     * \brief Processes the current event
+     * \brief Computes representative observables for the current event and fills the tree
      * 
-     * Consult documentation of the overriden method for details.
+     * Implemented from Plugin.
      */
-    bool ProcessEvent();
+    virtual bool ProcessEvent() override;
 
 private:
-    /// Pointer to PECReaderPlugin
-    PECReaderPlugin const *reader;
+    /// Name of the plugin that produces leptons
+    std::string leptonPluginName;
+    
+    /// Non-owning pointer to the plugin that produces leptons
+    LeptonReader const *leptonPlugin;
+    
+    /// Name of the plugin that produces jets and MET
+    std::string jetmetPluginName;
+    
+    /// Non-owning pointer to the plugin that produces jets and MET
+    JetMETReader const *jetmetPlugin;
+    
+    /// Name of the plugin that reads information about pile-up
+    std::string puPluginName;
+    
+    /// Non-owning pointer to the plugin that reads information about pile-up
+    PileUpReader const *puPlugin;
     
     /// Directory to store output files
     std::string outDirectory;
@@ -77,5 +108,4 @@ private:
     Float_t M_J1J2, DR_J1J2;
     Float_t MET, MtW;
     Int_t nPV;
-    Float_t weight;
 };

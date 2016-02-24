@@ -1,40 +1,53 @@
 #include <PECFwk/extensions/BasicKinematicsPlugin.hpp>
 
+#include <PECFwk/core/LeptonReader.hpp>
+#include <PECFwk/core/JetMETReader.hpp>
+#include <PECFwk/core/PileUpReader.hpp>
 #include <PECFwk/core/Processor.hpp>
+#include <PECFwk/core/PhysicsObjects.hpp>
 #include <PECFwk/core/ROOTLock.hpp>
 
 #include <sys/stat.h>
 
 
-using namespace std;
-
-
-BasicKinematicsPlugin::BasicKinematicsPlugin(string const &outDirectory_):
-    AnalysisPlugin("BasicKinematics"),
+BasicKinematicsPlugin::BasicKinematicsPlugin(std::string const &name,
+  std::string const &outDirectory_):
+    AnalysisPlugin(name),
+    leptonPluginName("Leptons"), leptonPlugin(nullptr),
+    jetmetPluginName("JetMET"), jetmetPlugin(nullptr),
+    puPluginName("PileUp"), puPlugin(nullptr),
     outDirectory(outDirectory_)
 {
-    // Make sure the directory path ends with a slash
-    if (outDirectory.back() != '/')
-        outDirectory += '/';
-    
-    // Create the output directory if it does not exist
-    struct stat dirStat;
-    
-    if (stat(outDirectory.c_str(), &dirStat) != 0)  // the directory does not exist
-        mkdir(outDirectory.c_str(), 0755);
+    CreateOutputDirectory();
 }
 
 
-Plugin *BasicKinematicsPlugin::Clone() const
+BasicKinematicsPlugin::BasicKinematicsPlugin(std::string const &outDirectory_):
+    AnalysisPlugin("BasicKinematics"),
+    leptonPluginName("Leptons"), leptonPlugin(nullptr),
+    jetmetPluginName("JetMET"), jetmetPlugin(nullptr),
+    puPluginName("PileUp"), puPlugin(nullptr),
+    outDirectory(outDirectory_)
 {
-    return new BasicKinematicsPlugin(outDirectory);
+    CreateOutputDirectory();
 }
+
+
+BasicKinematicsPlugin::~BasicKinematicsPlugin() noexcept
+{}
 
 
 void BasicKinematicsPlugin::BeginRun(Dataset const &dataset)
 {
-    // Save pointer to the reader plugin
-    reader = dynamic_cast<PECReaderPlugin const *>(master->GetPluginBefore("Reader", name));
+    // Save pointers to reader plugins
+    leptonPlugin = dynamic_cast<LeptonReader const *>(
+      GetMaster().GetPluginBefore(leptonPluginName, GetName()));
+    
+    jetmetPlugin = dynamic_cast<JetMETReader const *>(
+      GetMaster().GetPluginBefore(jetmetPluginName, GetName()));
+    
+    puPlugin = dynamic_cast<PileUpReader const *>(
+      GetMaster().GetPluginBefore(puPluginName, GetName()));
     
     
     // Creation of ROOT objects is not thread-safe and must be protected
@@ -63,9 +76,12 @@ void BasicKinematicsPlugin::BeginRun(Dataset const &dataset)
     tree->Branch("MET", &MET);
     tree->Branch("MtW", &MtW);
     tree->Branch("nPV", &nPV);
-    
-    if (dataset.IsMC())
-        tree->Branch("weight", &weight);
+}
+
+
+Plugin *BasicKinematicsPlugin::Clone() const
+{
+    return new BasicKinematicsPlugin(*this);
 }
 
 
@@ -86,14 +102,28 @@ void BasicKinematicsPlugin::EndRun()
 }
 
 
+void BasicKinematicsPlugin::CreateOutputDirectory()
+{
+    // Make sure the directory path ends with a slash
+    if (outDirectory.back() != '/')
+        outDirectory += '/';
+    
+    // Create the output directory if it does not exist
+    struct stat dirStat;
+    
+    if (stat(outDirectory.c_str(), &dirStat) != 0)  // the directory does not exist
+        mkdir(outDirectory.c_str(), 0755);
+}
+
+
 bool BasicKinematicsPlugin::ProcessEvent()
 {
-    auto const &leptons = (*reader)->GetLeptons();
+    auto const &leptons = leptonPlugin->GetLeptons();
+    auto const &met = jetmetPlugin->GetMET();
     
     if (leptons.size() > 0)
     {
         auto const &lep = leptons.front();
-        auto const &met = (*reader)->GetMET();
         
         Pt_Lep = lep.Pt();
         Eta_Lep = lep.Eta();
@@ -104,7 +134,7 @@ bool BasicKinematicsPlugin::ProcessEvent()
         Pt_Lep = Eta_Lep = MtW = 0.;
     
     
-    auto const &jets = (*reader)->GetJets();
+    auto const &jets = jetmetPlugin->GetJets();
     Pt_J1 = Eta_J1 = Pt_J2 = Eta_J2 = M_J1J2 = DR_J1J2 = 0.;
     
     if (jets.size() > 0)
@@ -123,11 +153,7 @@ bool BasicKinematicsPlugin::ProcessEvent()
     }
     
     
-    MET = (*reader)->GetMET().Pt();
-    
-    nPV = (*reader)->GetNPrimaryVertices();
-    
-    weight = (*reader)->GetCentralWeight();
+    nPV = puPlugin->GetNumVertices();
     
     
     tree->Fill();
