@@ -19,7 +19,7 @@ BTagEffService::BTagEffService(std::string const &name, std::string const &fileN
 
 
 BTagEffService::BTagEffService(std::string const &fileName, std::string const &directory /*= ""*/):
-    Service("BTagEffService"),
+    Service("BTagEff"),
     inFileDirectory(directory)
 {
     OpenInputFile(fileName);
@@ -134,18 +134,18 @@ void BTagEffService::BeginRun(Dataset const &dataset)
 }
 
 
-double BTagEffService::GetEfficiency(BTagger::WorkingPoint wp, Candidate const &jet, int flavour)
+double BTagEffService::GetEfficiency(BTagger::WorkingPoint wp, Jet const &jet)
   const
 {
     // Find the appropriate efficiency histogram
-    auto histIt = effHists.find(std::make_pair(wp, abs(flavour)));
+    auto histIt = effHists.find(std::make_pair(wp, abs(jet.GetParentID())));
     
     if (histIt == effHists.end())
     {
         std::ostringstream ost;
         ost << "BTagEffService::GetEfficiency: Failed to find an efficiency histogram for " <<
           "working point " << BTagger::WorkingPointToTextCode(wp) << " and jet flavour " <<
-          flavour << ".";
+          jet.GetParentID() << ".";
         
         throw std::runtime_error(ost.str());
     }

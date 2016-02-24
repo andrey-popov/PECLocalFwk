@@ -22,7 +22,7 @@ class JetMETReader;
  * bins)provided by the user.
  * 
  * The filter relies on the presence of a JetMETReader and a BTagWPService. The default names are
- * "JetMET" and "BTagWPService" respectively.
+ * "JetMET" and "BTagWP" respectively.
  */
 class JetFilter: public AnalysisPlugin
 {

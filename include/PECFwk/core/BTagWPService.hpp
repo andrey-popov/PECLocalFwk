@@ -31,7 +31,7 @@ public:
      * 
      * The arguments specify the desired b-tagging algorithm and default working point
      */
-    BTagWPService(std::string name = "BTagWPService");
+    BTagWPService(std::string name = "BTagWP");
     
     /// Default copy constructor
     BTagWPService(BTagWPService const &) = default;

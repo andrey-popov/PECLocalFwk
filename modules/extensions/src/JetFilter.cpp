@@ -23,7 +23,7 @@ bool JetFilter::SelectionBin::Contains(unsigned nJets, unsigned nTags) const
 JetFilter::JetFilter(std::string const name, double minPt_, BTagger const &bTagger_) noexcept:
     AnalysisPlugin(name),
     jetPluginName("JetMET"), jetPlugin(nullptr),
-    bTagWPServiceName("BTagWPService"), bTagWPService(nullptr),
+    bTagWPServiceName("BTagWP"), bTagWPService(nullptr),
     minPt(minPt_), bTagger(bTagger_)
 {}
 
@@ -31,7 +31,7 @@ JetFilter::JetFilter(std::string const name, double minPt_, BTagger const &bTagg
 JetFilter::JetFilter(double minPt_, BTagger const &bTagger_) noexcept:
     AnalysisPlugin("JetFilter"),
     jetPluginName("JetMET"), jetPlugin(nullptr),
-    bTagWPServiceName("BTagWPService"), bTagWPService(nullptr),
+    bTagWPServiceName("BTagWP"), bTagWPService(nullptr),
     minPt(minPt_), bTagger(bTagger_)
 {}
 
