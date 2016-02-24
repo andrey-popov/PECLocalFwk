@@ -4,16 +4,6 @@
 #include <string>
 
 
-// Forward declarations needed to provide a specialization of std::hash for BTagger
-class BTagger;
-
-namespace std
-{
-template<>
-struct hash<BTagger>;
-};
-
-
 /**
  * \class BTagger
  * \brief A light-weight class to define selection on b-tagging
@@ -76,6 +66,9 @@ public:
     /// Returns the working point in use
     WorkingPoint GetWorkingPoint() const;
     
+    /// Hash function to use BTagger in an unordered map
+    std::size_t Hash() const;
+    
     /// Equality operator
     bool operator==(BTagger const &other) const;
     
@@ -95,15 +88,14 @@ private:
      * This constant is needed to calculate hash value of the object.
      */
     static unsigned const numWP = 3;
-    
-    
-/**
- * \brief Specialization of std::hash
- * 
- * Needed to use this class in an unordered map.
- */
-friend class std::hash<BTagger>;
 };
+
+
+// Must define constexpr functions in the header since they are implicitly inlined
+constexpr double BTagger::GetMaxPseudorapidity()
+{
+    return 2.4;
+}
 
 
 
@@ -118,15 +110,7 @@ struct hash<BTagger>
 {
     std::size_t operator()(BTagger const &tagger) const
     {
-        return unsigned(tagger.algo) * BTagger::numWP + unsigned(tagger.wp);
+        return tagger.Hash();
     }
 };
 };
-
-
-// Must define constexpr functions in the header since they are implicitly inlined
-constexpr double BTagger::GetMaxPseudorapidity()
-{
-    return 2.4;
-}
-

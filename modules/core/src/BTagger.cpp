@@ -53,6 +53,12 @@ BTagger::WorkingPoint BTagger::GetWorkingPoint() const
 }
 
 
+std::size_t BTagger::Hash() const
+{
+    return unsigned(algo) * BTagger::numWP + unsigned(wp);
+}
+
+
 bool BTagger::operator==(BTagger const &other) const
 {
     return (other.algo == algo and other.wp == wp);
