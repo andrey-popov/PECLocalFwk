@@ -37,6 +37,15 @@ BasicKinematicsPlugin::~BasicKinematicsPlugin() noexcept
 {}
 
 
+BasicKinematicsPlugin::BasicKinematicsPlugin(BasicKinematicsPlugin const &src):
+    AnalysisPlugin(src),
+    leptonPluginName(src.leptonPluginName), leptonPlugin(nullptr),
+    jetmetPluginName(src.jetmetPluginName), jetmetPlugin(nullptr),
+    puPluginName(src.puPluginName), puPlugin(nullptr),
+    outDirectory(src.outDirectory)
+{}
+
+
 void BasicKinematicsPlugin::BeginRun(Dataset const &dataset)
 {
     // Save pointers to reader plugins
@@ -54,11 +63,12 @@ void BasicKinematicsPlugin::BeginRun(Dataset const &dataset)
     ROOTLock::Lock();
     
     // Create the output file
-    file = new TFile((outDirectory + dataset.GetFiles().front().GetBaseName() + ".root").c_str(),
-     "recreate");
+    file.reset(
+      new TFile((outDirectory + dataset.GetFiles().front().GetBaseName() + ".root").c_str(),
+        "recreate"));
     
     // Create the tree
-    tree = new TTree("Vars", "Basic kinematical variables");
+    tree.reset(new TTree("Vars", "Basic kinematical variables"));
     
     // End of critical block
     ROOTLock::Unlock();
@@ -95,8 +105,8 @@ void BasicKinematicsPlugin::EndRun()
     tree->Write("", TObject::kOverwrite);
     
     // Delete the objects
-    delete tree;
-    delete file;
+    tree.reset();
+    file.reset();
     
     ROOTLock::Unlock();
 }

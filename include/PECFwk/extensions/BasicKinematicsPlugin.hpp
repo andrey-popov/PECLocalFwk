@@ -5,6 +5,7 @@
 #include <TFile.h>
 #include <TTree.h>
 
+#include <memory>
 #include <string>
 
 
@@ -29,9 +30,6 @@ public:
     /// A short-cut for the above version with a default name "BasicKinematics"
     BasicKinematicsPlugin(std::string const &outDirectory);
     
-    /// Default copy constructor
-    BasicKinematicsPlugin(BasicKinematicsPlugin const &) = default;
-    
     /// Default move constructor
     BasicKinematicsPlugin(BasicKinematicsPlugin &&) = default;
     
@@ -40,6 +38,16 @@ public:
     
     /// Trivial destructor
     virtual ~BasicKinematicsPlugin() noexcept;
+    
+private:
+    /**
+     * \brief Copy constructor that produces a newly initialized clone
+     * 
+     * Behaviour of this copy constructor is appropriate only before processing of the first
+     * dataset starts since attributes that are created in BeginRun are not copy. For this reason
+     * the copy constructor must not be used in a generic case and made private to prevent this.
+     */
+    BasicKinematicsPlugin(BasicKinematicsPlugin const &src);
 
 public:
     /**
@@ -97,10 +105,10 @@ private:
     std::string outDirectory;
     
     /// Current output file
-    TFile *file;
+    std::unique_ptr<TFile> file;
     
     /// Current output tree
-    TTree *tree;
+    std::unique_ptr<TTree> tree;
     
     // Output buffers
     Float_t Pt_Lep, Eta_Lep;
