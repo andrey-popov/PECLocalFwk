@@ -1,43 +1,56 @@
-/**
- * \file WeightPileUp.hpp
- * 
- * The module provides an implementation for pile-up reweighting.
- */
-
 #pragma once
 
-#include <PECFwk/core/WeightPileUpInterface.hpp>
+#include <PECFwk/core/AnalysisPlugin.hpp>
 
 #include <TFile.h>
 #include <TH1.h>
 
-#include <string>
 #include <memory>
+#include <string>
+
+
+class PileUpReader;
 
 
 /**
  * \class WeightPileUp
- * \brief An implementation for reweighting on additional pp interactions ("pile-up")
+ * \brief Plugin that implements reweighting for additional pp interactions ("pile-up")
  * 
- * The class implements reweighting over pile-up based on the "true" number of pile-up interactions
- * (i.e. the parameter of Poisson distribution, from which the actual number of pile-up events is
- * sampled). The idea follows the official recipe [1].
- * [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupMCReweightingUtilities
+ * This plugin performs reweighting on pile-up based on the expected number of pile-up
+ * interactions, or "true" simulated pile-up. The idea follows the official recipe [1].
  * 
- * The input parameters for the algorithm are a file with target (data) distribution over pile-up
- * (normally the file is created by script pileupCalc.py [2]) and an amount of scaling of the number
- * of pile-up interactions that is used to account for the systematical variation (as described in
- * [3]). Several times a random-number engine exploited to admix pile-up to MC has been
- * misconfigured, which made the actual pile-up distribution in MC deviate from the nominal one.
- * The class is capable of handling such cases and for this reason can accept the name of a ROOT
- * file with actual pile-up MC histograms, which are used instead of nominal one.
- * [2] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJSONFileforData
- * [3] https://twiki.cern.ch/twiki/bin/view/CMS/PileupSystematicErrors
+ * The input parameters for the algorithm are a file with the target (data) distribution of pile-up
+ * (normally this file is created by script pileupCalc.py [2]) and an amount of scaling of the
+ * number of pile-up interactions that is used to account for the systematical variation (as
+ * described in [3]).
+ * 
+ * In past there were problems with the random-number engine exploited to admix pile-up to MC,
+ * which made the actual pile-up distribution in MC deviate from the nominal one. This plugin is
+ * capable of handling such cases, allowing user to supply a ROOT file with actual pile-up MC
+ * histograms, which are then used instead of nominal one.
  * 
  * The nominal MC pile-up distribution used by default is S10 (adopted in Summer12 campaign).
+ * 
+ * [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupMCReweightingUtilities
+ * [2] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJSONFileforData?rev=22
+ * [3] https://twiki.cern.ch/twiki/bin/view/CMS/PileupSystematicErrors
  */
-class WeightPileUp: public WeightPileUpInterface
+class WeightPileUp: public AnalysisPlugin
 {
+public:
+    /// An auxiliary structure to aggregate central weight and its systematical variations
+    struct Weights
+    {
+        /// Central weight
+        double central;
+        
+        /// Up variation
+        double up;
+        
+        /// Down variation
+        double down;
+    };
+    
 public:
     /**
      * \brief Constructor
@@ -52,8 +65,8 @@ public:
      * desired systematical variation as defined in [1].
      * [1] https://twiki.cern.ch/twiki/bin/view/CMS/PileupSystematicErrors
      */
-    WeightPileUp(std::string const &dataPUFileName, std::string const &mcPUFileName,
-     double systError);
+    WeightPileUp(std::string const &name, std::string const &dataPUFileName,
+      std::string const &mcPUFileName, double systError);
     
     /**
      * \brief Constuctor
@@ -62,41 +75,64 @@ public:
      * difference is that this version does not require a file with MC-truth pile-up
      * distributions, and reweighting is performed with the nominal MC distribution.
      */
+    WeightPileUp(std::string const &name, std::string const &dataPUFileName, double systError);
+    
+    /// A short-cut for the above version with a default name "WeightPileUp"
     WeightPileUp(std::string const &dataPUFileName, double systError);
     
-    /// Copy constructor
-    WeightPileUp(WeightPileUp const &src);
+    /// Default copy constructor
+    WeightPileUp(WeightPileUp const &) = default;
+    
+    /// Default move constructor
+    WeightPileUp(WeightPileUp &&) = default;
+    
+    /// Assignment operator is deleted
+    WeightPileUp &operator=(WeightPileUp const &) = delete;
+    
+    /// Trivial destructor
+    virtual ~WeightPileUp() noexcept;
 
 public:
     /**
-     * \brief Returns a newly-initialized copy of the class instance
+     * \brief Creates a new output file and sets up a tree
      * 
-     * Consult documentation of the overriden method in the base class for details.
+     * Reimplemented from Plugin.
      */
-    WeightPileUpInterface *Clone() const;
+    virtual void BeginRun(Dataset const &dataset) override;
     
     /**
-     * \brief Notifies this of the dataset that is about to be processed
+     * \brief Creates a newly configured clone
      * 
-     * Consult documentation of the overriden method in the base class for details.
+     * Implemented from Plugin.
      */
-    void SetDataset(Dataset const &dataset);
+    virtual Plugin *Clone() const override;
     
     /**
      * \brief Calculates event weight given the "true" number of pile-up interactions
      * 
      * Consult documentation of the overriden method in the base class for details.
      */
-    WeightPileUpInterface::Weights GetWeights(double nTruth) const;
+    WeightPileUp::Weights GetWeights(double nTruth) const;
+    
+private:
+    /**
+     * \brief Does nothing because computation of event weights is delegated to CalcWeight
+     * 
+     * Implemented from Plugin.
+     */
+    virtual bool ProcessEvent() override;
+    
+    /// Reads target (data) pile-up distribution from the given file
+    void ReadTargetDistribution(std::string const &dataPUFileName);
 
 private:
-    /// Target pile-up distribution in real data
+    /// Target pile-up distribution in data
     std::shared_ptr<TH1> dataPUHist;
     
-    /// File with MC-truth pile-up distributions
+    /// File with per-dataset distributions of expected pile-up in simulation
     std::shared_ptr<TFile> mcPUFile;
     
-    /// Distribution used in generation of the current MC dataset
+    /// Distribution of expected pile-up used in generation of the current MC dataset
     std::shared_ptr<TH1> mcPUHist;
     
     /// Rescaling of the target distribution to estimate systematical uncertainty
