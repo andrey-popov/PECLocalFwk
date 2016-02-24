@@ -14,7 +14,7 @@ using namespace std::string_literals;
 
 
 PECInputData::PECInputData(std::string const name):
-    ReaderPlugin(name),
+    EventIDReader(name),
     nextFileIt(inputFiles.end()),
     eventIDTreeName("pecEventID/EventID"),
     nEvents(0), nextEvent(0),
@@ -70,12 +70,6 @@ TTree *PECInputData::ExposeTree(std::string const &name) const
           name + "\", which has not been loaded.");
     
     return res->second.get();
-}
-
-
-EventID const &PECInputData::GetEventID() const
-{
-    return eventID;
 }
 
 

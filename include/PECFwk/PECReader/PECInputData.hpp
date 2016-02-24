@@ -1,6 +1,6 @@
 #pragma once
 
-#include <PECFwk/core/ReaderPlugin.hpp>
+#include <PECFwk/core/EventIDReader.hpp>
 
 #include <PECFwk/core/EventID.hpp>
 #include <PECFwk/core/Dataset.hpp>
@@ -28,7 +28,7 @@
  * operates with atomic datasets, so this should not be a large problem. For the time being,
  * reading of multiple files in a dataset is disabled; only the first file will be read.
  */
-class PECInputData: public ReaderPlugin
+class PECInputData: public EventIDReader
 {
 public:
     /// Status codes for method LoadTree
@@ -83,9 +83,6 @@ public:
      * current event is not exposed. To read the current event use the ReadEventFromTree method.
      */
     TTree *ExposeTree(std::string const &name) const;
-    
-    /// Returns ID of the current event
-    EventID const &GetEventID() const;
     
     /**
      * \brief Reads the tree with the given name from the current file
@@ -165,7 +162,4 @@ private:
      * ROOT needs a variable with a pointer to an object to read the object from a tree.
      */
     pec::EventID *bfEventIDPointer;
-    
-    /// ID of the current event converted into the standard format of the framework
-    EventID eventID;
 };
