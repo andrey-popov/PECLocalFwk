@@ -102,7 +102,8 @@ public:
      * \brief Calculates b-tagging scale factor for given jet momentum and flavour
      * 
      * The computation is performed with the help of package external/BTagCalibration. If given pt
-     * is outside of the supported range, the uncertainty is doubled.
+     * is outside of the supported range, the uncertainty is doubled. For pt < 20 GeV a zero scale
+     * factor is always returned.
      */
     double GetScaleFactor(double pt, double eta, int flavour, Variation var = Variation::Nominal)
       const;

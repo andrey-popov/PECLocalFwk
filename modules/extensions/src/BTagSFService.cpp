@@ -5,6 +5,7 @@
 #include <PECFwk/external/BTagCalibration/BTagCalibration.hpp>
 #include <PECFwk/external/BTagCalibration/BTagCalibrationReader.hpp>
 
+#include <cmath>
 #include <stdexcept>
 #include <sstream>
 
@@ -60,6 +61,11 @@ double BTagSFService::GetScaleFactor(double pt, double eta, int flavour,
           "only.");
     
     
+    // Scale factors are not supported for jets with pt < 20 GeV
+    if (pt < 20.)
+        return 0.;
+    
+    
     // Translate jet flavour to a code
     Flavour flavourCode;
     
@@ -87,26 +93,40 @@ double BTagSFService::GetScaleFactor(double pt, double eta, int flavour,
           "has not been specified.");
     
     auto const &readerGroup = res->second;
+    auto const &reader = readerGroup->readers[var];
+    
+    
+    // Check if pt is outside of the range in which scale factors have been measured. If this is
+    //true, clip it to the range
+    bool ptOutOfRange = false;
+    auto const &ptRange = reader->min_max_pt(readerGroup->translatedFlavour, eta);
+    
+    if (pt < ptRange.first)
+    {
+        ptOutOfRange = true;
+        pt = ptRange.first;
+    }
+    else if (pt > ptRange.second)
+    {
+        ptOutOfRange = true;
+        pt = std::nextafter(float(ptRange.second), 0.f);
+        //^ Have to use the previous representable floating-point number because
+        //BTagCalibrationReader::eval performs a strict comparison with the upper bound, and it
+        //uses float internally
+    }
     
     
     // Calculate the scale factor
-    auto const &reader = readerGroup->readers[var];
     double sf = reader->eval(readerGroup->translatedFlavour, eta, pt);
     
     
-    // If pt is outside of the supported range, the uncertainty needs to be doubled
-    if (var != Variation::Nominal)
+    // Double the uncertainty if pt is outside of the supported range
+    if (ptOutOfRange and var != Variation::Nominal)
     {
-        auto const &ptRange = reader->min_max_pt(readerGroup->translatedFlavour, eta);
+        double const sfNominal =
+          readerGroup->readers[Variation::Nominal]->eval(readerGroup->translatedFlavour, eta, pt);
         
-        if (pt < ptRange.first or pt > ptRange.second)
-        {
-            double const sfNominal =
-              readerGroup->readers[Variation::Nominal]->eval(
-                readerGroup->translatedFlavour, eta, pt);
-            
-            sf = 2 * (sf - sfNominal) + sfNominal;
-        }
+        sf = 2 * (sf - sfNominal) + sfNominal;
     }
     
     
