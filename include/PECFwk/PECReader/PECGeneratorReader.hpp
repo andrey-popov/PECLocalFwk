@@ -31,17 +31,17 @@ public:
      */
     PECGeneratorReader(std::string const name = "Generator");
     
-    /// Default copy constructor
-    PECGeneratorReader(PECGeneratorReader const &) = default;
+    /// Copy constructor
+    PECGeneratorReader(PECGeneratorReader const &src) noexcept;
     
     /// Default move constructor
     PECGeneratorReader(PECGeneratorReader &&) = default;
     
-    /// Default assignment operator
-    PECGeneratorReader &operator=(PECGeneratorReader const &) = default;
+    /// Assignment operator is deleted
+    PECGeneratorReader &operator=(PECGeneratorReader const &) = delete;
     
     /// Trivial destructor
-    virtual ~PECGeneratorReader();
+    virtual ~PECGeneratorReader() noexcept;
     
 public:
     /**

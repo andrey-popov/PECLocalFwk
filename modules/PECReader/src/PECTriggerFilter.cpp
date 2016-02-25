@@ -17,7 +17,7 @@ PECTriggerFilter::PECTriggerFilter(std::string const name /*= "PECTriggerFilter"
 {}
 
 
-PECTriggerFilter::~PECTriggerFilter()
+PECTriggerFilter::~PECTriggerFilter() noexcept
 {}
 
 
@@ -49,7 +49,7 @@ double PECTriggerFilter::GetWeight() const
 // (Defined in the header)
 
 
-PECTriggerFilterData::~PECTriggerFilterData()
+PECTriggerFilterData::~PECTriggerFilterData() noexcept
 {}
 
 
@@ -131,7 +131,7 @@ bool PECTriggerFilterData::ProcessEvent()
 // (Defined in the header)
 
 
-PECTriggerFilterMC::~PECTriggerFilterMC()
+PECTriggerFilterMC::~PECTriggerFilterMC() noexcept
 {
     delete [] buffer;
 }

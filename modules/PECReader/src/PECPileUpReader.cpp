@@ -12,7 +12,16 @@ PECPileUpReader::PECPileUpReader(std::string const name /*= "PileUp"*/):
 {}
 
 
-PECPileUpReader::~PECPileUpReader()
+PECPileUpReader::PECPileUpReader(PECPileUpReader const &src) noexcept:
+    PileUpReader(src),
+    inputDataPluginName(src.inputDataPluginName),
+    inputDataPlugin(src.inputDataPlugin),
+    treeName(src.treeName),
+    bfPileUpInfoPointer(&bfPileUpInfo)
+{}
+
+
+PECPileUpReader::~PECPileUpReader() noexcept
 {}
 
 
@@ -34,7 +43,7 @@ void PECPileUpReader::BeginRun(Dataset const &)
 
 Plugin *PECPileUpReader::Clone() const
 {
-    return new PECPileUpReader(GetName());
+    return new PECPileUpReader(*this);
 }
 
 

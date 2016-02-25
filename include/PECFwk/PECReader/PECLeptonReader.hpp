@@ -30,17 +30,17 @@ public:
      */
     PECLeptonReader(std::string const name = "Leptons");
     
-    /// Default copy constructor
-    PECLeptonReader(PECLeptonReader const &) = default;
+    /// Copy constructor
+    PECLeptonReader(PECLeptonReader const &src) noexcept;
     
     /// Default move constructor
     PECLeptonReader(PECLeptonReader &&) = default;
     
-    /// Default assignment operator
-    PECLeptonReader &operator=(PECLeptonReader const &) = default;
+    /// Assignment operator is deleted
+    PECLeptonReader &operator=(PECLeptonReader const &) = delete;
     
     /// Trivial destructor
-    virtual ~PECLeptonReader();
+    virtual ~PECLeptonReader() noexcept;
     
 public:
     /**

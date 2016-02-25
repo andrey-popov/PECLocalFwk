@@ -24,17 +24,17 @@ public:
      */
     PECPileUpReader(std::string const name = "PileUp");
     
-    /// Default copy constructor
-    PECPileUpReader(PECPileUpReader const &) = default;
+    /// Copy constructor
+    PECPileUpReader(PECPileUpReader const &src) noexcept;
     
     /// Default move constructor
     PECPileUpReader(PECPileUpReader &&) = default;
     
-    /// Default assignment operator
-    PECPileUpReader &operator=(PECPileUpReader const &) = default;
+    /// Assignment operator is deleted
+    PECPileUpReader &operator=(PECPileUpReader const &) = delete;
     
     /// Trivial destructor
-    virtual ~PECPileUpReader();
+    virtual ~PECPileUpReader() noexcept;
     
 public:
     /**

@@ -20,6 +20,18 @@ PECJetMETReader::PECJetMETReader(std::string name /*= "JetMET"*/):
 {}
 
 
+PECJetMETReader::PECJetMETReader(PECJetMETReader const &src) noexcept:
+    JetMETReader(src),
+    inputDataPluginName(src.inputDataPluginName),
+    inputDataPlugin(src.inputDataPlugin),
+    treeName(src.treeName),
+    bfJetPointer(&bfJets), bfMETPointer(&bfMETs),
+    minPt(src.minPt), maxAbsEta(src.maxAbsEta),
+    leptonPluginName(src.leptonPluginName), leptonPlugin(src.leptonPlugin),
+    leptonDR2(src.leptonDR2)
+{}
+
+
 PECJetMETReader::~PECJetMETReader()
 {}
 
@@ -55,7 +67,7 @@ void PECJetMETReader::BeginRun(Dataset const &)
 
 Plugin *PECJetMETReader::Clone() const
 {
-    return new PECJetMETReader(GetName());
+    return new PECJetMETReader(*this);
 }
 
 

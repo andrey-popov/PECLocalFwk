@@ -17,7 +17,16 @@ PECGeneratorReader::PECGeneratorReader(std::string const name /*= "Generator"*/)
 {}
 
 
-PECGeneratorReader::~PECGeneratorReader()
+PECGeneratorReader::PECGeneratorReader(PECGeneratorReader const &src) noexcept:
+    ReaderPlugin(src),
+    inputDataPluginName(src.inputDataPluginName),
+    inputDataPlugin(src.inputDataPlugin),
+    treeName(src.treeName),
+    bfGeneratorPointer(&bfGenerator)
+{}
+
+
+PECGeneratorReader::~PECGeneratorReader() noexcept
 {}
 
 
@@ -48,7 +57,7 @@ void PECGeneratorReader::BeginRun(Dataset const &dataset)
 
 Plugin *PECGeneratorReader::Clone() const
 {
-    return new PECGeneratorReader(GetName());
+    return new PECGeneratorReader(*this);
 }
 
 

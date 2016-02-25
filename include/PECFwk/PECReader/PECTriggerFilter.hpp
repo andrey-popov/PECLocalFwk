@@ -35,7 +35,7 @@ public:
     PECTriggerFilter &operator=(PECTriggerFilter const &) = delete;
     
     /// Trivial destructor
-    virtual ~PECTriggerFilter();
+    virtual ~PECTriggerFilter() noexcept;
     
 public:
     /**
@@ -120,7 +120,7 @@ public:
     PECTriggerFilterData &operator=(PECTriggerFilterData const &) = delete;
     
     /// Trivial destructor
-    virtual ~PECTriggerFilterData();
+    virtual ~PECTriggerFilterData() noexcept;
     
 public:
     /**
@@ -241,9 +241,6 @@ public:
     template<typename C>
     PECTriggerFilterMC(C const &ranges);
     
-    /// Default copy constructor
-    PECTriggerFilterMC(PECTriggerFilterMC const &) = default;
-    
     /// Default move constructor
     PECTriggerFilterMC(PECTriggerFilterMC &&) = default;
     
@@ -251,8 +248,17 @@ public:
     PECTriggerFilterMC &operator=(PECTriggerFilterMC const &) = delete;
     
     /// Destructor
-    virtual ~PECTriggerFilterMC();
-
+    virtual ~PECTriggerFilterMC() noexcept;
+    
+private:
+    /**
+     * \brief Default copy constructor
+     * 
+     * A copy can only be constructed before the first call to BeginRun. For the sake of safety,
+     * this constructor is made private.
+     */
+    PECTriggerFilterMC(PECTriggerFilterMC const &) = default;
+    
 public:
     /**
      * \brief Requests reading of the tree with trigger information and sets up its branches

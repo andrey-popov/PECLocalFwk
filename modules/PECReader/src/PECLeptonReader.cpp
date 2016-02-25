@@ -9,14 +9,24 @@
 
 PECLeptonReader::PECLeptonReader(std::string const name /*= "Leptons"*/):
     LeptonReader(name),
-    inputDataPluginName("InputData"),
-    inputDataPlugin(nullptr),
+    inputDataPluginName("InputData"), inputDataPlugin(nullptr),
     electronTreeName("pecElectrons/Electrons"), bfElectronPointer(&bfElectrons),
     muonTreeName("pecMuons/Muons"), bfMuonPointer(&bfMuons)
 {}
 
 
-PECLeptonReader::~PECLeptonReader()
+PECLeptonReader::PECLeptonReader(PECLeptonReader const &src) noexcept:
+    LeptonReader(src),
+    inputDataPluginName(src.inputDataPluginName),
+    inputDataPlugin(src.inputDataPlugin),
+    electronTreeName(src.electronTreeName),
+    bfElectronPointer(&bfElectrons),
+    muonTreeName(src.muonTreeName),
+    bfMuonPointer(&bfMuons)
+{}
+
+
+PECLeptonReader::~PECLeptonReader() noexcept
 {}
 
 
@@ -41,7 +51,7 @@ void PECLeptonReader::BeginRun(Dataset const &)
 
 Plugin *PECLeptonReader::Clone() const
 {
-    return new PECLeptonReader(GetName());
+    return new PECLeptonReader(*this);
 }
 
 

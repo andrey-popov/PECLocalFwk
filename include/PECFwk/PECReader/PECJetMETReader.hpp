@@ -33,14 +33,14 @@ public:
      */
     PECJetMETReader(std::string const name = "JetMET");
     
-    /// Default copy constructor
-    PECJetMETReader(PECJetMETReader const &) = default;
+    /// Copy constructor
+    PECJetMETReader(PECJetMETReader const &src) noexcept;
     
     /// Default move constructor
     PECJetMETReader(PECJetMETReader &&) = default;
     
-    /// Default assignment operator
-    PECJetMETReader &operator=(PECJetMETReader const &) = default;
+    /// Assignment operator is deleted
+    PECJetMETReader &operator=(PECJetMETReader const &) = delete;
     
     /// Trivial destructor
     virtual ~PECJetMETReader() noexcept;

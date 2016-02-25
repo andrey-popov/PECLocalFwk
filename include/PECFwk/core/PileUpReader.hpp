@@ -17,8 +17,8 @@ public:
      */
     PileUpReader(std::string const name = "PileUp");
     
-    /// The copy constructor is deleted
-    PileUpReader(PileUpReader const &) = delete;
+    /// Default copy constructor
+    PileUpReader(PileUpReader const &) = default;
     
     /// Default move constructor
     PileUpReader(PileUpReader &&) = default;
