@@ -1,10 +1,10 @@
 #include <PECFwk/PECReader/PECTriggerFilter.hpp>
 
 #include <PECFwk/core/Processor.hpp>
+#include <PECFwk/core/ROOTLock.hpp>
 #include <PECFwk/PECReader/PECInputData.hpp>
 
 #include <algorithm>
-/**/#include <iostream>
 
 
 using namespace std::literals::string_literals;
@@ -30,7 +30,6 @@ void PECTriggerFilter::BeginRun(Dataset const &)
     // Register reading the tree with trigger information and by default disable all branches
     inputDataPlugin->LoadTree(triggerTreeName);
     triggerTree = inputDataPlugin->ExposeTree(triggerTreeName);
-    triggerTree->SetBranchStatus("*", false);
 }
 
 
@@ -99,18 +98,24 @@ bool PECTriggerFilterData::ProcessEvent()
         // A valid trigger range has been found. Get the corresponding branch of the tree and
         //assign the buffer to it
         currentRange = *res;
+        
+        ROOTLock::Lock();
         triggerTree->SetBranchStatus("*", false);
         
         TBranch *branch =
          triggerTree->GetBranch((currentRange->GetDataTriggerPattern() + "__accept").c_str());
         
         if (not branch)
+        {
+            ROOTLock::Unlock();
             throw std::runtime_error("PECTriggerFilterData::ProcessEvent: State of the trigger "s +
              "\"HLT_" + currentRange->GetDataTriggerPattern() + "_v*\" is not stored in the "
              "source tree.");
+        }
         
         branch->SetStatus(true);
         branch->SetAddress(&bfAccepted);
+        ROOTLock::Unlock();
     }
     
     
@@ -159,6 +164,8 @@ void PECTriggerFilterMC::BeginRun(Dataset const &dataset)
     
     // Set statuses and addresses of relevant branches of the trigger tree. Take into account that
     //the same trigger might be specified in several trigger ranges
+    ROOTLock::Lock();
+    
     triggerTree->SetBranchStatus("*", false);
     unsigned curBufferIndex = 0;
     
@@ -182,8 +189,11 @@ void PECTriggerFilterMC::BeginRun(Dataset const &dataset)
             TBranch *branch = triggerTree->GetBranch((curTriggerName + "__accept").c_str());
             
             if (not branch)
+            {
+                ROOTLock::Unlock();
                 throw std::runtime_error("PECTriggerFilterMC::BeginRun: State of the trigger "s +
                  "\"HLT_" + curTriggerName + "_v*\" is not stored in the source tree.");
+            }
             
             
             // Set the status and address of the branch
@@ -204,6 +214,8 @@ void PECTriggerFilterMC::BeginRun(Dataset const &dataset)
             ranges.at(i).second = ranges.at(iPrev).second;
         }
     }
+    
+    ROOTLock::Unlock();
 }
 
 

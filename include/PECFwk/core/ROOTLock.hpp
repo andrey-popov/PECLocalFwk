@@ -1,9 +1,3 @@
-/**
- * \file ROOTLock.hpp
- * 
- * The module defines a global locking mechanism to protect thread-unsafe ROOT routines.
- */
-
 #pragma once
 
 #include <mutex>
@@ -11,12 +5,15 @@
 
 /**
  * \class ROOTLock
- * \brief Provides a lock to protect thread-unsafe ROOT routines
+ * \brief Provides a lock to protect ROOT routines that are not thread-safe
  * 
- * The class is a simple wrapper around a static mutex. Since ROOT is not thread-safe, this lock
- * must be used to mark all the crical blocks of code that call ROOT routines. In particular,
- * creation of any ROOT objects must be guarded with the help of this class. The user should also
- * keep in mind that threads share the current ROOT directory object (gDirectory).
+ * This class is a simple wrapper around a static mutex. In general, ROOT is not thread-safe, and
+ * a number of operations must be protected by a lock. Their list includes (but is likely not
+ * limited to) the following:
+ *   * creation of objects inheriting from TObject, especially, TFile, TTree, and histograms;
+ *   * deletion of these objects;
+ *   * calling TTree::SetBranchAddress or TBranch::SetAddress.
+ * User should also remember that threads share the current ROOT directory object (gDirectory).
  */
 class ROOTLock
 {

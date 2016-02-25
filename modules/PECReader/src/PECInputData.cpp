@@ -176,7 +176,9 @@ bool PECInputData::NextInputFile()
     
     // Set up the tree and update counters
     bfEventIDPointer = &bfEventID;
+    ROOTLock::Lock();
     eventIDTree->SetBranchAddress("eventId", &bfEventIDPointer);
+    ROOTLock::Unlock();
     
     nEvents = eventIDTree->GetEntries();
     nextEvent = 0;

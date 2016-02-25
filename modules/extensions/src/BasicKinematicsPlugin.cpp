@@ -70,10 +70,6 @@ void BasicKinematicsPlugin::BeginRun(Dataset const &dataset)
     // Create the tree
     tree.reset(new TTree("Vars", "Basic kinematical variables"));
     
-    // End of critical block
-    ROOTLock::Unlock();
-    
-    
     // Assign branch addresses
     tree->Branch("Pt_Lep", &Pt_Lep);
     tree->Branch("Eta_Lep", &Eta_Lep);
@@ -86,6 +82,9 @@ void BasicKinematicsPlugin::BeginRun(Dataset const &dataset)
     tree->Branch("MET", &MET);
     tree->Branch("MtW", &MtW);
     tree->Branch("nPV", &nPV);
+    
+    // End of critical block
+    ROOTLock::Unlock();
 }
 
 

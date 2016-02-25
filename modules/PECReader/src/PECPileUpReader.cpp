@@ -1,6 +1,7 @@
 #include <PECFwk/PECReader/PECPileUpReader.hpp>
 
 #include <PECFwk/core/Processor.hpp>
+#include <PECFwk/core/ROOTLock.hpp>
 #include <PECFwk/PECReader/PECInputData.hpp>
 
 
@@ -36,8 +37,10 @@ void PECPileUpReader::BeginRun(Dataset const &)
     //used are not read
     inputDataPlugin->LoadTree(treeName);
     TTree *tree = inputDataPlugin->ExposeTree(treeName);
+    ROOTLock::Lock();
     tree->SetBranchStatus("inTimeNumPU", false);
     tree->SetBranchAddress("puInfo", &bfPileUpInfoPointer);
+    ROOTLock::Unlock();
 }
 
 

@@ -1,6 +1,7 @@
 #include <PECFwk/PECReader/PECJetMETReader.hpp>
 
 #include <PECFwk/core/Processor.hpp>
+#include <PECFwk/core/ROOTLock.hpp>
 #include <PECFwk/PECReader/PECInputData.hpp>
 
 #include <TVector2.h>
@@ -60,8 +61,10 @@ void PECJetMETReader::BeginRun(Dataset const &)
     // Set up the tree
     inputDataPlugin->LoadTree(treeName);
     TTree *tree = inputDataPlugin->ExposeTree(treeName);
+    ROOTLock::Lock();
     tree->SetBranchAddress("jets", &bfJetPointer);
     tree->SetBranchAddress("METs", &bfMETPointer);
+    ROOTLock::Unlock();
 }
 
 

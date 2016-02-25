@@ -1,6 +1,7 @@
 #include <PECFwk/PECReader/PECGeneratorReader.hpp>
 
 #include <PECFwk/core/Processor.hpp>
+#include <PECFwk/core/ROOTLock.hpp>
 #include <PECFwk/PECReader/PECInputData.hpp>
 
 #include <stdexcept>
@@ -47,11 +48,13 @@ void PECGeneratorReader::BeginRun(Dataset const &dataset)
     inputDataPlugin->LoadTree(treeName);
     TTree *tree = inputDataPlugin->ExposeTree(treeName);
     
+    ROOTLock::Lock();
     tree->SetBranchStatus("*", false);
     tree->SetBranchStatus("processId", true);
     tree->SetBranchStatus("nominalWeight", true);
     
     tree->SetBranchAddress("generator", &bfGeneratorPointer);
+    ROOTLock::Unlock();
 }
 
 

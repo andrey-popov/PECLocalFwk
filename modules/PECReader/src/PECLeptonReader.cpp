@@ -1,10 +1,10 @@
 #include <PECFwk/PECReader/PECLeptonReader.hpp>
 
 #include <PECFwk/core/Processor.hpp>
+#include <PECFwk/core/ROOTLock.hpp>
 #include <PECFwk/PECReader/PECInputData.hpp>
 
 #include <algorithm>
-/**/#include <iostream>
 
 
 PECLeptonReader::PECLeptonReader(std::string const name /*= "Leptons"*/):
@@ -37,15 +37,15 @@ void PECLeptonReader::BeginRun(Dataset const &)
       GetMaster().GetPluginBefore(inputDataPluginName, GetName()));
     
     
-    // Set up electron tree
+    // Set up the trees
     inputDataPlugin->LoadTree(electronTreeName);
+    inputDataPlugin->LoadTree(muonTreeName);
+    
+    ROOTLock::Lock();
     inputDataPlugin->ExposeTree(electronTreeName)->
       SetBranchAddress("electrons", &bfElectronPointer);
-    
-    
-    // Set up muon tree
-    inputDataPlugin->LoadTree(muonTreeName);
     inputDataPlugin->ExposeTree(muonTreeName)->SetBranchAddress("muons", &bfMuonPointer);
+    ROOTLock::Unlock();
 }
 
 
