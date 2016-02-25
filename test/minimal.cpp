@@ -2,7 +2,9 @@
 #include <PECFwk/core/Dataset.hpp>
 #include <PECFwk/core/Processor.hpp>
 
+#include <PECFwk/extensions/BTagEffService.hpp>
 #include <PECFwk/extensions/BTagSFService.hpp>
+#include <PECFwk/extensions/BTagWeight.hpp>
 #include <PECFwk/extensions/JetFilter.hpp>
 #include <PECFwk/extensions/LeptonFilter.hpp>
 #include <PECFwk/extensions/MetFilter.hpp>
@@ -23,87 +25,24 @@ using namespace std;
 
 int main()
 {
-    #if 0
-    // Define the b-tagging objects
-    shared_ptr<BTagger const> bTagger(
-     new BTagger(BTagger::Algorithm::CSV, BTagger::WorkingPoint::Tight));
-    
-    
-    // Define the event selection
-    GenericEventSelection sel(30., bTagger);
-    sel.AddLeptonThreshold(Lepton::Flavour::Muon, 26.);
-    sel.AddJetTagBin(2, 1);
-    sel.AddJetTagBin(3, 1);
-    sel.AddJetTagBin(3, 2);
-    
-    
-    // Define datasets
-    string const filePrefix("/gridgroup/cms/popov/PECData/2012Bravo/");
-    double const brWlnu = 3 * 0.1080;
-    list<Dataset> datasets;
-    
-    // ttbar
-    datasets.emplace_back(Dataset({Dataset::Process::ttbar, Dataset::Process::ttSemilep},
-     Dataset::Generator::MadGraph, Dataset::ShowerGenerator::Pythia));
-    datasets.back().AddFile(filePrefix + "ttbar-semilep-mg-p1_53X.02.05_tTP_p1.root",
-     234. * brWlnu * (1. - brWlnu) * 2, 24953451);
-    datasets.back().AddFile(filePrefix + "ttbar-semilep-mg-p1_53X.02.05_tTP_p2.root",
-     234. * brWlnu * (1. - brWlnu) * 2, 24953451);
-    datasets.back().AddFile(filePrefix + "ttbar-semilep-mg-p1_53X.02.05_tTP_p3.root",
-     234. * brWlnu * (1. - brWlnu) * 2, 24953451);
-    datasets.back().AddFile(filePrefix + "ttbar-semilep-mg-p1_53X.02.05_tTP_p4.root",
-     234. * brWlnu * (1. - brWlnu) * 2, 24953451);
-    
-     
-    // Define the triggers
-    list<TriggerRange> triggerRanges;
-    triggerRanges.emplace_back(0, -1, "IsoMu24_eta2p1", 19.7e3, "IsoMu24_eta2p1");
-    
-    TriggerSelection triggerSel(triggerRanges);
-    
-    
-    // Define reweighting for b-tagging
-    BTagEfficiencies bTagEff("BTagEff_2012Bravo_v1.0.root", "in4_jPt30/");
-    
-    // Set a mapping from process codes to names of histograms with b-tagging efficiencies
-    bTagEff.SetProcessLabel(Dataset::Process::ttSemilep, "ttbar-semilep");
-    bTagEff.SetProcessLabel(Dataset::Process::ttchan, "t-tchan");
-    bTagEff.SetProcessLabel(Dataset::Process::ttH, "ttH");
-    bTagEff.SetProcessLabel(Dataset::Process::tHq, "tHq-nc");
-    bTagEff.SetDefaultProcessLabel("ttbar-inc");
-    
-    BTagScaleFactors bTagSF(bTagger->GetAlgorithm());
-    WeightBTag bTagReweighter(bTagger, bTagEff, bTagSF);
-    
-    
-    // Perform dataset-specific initialization
-    bTagReweighter.LoadPayload(datasets.front());
-    
-    
-    // Build an instance of PECReader
-    PECReader reader(datasets.front());
-    reader.SetTriggerSelection(&triggerSel);
-    reader.SetEventSelection(&sel);
-    reader.SetBTagReweighter(&bTagReweighter);
-    //reader.SetReadHardInteraction();
-    reader.NextSourceFile();
-    #endif
-    
-    
-    // Datasets
-    Dataset dataTTbar({Dataset::Process::ttbar, Dataset::Process::ttSemilep},
-     Dataset::Generator::MadGraph, Dataset::ShowerGenerator::Pythia);
-    dataTTbar.AddFile("/gridgroup/cms/popov/Analyses/ZPrimeToTT/2016.01.15_Grid-campaign/PEC/"
-     "ExampleOutputFiles/ttbar-pw_3.0.0_VmF_1.root", 1., 1);
+    // Input dataset
+    Dataset dataset({Dataset::Process::ttbar}, Dataset::Generator::POWHEG);
+    string const filePrefix("/gridgroup/cms/popov/PECData/2015Bravo/");
+    dataset.AddFile(filePrefix + "ttbar-pw_3.0.0_VmF_p1.root", 831.76, 96834559);
+    dataset.AddFile(filePrefix + "ttbar-pw_3.0.0_VmF_p2.root", 831.76, 96834559);
+    dataset.AddFile(filePrefix + "ttbar-pw_3.0.0_VmF_p3.root", 831.76, 96834559);
+    dataset.AddFile(filePrefix + "ttbar-pw_3.0.0_VmF_p4.root", 831.76, 96834559);
+    dataset.AddFile(filePrefix + "ttbar-pw_3.0.0_VmF_p5.root", 831.76, 96834559);
+    //^ Only a fraction of available files included here
     
     
     // Triggers
     list<TriggerRange> triggerRanges;
-    triggerRanges.emplace_back(0, -1, "IsoMu20", 2.2e3, "IsoMu20");
+    triggerRanges.emplace_back(0, -1, "IsoMu20", 2244.966, "IsoMu20");
     
     
     // Common definition of b-tagging that will be used everywhere
-    BTagger const bTagger(BTagger::Algorithm::CSV, BTagger::WorkingPoint::Medium);
+    BTagger const bTagger(BTagger::Algorithm::CSV, BTagger::WorkingPoint::Tight);
     
     
     // Processor object
@@ -112,6 +51,12 @@ int main()
     
     // Register b-tagging services
     processor.RegisterService(new BTagWPService);
+    
+    BTagEffService *bTagEffService =
+      new BTagEffService("BTagEff_2012Bravo_v1.0.root", "in4_jPt30/");
+    bTagEffService->SetProcessLabel(Dataset::Process::ttSemilep, "ttbar-semilep");
+    bTagEffService->SetDefaultProcessLabel("ttbar-inc");
+    processor.RegisterService(bTagEffService);
     
     BTagSFService *bTagSFService = new BTagSFService(bTagger, "BTagSF_74X_CSVv2.csv");
     bTagSFService->SetMeasurement(BTagSFService::Flavour::Bottom, "mujets");
@@ -137,8 +82,10 @@ int main()
     processor.RegisterPlugin(new MetFilter(MetFilter::Mode::MtW, 40.));
     processor.RegisterPlugin(new PECPileUpReader);
     processor.RegisterPlugin(new PECGeneratorReader);
+    processor.RegisterPlugin(new BTagWeight(bTagger));
     
     
+    // Save pointers to selected plugins to read information from them in the event loop
     PECInputData const *inputData =
       dynamic_cast<PECInputData const *>(processor.GetPlugin("InputData"));
     LeptonReader const *leptonReader =
@@ -147,10 +94,12 @@ int main()
       dynamic_cast<PileUpReader const *>(processor.GetPlugin("PileUp"));
     PECGeneratorReader const *generatorReader =
       dynamic_cast<PECGeneratorReader const *>(processor.GetPlugin("Generator"));
+    BTagWeight const *bTagReweighter =
+      dynamic_cast<BTagWeight const *>(processor.GetPlugin("BTagWeight"));
     
     
     // Open the input dataset
-    processor.OpenDataset(dataTTbar);
+    processor.OpenDataset(dataset);
     
     
     // Loop over few events
@@ -197,10 +146,11 @@ int main()
           puReader->GetRho() << '\n';
         
         cout << "\nNominal GEN-level weight: " << generatorReader->GetNominalWeight() << '\n';
+        cout << "Weight for b-tagging scale factors: " << bTagReweighter->CalcWeight() << '\n';
         
         cout << "\n\n";
     }
     
     
-    return 0;
+    return EXIT_SUCCESS;
 }
