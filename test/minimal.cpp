@@ -153,27 +153,6 @@ int main()
     processor.OpenDataset(dataTTbar);
     
     
-    // Test reading some b-tagging SF
-    for (double const &pt: {25., 40., 100., 1100.})
-    {
-        cout << "b-tag SF for pt = " << pt << ", eta = 0 (b, c, udsg):\n";
-        
-        for (unsigned const &f: {5, 4, 0})
-        {
-            double const nominal =
-              bTagSFService->GetScaleFactor(pt, 0., f, BTagSFService::Variation::Nominal);
-            double const up =
-              bTagSFService->GetScaleFactor(pt, 0., f, BTagSFService::Variation::Up);
-            double const down =
-              bTagSFService->GetScaleFactor(pt, 0., f, BTagSFService::Variation::Down);
-            
-            cout << "  " << nominal << "  [" << up << ",  " << down << "]\n";
-        }
-    }
-    
-    cout << "\n\n";
-    
-    
     // Loop over few events
     for (unsigned i = 0; i < 500; ++i)
     {

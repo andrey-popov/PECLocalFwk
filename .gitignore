@@ -21,8 +21,3 @@ lib/*
 
 # Uncompressed data files
 data/JERC/*.txt
-
-# Compiled test programs
-test/minimal
-test/multithread
-
