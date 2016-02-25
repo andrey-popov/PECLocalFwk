@@ -75,6 +75,13 @@ public:
     virtual Plugin *Clone() const override;
     
     /**
+     * \brief Clears collections of input files and loaded trees
+     * 
+     * Reimplemented from Plugin.
+     */
+    virtual void EndRun() override;
+    
+    /**
      * \brief Returns non-owning pointer to the loaded tree with the given name
      * 
      * The must be loaded with method LoadTree beforehand. If it is not the case, an exception is

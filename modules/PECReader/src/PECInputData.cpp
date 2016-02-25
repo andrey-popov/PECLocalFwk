@@ -61,6 +61,15 @@ Plugin *PECInputData::Clone() const
 }
 
 
+void PECInputData::EndRun()
+{
+    // Clear collections of input files and loaded trees. Other attributes of the class will be
+    //initialized correctly when the next dataset is opened
+    inputFiles.clear();
+    loadedTrees.clear();
+}
+
+
 TTree *PECInputData::ExposeTree(std::string const &name) const
 {
     auto const res = loadedTrees.find(name);
