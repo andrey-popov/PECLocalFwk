@@ -29,7 +29,8 @@ class PileUpReader;
  * capable of handling such cases, allowing user to supply a ROOT file with actual pile-up MC
  * histograms, which are then used instead of nominal one.
  * 
- * The nominal MC pile-up distribution used by default is S10 (adopted in Summer12 campaign).
+ * The nominal MC pile-up distribution used by default is Startup2015 for 25 ns (adopted in
+ * RunIISpring15DR74-Asympt25ns).
  * 
  * This plugin exploits a PileUpReader with the default name "PileUp".
  * 
