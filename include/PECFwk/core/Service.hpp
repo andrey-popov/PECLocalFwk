@@ -1,9 +1,10 @@
 #pragma once
 
-#include <PECFwk/core/ProcessorForward.hpp>
-#include <PECFwk/core/DatasetForward.hpp>
-
 #include <string>
+
+
+class Dataset;
+class Processor;
 
 
 /**

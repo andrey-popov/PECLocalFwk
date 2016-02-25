@@ -6,8 +6,6 @@
 
 #pragma once
 
-#include <PECFwk/core/DatasetForward.hpp>
-
 #include <string>
 #include <list>
 #include <unordered_set>

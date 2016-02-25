@@ -2,7 +2,6 @@
 
 #include <PECFwk/core/Dataset.hpp>
 #include <PECFwk/core/Plugin.hpp>
-#include <PECFwk/core/RunManagerForward.hpp>
 #include <PECFwk/core/Service.hpp>
 
 #include <map>
@@ -10,6 +9,9 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
+
+class RunManager;
 
 
 /**
