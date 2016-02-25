@@ -22,7 +22,7 @@ FileInPath::FileInPath()
     
     installPath = path;
     
-    if (installPath.length() > 0 and installPath[installPath.length() - 1] == '/')
+    if (installPath.length() > 0 and installPath[installPath.length() - 1] != '/')
         installPath += '/';
 }
 
