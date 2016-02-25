@@ -1,17 +1,23 @@
+#include <PECFwk/core/BTagWPService.hpp>
 #include <PECFwk/core/Dataset.hpp>
-#include <PECFwk/core/PECReader.hpp>
-#include <PECFwk/core/BTagger.hpp>
 #include <PECFwk/core/RunManager.hpp>
-#include <PECFwk/extensions/GenericEventSelection.hpp>
-#include <PECFwk/extensions/BTagEfficiencies.hpp>
-#include <PECFwk/extensions/BTagScaleFactors.hpp>
-#include <PECFwk/extensions/WeightBTag.hpp>
-#include <PECFwk/extensions/TriggerSelection.hpp>
-#include <PECFwk/extensions/WeightPileUp.hpp>
-#include <PECFwk/extensions/BasicKinematicsPlugin.hpp>
 
-#include <iostream>
-#include <memory>
+#include <PECFwk/extensions/BasicKinematicsPlugin.hpp>
+#include <PECFwk/extensions/BTagEffService.hpp>
+#include <PECFwk/extensions/BTagSFService.hpp>
+#include <PECFwk/extensions/BTagWeight.hpp>
+#include <PECFwk/extensions/JetFilter.hpp>
+#include <PECFwk/extensions/LeptonFilter.hpp>
+#include <PECFwk/extensions/MetFilter.hpp>
+
+#include <PECFwk/PECReader/PECGeneratorReader.hpp>
+#include <PECFwk/PECReader/PECInputData.hpp>
+#include <PECFwk/PECReader/PECJetMETReader.hpp>
+#include <PECFwk/PECReader/PECLeptonReader.hpp>
+#include <PECFwk/PECReader/PECPileUpReader.hpp>
+#include <PECFwk/PECReader/PECTriggerFilter.hpp>
+
+#include <list>
 
 
 using namespace std;
@@ -19,82 +25,76 @@ using namespace std;
 
 int main()
 {
-    // Define the b-tagging objects
-    shared_ptr<BTagger const> bTagger(
-     new BTagger(BTagger::Algorithm::CSV, BTagger::WorkingPoint::Tight));
-    
-    
-    // Define the event selection
-    GenericEventSelection sel(30., bTagger);
-    sel.AddLeptonThreshold(Lepton::Flavour::Muon, 26.);
-    sel.AddJetTagBin(2, 1);
-    sel.AddJetTagBin(3, 1);
-    sel.AddJetTagBin(3, 2);
-    
-    
-    // Define datasets
-    string const filePrefix("/gridgroup/cms/popov/PECData/2012Bravo/");
-    double const brWlnu = 3 * 0.1080;
+    // Input datasets
     list<Dataset> datasets;
+    string const filePrefix("/gridgroup/cms/popov/PECData/2015Bravo/");
     
-    // ttbar
-    datasets.emplace_back(Dataset({Dataset::Process::ttbar, Dataset::Process::ttSemilep},
-     Dataset::Generator::MadGraph, Dataset::ShowerGenerator::Pythia));
-    datasets.back().AddFile(filePrefix + "ttbar-semilep-mg-p1_53X.02.05_tTP_p1.root",
-     234. * brWlnu * (1. - brWlnu) * 2, 24953451);
-    datasets.back().AddFile(filePrefix + "ttbar-semilep-mg-p1_53X.02.05_tTP_p2.root",
-     234. * brWlnu * (1. - brWlnu) * 2, 24953451);
-    datasets.back().AddFile(filePrefix + "ttbar-semilep-mg-p1_53X.02.05_tTP_p3.root",
-     234. * brWlnu * (1. - brWlnu) * 2, 24953451);
-    datasets.back().AddFile(filePrefix + "ttbar-semilep-mg-p1_53X.02.05_tTP_p4.root",
-     234. * brWlnu * (1. - brWlnu) * 2, 24953451);
+    datasets.emplace_back(Dataset({Dataset::Process::ttbar}, Dataset::Generator::POWHEG));
+    Dataset *d = &datasets.back();
+    d->AddFile(filePrefix + "ttbar-pw_3.0.0_VmF_p1.root", 831.76, 96834559);
+    d->AddFile(filePrefix + "ttbar-pw_3.0.0_VmF_p2.root", 831.76, 96834559);
+    d->AddFile(filePrefix + "ttbar-pw_3.0.0_VmF_p3.root", 831.76, 96834559);
+    d->AddFile(filePrefix + "ttbar-pw_3.0.0_VmF_p4.root", 831.76, 96834559);
+    d->AddFile(filePrefix + "ttbar-pw_3.0.0_VmF_p5.root", 831.76, 96834559);
+    //^ Only a fraction of available files included here
     
-     
-    // Define the triggers
+    
+    // Triggers
     list<TriggerRange> triggerRanges;
-    triggerRanges.emplace_back(0, -1, "IsoMu24_eta2p1", 19.7e3, "IsoMu24_eta2p1");
-    
-    TriggerSelection triggerSel(triggerRanges);
+    triggerRanges.emplace_back(0, -1, "IsoMu20", 2244.966, "IsoMu20");
     
     
-    // Define reweighting for b-tagging
-    BTagEfficiencies bTagEff("BTagEff_2012Bravo_v1.0.root", "in4_jPt30/");
-    
-    // Set a mapping from process codes to names of histograms with b-tagging efficiencies
-    bTagEff.SetProcessLabel(Dataset::Process::ttSemilep, "ttbar-semilep");
-    bTagEff.SetProcessLabel(Dataset::Process::ttchan, "t-tchan");
-    bTagEff.SetProcessLabel(Dataset::Process::ttH, "ttH");
-    bTagEff.SetProcessLabel(Dataset::Process::tHq, "tHq-nc");
-    bTagEff.SetDefaultProcessLabel("ttbar-inc");
-    
-    BTagScaleFactors bTagSF(bTagger->GetAlgorithm());
-    WeightBTag bTagReweighter(bTagger, bTagEff, bTagSF);
-    
-    
-    // An object to reweight for pile-up
-    WeightPileUp weigtPileUp("SingleMu2012ABCD_Bravo_v1.0_pixelLumi.pileupTruth_finebin.root",
-     0.06);
+    // Common definition of b-tagging that will be used everywhere
+    BTagger const bTagger(BTagger::Algorithm::CSV, BTagger::WorkingPoint::Tight);
     
     
     // Construct the run manager
     RunManager manager(datasets.begin(), datasets.end());
     
-    #if 0
-    // Set the configuration for PECReader
-    auto &config = manager.GetPECReaderConfig();
-    config.SetModule(&triggerSel);
-    config.SetModule(&sel);
-    config.SetModule(bTagger);
-    config.SetModule(&bTagReweighter);
-    config.SetModule(&weigtPileUp);
-    #endif
     
-    // Register a plugin
+    // Register b-tagging services
+    manager.RegisterService(new BTagWPService);
+    
+    BTagEffService *bTagEffService =
+      new BTagEffService("BTagEff_2012Bravo_v1.0.root", "in4_jPt30/");
+    bTagEffService->SetProcessLabel(Dataset::Process::ttSemilep, "ttbar-semilep");
+    bTagEffService->SetDefaultProcessLabel("ttbar-inc");
+    manager.RegisterService(bTagEffService);
+    
+    BTagSFService *bTagSFService = new BTagSFService(bTagger, "BTagSF_74X_CSVv2.csv");
+    bTagSFService->SetMeasurement(BTagSFService::Flavour::Bottom, "mujets");
+    bTagSFService->SetMeasurement(BTagSFService::Flavour::Charm, "mujets");
+    bTagSFService->SetMeasurement(BTagSFService::Flavour::Light, "comb");
+    manager.RegisterService(bTagSFService);
+    
+    
+    // Register plugins
+    manager.RegisterPlugin(new PECInputData);
+    manager.RegisterPlugin(BuildPECTriggerFilter(false, triggerRanges));
+    manager.RegisterPlugin(new PECLeptonReader);
+    manager.RegisterPlugin(new LeptonFilter("LeptonFilter", Lepton::Flavour::Muon, 22., 2.1));
+    
+    PECJetMETReader *jetReader = new PECJetMETReader;
+    jetReader->SetSelection(30., 2.4);
+    manager.RegisterPlugin(jetReader);
+    
+    JetFilter *jetFilter = new JetFilter(0., bTagger);
+    jetFilter->AddSelectionBin(4, -1, 2, 2);
+    manager.RegisterPlugin(jetFilter);
+    
+    manager.RegisterPlugin(new MetFilter(MetFilter::Mode::MtW, 40.));
+    manager.RegisterPlugin(new PECPileUpReader);
+    manager.RegisterPlugin(new PECGeneratorReader);
+    manager.RegisterPlugin(new BTagWeight(bTagger));
+    
+    
+    // Finally, the plugin to calculate some observables
     manager.RegisterPlugin(new BasicKinematicsPlugin("basicTuples"));
     
+    
     // Process the datasets
-    manager.Process(3);
+    manager.Process(4);
     
     
-    return 0;
+    return EXIT_SUCCESS;
 }
