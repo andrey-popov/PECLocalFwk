@@ -1,15 +1,12 @@
+#include <PECFwk/core/BTagWPService.hpp>
 #include <PECFwk/core/Dataset.hpp>
 #include <PECFwk/core/Processor.hpp>
 
-#include <PECFwk/extensions/GenericEventSelection.hpp>
-#include <PECFwk/extensions/BTagEfficiencies.hpp>
-#include <PECFwk/extensions/BTagScaleFactors.hpp>
-#include <PECFwk/extensions/WeightBTag.hpp>
-
-#include <PECFwk/core/BTagWPService.hpp>
+#include <PECFwk/extensions/BTagSFService.hpp>
 #include <PECFwk/extensions/JetFilter.hpp>
 #include <PECFwk/extensions/LeptonFilter.hpp>
 #include <PECFwk/extensions/MetFilter.hpp>
+
 #include <PECFwk/PECReader/PECGeneratorReader.hpp>
 #include <PECFwk/PECReader/PECInputData.hpp>
 #include <PECFwk/PECReader/PECJetMETReader.hpp>
@@ -105,12 +102,22 @@ int main()
     triggerRanges.emplace_back(0, -1, "IsoMu20", 2.2e3, "IsoMu20");
     
     
+    // Common definition of b-tagging that will be used everywhere
+    BTagger const bTagger(BTagger::Algorithm::CSV, BTagger::WorkingPoint::Medium);
+    
+    
     // Processor object
     Processor processor;
     
     
-    // Register services
+    // Register b-tagging services
     processor.RegisterService(new BTagWPService);
+    
+    BTagSFService *bTagSFService = new BTagSFService(bTagger, "BTagSF_74X_CSVv2.csv");
+    bTagSFService->SetMeasurement(BTagSFService::Flavour::Bottom, "mujets");
+    bTagSFService->SetMeasurement(BTagSFService::Flavour::Charm, "mujets");
+    bTagSFService->SetMeasurement(BTagSFService::Flavour::Light, "comb");
+    processor.RegisterService(bTagSFService);
     
     
     // Register plugins
@@ -123,8 +130,7 @@ int main()
     jetReader->SetSelection(30., 2.4);
     processor.RegisterPlugin(jetReader);
     
-    JetFilter *jetFilter =
-      new JetFilter(0., BTagger(BTagger::Algorithm::CSV, BTagger::WorkingPoint::Tight));
+    JetFilter *jetFilter = new JetFilter(0., bTagger);
     jetFilter->AddSelectionBin(4, -1, 2, 2);
     processor.RegisterPlugin(jetFilter);
     
@@ -145,6 +151,27 @@ int main()
     
     // Open the input dataset
     processor.OpenDataset(dataTTbar);
+    
+    
+    // Test reading some b-tagging SF
+    for (double const &pt: {25., 40., 100., 1100.})
+    {
+        cout << "b-tag SF for pt = " << pt << ", eta = 0 (b, c, udsg):\n";
+        
+        for (unsigned const &f: {5, 4, 0})
+        {
+            double const nominal =
+              bTagSFService->GetScaleFactor(pt, 0., f, BTagSFService::Variation::Nominal);
+            double const up =
+              bTagSFService->GetScaleFactor(pt, 0., f, BTagSFService::Variation::Up);
+            double const down =
+              bTagSFService->GetScaleFactor(pt, 0., f, BTagSFService::Variation::Down);
+            
+            cout << "  " << nominal << "  [" << up << ",  " << down << "]\n";
+        }
+    }
+    
+    cout << "\n\n";
     
     
     // Loop over few events
