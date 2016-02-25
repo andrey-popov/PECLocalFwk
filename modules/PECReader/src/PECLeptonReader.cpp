@@ -37,14 +37,19 @@ void PECLeptonReader::BeginRun(Dataset const &)
       GetMaster().GetPluginBefore(inputDataPluginName, GetName()));
     
     
-    // Set up the trees
+    // Set up the trees. Branches with properties that are currently not utilized, are disabled
     inputDataPlugin->LoadTree(electronTreeName);
     inputDataPlugin->LoadTree(muonTreeName);
     
     ROOTLock::Lock();
-    inputDataPlugin->ExposeTree(electronTreeName)->
-      SetBranchAddress("electrons", &bfElectronPointer);
-    inputDataPlugin->ExposeTree(muonTreeName)->SetBranchAddress("muons", &bfMuonPointer);
+    TTree *t = inputDataPlugin->ExposeTree(electronTreeName);
+    t->SetBranchStatus("electrons.dB", false);
+    t->SetBranchStatus("electrons.mvaId*", false);
+    t->SetBranchAddress("electrons", &bfElectronPointer);
+    
+    t = inputDataPlugin->ExposeTree(muonTreeName);
+    t->SetBranchStatus("muons.dB", false);
+    t->SetBranchAddress("muons", &bfMuonPointer);
     ROOTLock::Unlock();
 }
 

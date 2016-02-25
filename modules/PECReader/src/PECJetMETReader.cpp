@@ -58,10 +58,12 @@ void PECJetMETReader::BeginRun(Dataset const &)
           GetMaster().GetPluginBefore(leptonPluginName, GetName()));
     
     
-    // Set up the tree
+    // Set up the tree. Branches with properties that are not currently not used, are disabled
     inputDataPlugin->LoadTree(treeName);
     TTree *tree = inputDataPlugin->ExposeTree(treeName);
     ROOTLock::Lock();
+    tree->SetBranchStatus("jets.secVertexMass", false);
+    tree->SetBranchStatus("jets.pullAngle", false);
     tree->SetBranchAddress("jets", &bfJetPointer);
     tree->SetBranchAddress("METs", &bfMETPointer);
     ROOTLock::Unlock();
@@ -139,7 +141,7 @@ bool PECJetMETReader::ProcessEvent()
         jet.SetBTag(BTagger::Algorithm::CSV, j.BTagCSV());
         jet.SetArea(j.Area());
         jet.SetCharge(j.Charge());
-        jet.SetPullAngle(j.PullAngle());
+        // jet.SetPullAngle(j.PullAngle());
         
         jet.SetParentID(j.Flavour());
         
