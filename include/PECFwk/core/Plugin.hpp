@@ -1,9 +1,3 @@
-/**
- * \file Plugin.hpp
- * 
- * The module describes an interface for a plugin for Processor.
- */
-
 #pragma once
 
 #include <PECFwk/core/ProcessorForward.hpp>
@@ -79,8 +73,7 @@ public:
     /**
      * \brief Returns a reference to the master
      * 
-     * Will throw an exception if the pointer to master is null. Using this method is the preferred
-     * way to access the master.
+     * Will throw an exception if the pointer to master is null.
      */
     Processor const &GetMaster() const;
     
@@ -143,7 +136,7 @@ private:
      */
     virtual EventOutcome ReinterpretDecision(bool decision) const = 0;
     
-protected:
+private:
     /**
      * \brief Unique name to identify the plugin
      * 
