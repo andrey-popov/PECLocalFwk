@@ -31,6 +31,8 @@ class PileUpReader;
  * 
  * The nominal MC pile-up distribution used by default is S10 (adopted in Summer12 campaign).
  * 
+ * This plugin exploits a PileUpReader with the default name "PileUp".
+ * 
  * [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupMCReweightingUtilities
  * [2] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJSONFileforData?rev=22
  * [3] https://twiki.cern.ch/twiki/bin/view/CMS/PileupSystematicErrors
@@ -107,16 +109,12 @@ public:
      */
     virtual Plugin *Clone() const override;
     
-    /**
-     * \brief Calculates event weight given the "true" number of pile-up interactions
-     * 
-     * Consult documentation of the overriden method in the base class for details.
-     */
-    WeightPileUp::Weights GetWeights(double nTruth) const;
+    /// Returns weights for the current event
+    WeightPileUp::Weights const &GetWeights() const;
     
 private:
     /**
-     * \brief Does nothing because computation of event weights is delegated to CalcWeight
+     * \brief Calculates weights for the current event
      * 
      * Implemented from Plugin.
      */
@@ -126,6 +124,12 @@ private:
     void ReadTargetDistribution(std::string const &dataPUFileName);
 
 private:
+    /// Name of the plugin that reads information about pile-up
+    std::string puPluginName;
+    
+    /// Non-owning pointer to the plugin that reads information about pile-up
+    PileUpReader const *puPlugin;
+    
     /// Target pile-up distribution in data
     std::shared_ptr<TH1> dataPUHist;
     
@@ -137,4 +141,7 @@ private:
     
     /// Rescaling of the target distribution to estimate systematical uncertainty
     double const systError;
+    
+    /// Nominal and systematic weights calculated for the current event
+    Weights weights;
 };

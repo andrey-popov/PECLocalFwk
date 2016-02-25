@@ -2,6 +2,7 @@
 
 #include <PECFwk/core/FileInPath.hpp>
 #include <PECFwk/core/PileUpReader.hpp>
+#include <PECFwk/core/Processor.hpp>
 #include <PECFwk/core/ROOTLock.hpp>
 
 #include <cstdlib>
@@ -11,6 +12,7 @@
 WeightPileUp::WeightPileUp(std::string const &name, std::string const &dataPUFileName,
   std::string const &mcPUFileName, double systError_):
     AnalysisPlugin(name),
+    puPluginName("PileUp"), puPlugin(nullptr),
     systError(systError_)
 {
     // Target distribution
@@ -29,6 +31,7 @@ WeightPileUp::WeightPileUp(std::string const &name, std::string const &dataPUFil
 WeightPileUp::WeightPileUp(std::string const &name, std::string const &dataPUFileName,
   double systError_):
     AnalysisPlugin(name),
+    puPluginName("PileUp"), puPlugin(nullptr),
     systError(systError_)
 {
     ReadTargetDistribution(dataPUFileName);
@@ -37,6 +40,7 @@ WeightPileUp::WeightPileUp(std::string const &name, std::string const &dataPUFil
 
 WeightPileUp::WeightPileUp(std::string const &dataPUFileName, double systError_):
     AnalysisPlugin("WeightPileUp"),
+    puPluginName("PileUp"), puPlugin(nullptr),
     systError(systError_)
 {
     ReadTargetDistribution(dataPUFileName);
@@ -49,6 +53,13 @@ WeightPileUp::~WeightPileUp() noexcept
 
 void WeightPileUp::BeginRun(Dataset const &)
 {
+    // Save pointer to pile-up reader
+    puPlugin = dynamic_cast<PileUpReader const *>(
+      GetMaster().GetPluginBefore(puPluginName, GetName()));
+    
+    
+    // Load the distribution of expected pile-up as generated for the current dataset. (This is)
+    //not implemented yet.)
     if (mcPUFile)
     {
         // Check if a MC-truth histogram is available for the new dataset and update mcPUHist if
@@ -101,35 +112,40 @@ Plugin *WeightPileUp::Clone() const
 }
 
 
-WeightPileUp::Weights WeightPileUp::GetWeights(double nTruth) const
+WeightPileUp::Weights const &WeightPileUp::GetWeights() const
 {
-    // Find probability according to MC histogram
-    unsigned bin = mcPUHist->FindFixBin(nTruth);
-    double const mcProb = mcPUHist->GetBinContent(bin);
-    
-    if (mcProb <= 0.)
-        return {0., 0., 0.};
-    
-    
-    // Calculate the weights
-    bin = dataPUHist->FindFixBin(nTruth);
-    double const central = dataPUHist->GetBinContent(bin) / mcProb;
-    
-    bin = dataPUHist->FindFixBin(nTruth * (1. + systError));
-    double const up = dataPUHist->GetBinContent(bin) / mcProb * (1. + systError);
-    //^ The last multiplier is needed to correct for the total normalisation due to rescale in
-    //the variable of integration. Same applies to the down weight below
-    
-    bin = dataPUHist->FindFixBin(nTruth * (1. - systError));
-    double const down = dataPUHist->GetBinContent(bin) / mcProb * (1. - systError);
-    
-    
-    return {central, up, down};
+    return weights;
 }
 
 
 bool WeightPileUp::ProcessEvent()
 {
+    // Read the expected number of pile-up events
+    double const nTruth = puPlugin->GetExpectedPileUp();
+    
+    
+    // Find probability according to MC histogram
+    unsigned bin = mcPUHist->FindFixBin(nTruth);
+    double const mcProb = mcPUHist->GetBinContent(bin);
+    
+    if (mcProb <= 0.)
+        weights = {0., 0., 0.};
+    
+    
+    // Calculate the weights
+    bin = dataPUHist->FindFixBin(nTruth);
+    weights.central = dataPUHist->GetBinContent(bin) / mcProb;
+    
+    bin = dataPUHist->FindFixBin(nTruth * (1. + systError));
+    weights.up = dataPUHist->GetBinContent(bin) / mcProb * (1. + systError);
+    //^ The last multiplier is needed to correct for the total normalisation due to rescale in
+    //the variable of integration. Same applies to the down weight below
+    
+    bin = dataPUHist->FindFixBin(nTruth * (1. - systError));
+    weights.down = dataPUHist->GetBinContent(bin) / mcProb * (1. - systError);
+    
+    
+    // This plugin does not perform any filtering, so ProcessEvent always returns true
     return true;
 }
 
