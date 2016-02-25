@@ -163,6 +163,7 @@ bool BasicKinematicsPlugin::ProcessEvent()
     }
     
     
+    MET = met.Pt();
     nPV = puPlugin->GetNumVertices();
     
     
