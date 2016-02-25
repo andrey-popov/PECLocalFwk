@@ -81,26 +81,20 @@ bool Candidate::operator<(Candidate const &rhs) const noexcept
 Lepton::Lepton() noexcept:
     Candidate(),
     flavour(Flavour::Unknown),
-    relIso(-1.), dB(0.), charge(0)
+    relIso(-1.), charge(0)
 {}
 
 
 Lepton::Lepton(Lepton::Flavour flavour_, TLorentzVector const &p4) noexcept:
     Candidate(p4),
     flavour(flavour_),
-    relIso(-1.), dB(0.), charge(0)
+    relIso(-1.), charge(0)
 {}
 
 
 void Lepton::SetRelIso(double relIso_) noexcept
 {
     relIso = relIso_;
-}
-
-
-void Lepton::SetDB(double dB_) noexcept
-{
-    dB = dB_;
 }
 
 
@@ -122,12 +116,6 @@ double Lepton::RelIso() const noexcept
 }
 
 
-double Lepton::DB() const noexcept
-{
-    return dB;
-}
-
-
 int Lepton::Charge() const noexcept
 {
     return charge;
@@ -140,7 +128,6 @@ Jet::Jet() noexcept:
     rawMomentumSF(0.),
     parentPDGID(0),
     charge(-10.), pullAngle(-10.),
-    rawPileUpID(0),
     matchedGenJet(nullptr)
 {}
 
@@ -150,7 +137,6 @@ Jet::Jet(TLorentzVector const &correctedP4) noexcept:
     rawMomentumSF(0.),
     parentPDGID(0),
     charge(-10.), pullAngle(-10.),
-    rawPileUpID(0),
     matchedGenJet(nullptr)
 {}
 
@@ -160,7 +146,6 @@ Jet::Jet(TLorentzVector const &rawP4, double corrSF) noexcept:
     rawMomentumSF(1. / corrSF),
     parentPDGID(0),
     charge(-10.), pullAngle(-10.),
-    rawPileUpID(0),
     matchedGenJet(nullptr)
 {}
 
@@ -193,12 +178,6 @@ void Jet::SetCharge(double charge_) noexcept
 void Jet::SetPullAngle(double pullAngle_) noexcept
 {
     pullAngle = pullAngle_;
-}
-
-
-void Jet::SetRawPileUpID(unsigned rawPileUpID_) noexcept
-{
-    rawPileUpID = rawPileUpID_;
 }
 
 
@@ -259,12 +238,6 @@ double Jet::Charge() const noexcept
 double Jet::GetPullAngle() const noexcept
 {
     return pullAngle;
-}
-
-
-unsigned Jet::GetRawPileUpID() const noexcept
-{
-    return rawPileUpID;
 }
 
 

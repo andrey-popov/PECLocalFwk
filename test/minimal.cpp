@@ -125,20 +125,20 @@ int main()
         cout << "\nTight leptons:\n";
         
         for (auto const &l: leptonReader->GetLeptons())
-            cout << " flavour: " << int(l.GetFlavour()) << ", pt: " << l.Pt() << ", iso: " <<
-              l.RelIso() << ", dB: " << l.DB() << '\n';
+            cout << " flavour: " << int(l.GetFlavour()) << ", pt: " << l.Pt() << ", eta: " <<
+              l.Eta() << ", iso: " << l.RelIso() << '\n';
         
         cout << "\nLoose leptons:\n";
         
         for (auto const &l: leptonReader->GetLooseLeptons())
-            cout << " flavour: " << int(l.GetFlavour()) << ", pt: " << l.Pt() << ", iso: " <<
-              l.RelIso() << ", dB: " << l.DB() << '\n';
+            cout << " flavour: " << int(l.GetFlavour()) << ", pt: " << l.Pt() << ", eta: " <<
+              l.Eta() << ", iso: " << l.RelIso() << '\n';
         
         cout << "\nAnalysis jets:\n";
         
         for (auto const &j: jetReader->GetJets())
-            cout << " pt: " << j.Pt() << ", eta: " << j.Eta() << ", b-tag: " << j.CSV() <<
-              ", flavour: " << j.GetParentID() << '\n';
+            cout << " pt: " << j.Pt() << ", eta: " << j.Eta() << ", b-tag: " <<
+              j.BTag(BTagger::Algorithm::CSV) << ", flavour: " << j.GetParentID() << '\n';
         
         cout << "\nMET: " << jetReader->GetMET().Pt() << '\n';
         

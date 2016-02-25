@@ -560,7 +560,6 @@ bool PECReader::BuildAndSelectEvent()
         // A loose electron is found
         Lepton lepton(Lepton::Flavour::Electron, p4);
         lepton.SetRelIso(eleRelIso[i]);
-        lepton.SetDB(eleDB[i]);
         lepton.SetCharge((eleCharge[i]) ? -1 : 1);
         
         looseLeptons.push_back(lepton);
@@ -589,7 +588,6 @@ bool PECReader::BuildAndSelectEvent()
         // A loose muon is found
         Lepton lepton(Lepton::Flavour::Muon, p4);
         lepton.SetRelIso(muRelIso[i]);
-        lepton.SetDB(muDB[i]);
         lepton.SetCharge((muCharge[i]) ? -1 : 1);
         
         looseLeptons.push_back(lepton);
@@ -627,7 +625,6 @@ bool PECReader::BuildAndSelectEvent()
         
         jet.SetCharge(jetCharge[i]);
         jet.SetPullAngle(jetPullAngle[i]);
-        jet.SetRawPileUpID(jetPileUpID[i]);
         jet.SetArea(jetArea[i]);
         
         if (dataset.IsMC())

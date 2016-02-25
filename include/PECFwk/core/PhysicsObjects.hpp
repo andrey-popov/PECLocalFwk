@@ -93,9 +93,6 @@ public:
     /// Sets the relative isolation
     void SetRelIso(double relIso_) noexcept;
     
-    /// Sets the impact-parameter
-    void SetDB(double dB_) noexcept;
-    
     /// Sets the electric charge
     void SetCharge(int charge_) noexcept;
     
@@ -105,16 +102,12 @@ public:
     /// Gets the relative isolation
     double RelIso() const noexcept;
     
-    /// Gets the impact parameter
-    double DB() const noexcept;
-    
     /// Gets the electric charge
     int Charge() const noexcept;
 
 private:
     Flavour flavour;  ///< The flavour
     double relIso;  ///< The relative isolation
-    double dB;  ///< The impact parameter of the associated track
     int charge;  ///< The electric charge
 };
 
@@ -164,9 +157,6 @@ public:
     /// Sets jet pull angle
     void SetPullAngle(double pullAngle) noexcept;
     
-    /// Sets bitmask with results of pile-up ID
-    void SetRawPileUpID(unsigned rawPileUpID) noexcept;
-    
     /// Sets jet area
     void SetArea(double area) noexcept;
     
@@ -196,9 +186,6 @@ public:
     /// Gets the pull angle
     double GetPullAngle() const noexcept;
     
-    /// Returns a bitmask with results of jet pile-up ID
-    unsigned GetRawPileUpID() const noexcept;
-    
     /// Returns jet area
     double Area() const noexcept;
     
@@ -216,10 +203,14 @@ private:
     /// Values of b-tagging discriminators
     std::map<BTagger::Algorithm, double> bTagValues;
     
-    int parentPDGID;  ///< PDG ID of the parent
-    double charge;  ///< Electric charge
-    double pullAngle;  ///< "Pull angle" (characterises the colour flow)
-    unsigned rawPileUpID;  ///< Bit mask with results of jet pile-up ID
+    /// PDG ID of the parent
+    int parentPDGID;
+    
+    /// Electric charge
+    double charge;
+    
+    /// "Pull angle" (characterises the colour flow)
+    double pullAngle;
     
     /// Jet area
     double area;

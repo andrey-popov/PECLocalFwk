@@ -68,7 +68,6 @@ bool PECLeptonReader::ProcessEvent()
         
         Lepton lepton(Lepton::Flavour::Electron, p4);
         lepton.SetRelIso(l.RelIso());
-        lepton.SetDB(l.DB());
         lepton.SetCharge(l.Charge());
         
         looseLeptons.push_back(lepton);
@@ -98,7 +97,6 @@ bool PECLeptonReader::ProcessEvent()
         
         Lepton lepton(Lepton::Flavour::Muon, p4);
         lepton.SetRelIso(l.RelIso());
-        lepton.SetDB(l.DB());
         lepton.SetCharge(l.Charge());
         
         looseLeptons.push_back(lepton);
