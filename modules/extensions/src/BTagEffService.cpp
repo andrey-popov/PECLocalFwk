@@ -10,7 +10,7 @@
 
 
 BTagEffService::BTagEffService(std::string const &name, std::string const &fileName,
-  std::string const &directory /*= ""*/):
+  std::string const &directory):
     Service(name),
     inFileDirectory(directory)
 {
@@ -134,28 +134,34 @@ void BTagEffService::BeginRun(Dataset const &dataset)
 }
 
 
-double BTagEffService::GetEfficiency(BTagger::WorkingPoint wp, Jet const &jet)
+double BTagEffService::GetEfficiency(BTagger::WorkingPoint wp, double pt, double eta, int flavour)
   const
 {
     // Find the appropriate efficiency histogram
-    auto histIt = effHists.find(std::make_pair(wp, abs(jet.GetParentID())));
+    auto histIt = effHists.find(std::make_pair(wp, abs(flavour)));
     
     if (histIt == effHists.end())
     {
         std::ostringstream ost;
         ost << "BTagEffService::GetEfficiency: Failed to find an efficiency histogram for " <<
           "working point " << BTagger::WorkingPointToTextCode(wp) << " and jet flavour " <<
-          jet.GetParentID() << ".";
+          flavour << ".";
         
         throw std::runtime_error(ost.str());
     }
     
     
     // Find bin that contains the jet
-    int const bin = histIt->second->FindFixBin(jet.Pt(), jet.Eta());
+    int const bin = histIt->second->FindFixBin(pt, eta);
     
         
     return histIt->second->GetBinContent(bin);
+}
+
+
+double BTagEffService::GetEfficiency(BTagger::WorkingPoint wp, Jet const &jet)  const
+{
+    return GetEfficiency(wp, jet.Pt(), jet.Eta(), jet.GetParentID());
 }
 
 

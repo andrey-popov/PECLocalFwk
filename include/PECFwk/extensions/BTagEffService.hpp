@@ -68,7 +68,7 @@ public:
      * is not found, an exception is thrown.
      */
     BTagEffService(std::string const &name, std::string const &fileName,
-      std::string const &directory = "");
+      std::string const &directory);
     
     /// A short-cut for the above version with a default name "BTagEff"
     BTagEffService(std::string const &fileName, std::string const &directory = "");
@@ -121,13 +121,16 @@ public:
     virtual void BeginRun(Dataset const &dataset) override;
     
     /**
-     * \brief Returns b-tagging efficiency for the given working point and given jet
+     * \brief Returns b-tagging efficiency for the given working point and given jet properties
      * 
      * The efficiency is read from a histogram selected according to jet flavour and requested
      * working point. Appropriate bin of the histogram is identified by jet transverse momentum and
      * (signed) pseudorapidity; overflow bins are expected to be filled in a meaningful way. If
      * required histogram is not found, an exception is thrown.
      */
+    double GetEfficiency(BTagger::WorkingPoint wp, double pt, double eta, int flavour) const;
+    
+    /// Short-cut for the overloaded version above
     double GetEfficiency(BTagger::WorkingPoint wp, Jet const &jet) const;
     
     /// Sets the default label to be used when no label is found for a process code
