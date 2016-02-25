@@ -1,9 +1,3 @@
-/**
- * \file Service.hpp
- * 
- * The module describes a base class for services.
- */
-
 #pragma once
 
 #include <PECFwk/core/ProcessorForward.hpp>
@@ -60,15 +54,11 @@ public:
     
 public:
     /**
-     * \brief Provides a pointer to an instance of Processor class that owns the service
+     * \brief Performs initialization needed when processing of a new dataset starts
      * 
-     * The pointer is guaranteed to be initialized before the first call to BeginRun. It stays
-     * valid for the lifetime of the object.
+     * The method is trivial in the default implementation.
      */
-    void SetMaster(Processor const *processor);
-    
-    /// Returns name of the plugin
-    std::string const &GetName() const;
+    virtual void BeginRun(Dataset const &dataset);
     
     /**
      * \brief Clones the object
@@ -88,19 +78,30 @@ public:
     virtual Service *Clone() const = 0;
     
     /**
-     * \brief Performs initialization needed when processing of a new dataset starts
-     * 
-     * The method is trivial in the default implementation.
-     */
-    virtual void BeginRun(Dataset const &dataset);
-    
-    /**
      * \brief Performs necessary actions needed after processing of a dataset is finished
      * 
      * The method is trivial in the default implementation.
      */
     virtual void EndRun();
     
+    /**
+     * \brief Returns a reference to the master
+     * 
+     * Will throw an exception if the pointer to master is null.
+     */
+    Processor const &GetMaster() const;
+    
+    /// Returns name of the plugin
+    std::string const &GetName() const;
+    
+    /**
+     * \brief Provides a pointer to an instance of Processor class that owns the service
+     * 
+     * The pointer is guaranteed to be initialized before the first call to BeginRun. It stays
+     * valid for the lifetime of the object.
+     */
+    void SetMaster(Processor const *processor);
+        
 private:
     /// Unique name of the service
     std::string const name;
