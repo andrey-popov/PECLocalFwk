@@ -27,6 +27,14 @@ Processor::Processor(Processor &&src) noexcept:
 {
     // Prevent the source object from deleting the plugins
     src.path.clear();
+    
+    
+    // Update the master in services and plugins
+    for (auto &s: services)
+        s.second->SetMaster(this);
+    
+    for (auto &p: path)
+        p->SetMaster(this);
 }
 
 
