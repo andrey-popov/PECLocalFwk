@@ -1,4 +1,4 @@
-#include <PECFwk/extensions/WeightBTagPlugin.hpp>
+#include <PECFwk/extensions/BTagWeight.hpp>
 
 #include <PECFwk/core/BTagWPService.hpp>
 #include <PECFwk/core/JetMETReader.hpp>
@@ -7,7 +7,7 @@
 #include <PECFwk/extensions/BTagEffService.hpp>
 
 
-WeightBTagPlugin::WeightBTagPlugin(std::string const &name, BTagger bTagger_,
+BTagWeight::BTagWeight(std::string const &name, BTagger bTagger_,
   double minPt_ /*= 0.*/):
     AnalysisPlugin(name),
     jetPluginName("JetMET"), jetPlugin(nullptr),
@@ -19,8 +19,8 @@ WeightBTagPlugin::WeightBTagPlugin(std::string const &name, BTagger bTagger_,
 {}
 
 
-WeightBTagPlugin::WeightBTagPlugin(BTagger bTagger_, double minPt_ /*= 0.*/):
-    AnalysisPlugin("WeightBTag"),
+BTagWeight::BTagWeight(BTagger bTagger_, double minPt_ /*= 0.*/):
+    AnalysisPlugin("BTagWeight"),
     jetPluginName("JetMET"), jetPlugin(nullptr),
     bTagWPServiceName("BTagWP"), bTagWPService(nullptr),
     bTagEffServiceName("BTagEff"), bTagEffService(nullptr),
@@ -30,11 +30,11 @@ WeightBTagPlugin::WeightBTagPlugin(BTagger bTagger_, double minPt_ /*= 0.*/):
 {}
 
 
-WeightBTagPlugin::~WeightBTagPlugin() noexcept
+BTagWeight::~BTagWeight() noexcept
 {}
 
 
-void WeightBTagPlugin::BeginRun(Dataset const &)
+void BTagWeight::BeginRun(Dataset const &)
 {
     // Save pointer to plugin that produces jets
     jetPlugin = dynamic_cast<JetMETReader const *>(
@@ -48,13 +48,13 @@ void WeightBTagPlugin::BeginRun(Dataset const &)
 }
 
 
-Plugin *WeightBTagPlugin::Clone() const
+Plugin *BTagWeight::Clone() const
 {
-    return new WeightBTagPlugin(*this);
+    return new BTagWeight(*this);
 }
 
 
-double WeightBTagPlugin::CalcWeight(Variation var /*=Variation::Nominal*/) const
+double BTagWeight::CalcWeight(Variation var /*=Variation::Nominal*/) const
 {
     // The weight will be constructed following this recipe [1]. It will be calculated as a product
     //of per-jet factors. These factors are of the order of 1, and for this reason it is fine to
@@ -100,13 +100,13 @@ double WeightBTagPlugin::CalcWeight(Variation var /*=Variation::Nominal*/) const
 }
 
 
-bool WeightBTagPlugin::ProcessEvent()
+bool BTagWeight::ProcessEvent()
 {
     return true;
 }
 
 
-BTagSFService::Variation WeightBTagPlugin::TranslateVariation(Variation var, int jetPdgId)
+BTagSFService::Variation BTagWeight::TranslateVariation(Variation var, int jetPdgId)
 {
     unsigned const absFlavour = abs(jetPdgId);
     

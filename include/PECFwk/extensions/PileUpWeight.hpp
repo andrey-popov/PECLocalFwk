@@ -13,7 +13,7 @@ class PileUpReader;
 
 
 /**
- * \class WeightPileUp
+ * \class PileUpWeight
  * \brief Plugin that implements reweighting for additional pp interactions ("pile-up")
  * 
  * This plugin performs reweighting on pile-up based on the expected number of pile-up
@@ -38,7 +38,7 @@ class PileUpReader;
  * [2] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJSONFileforData?rev=22
  * [3] https://twiki.cern.ch/twiki/bin/view/CMS/PileupSystematicErrors
  */
-class WeightPileUp: public AnalysisPlugin
+class PileUpWeight: public AnalysisPlugin
 {
 public:
     /// An auxiliary structure to aggregate central weight and its systematical variations
@@ -68,32 +68,32 @@ public:
      * desired systematical variation as defined in [1].
      * [1] https://twiki.cern.ch/twiki/bin/view/CMS/PileupSystematicErrors
      */
-    WeightPileUp(std::string const &name, std::string const &dataPUFileName,
+    PileUpWeight(std::string const &name, std::string const &dataPUFileName,
       std::string const &mcPUFileName, double systError);
     
     /**
      * \brief Constuctor
      * 
-     * See documentation for WeightPileUp(string const &, string const &, double). The only
+     * See documentation for PileUpWeight(string const &, string const &, double). The only
      * difference is that this version does not require a file with MC-truth pile-up
      * distributions, and reweighting is performed with the nominal MC distribution.
      */
-    WeightPileUp(std::string const &name, std::string const &dataPUFileName, double systError);
+    PileUpWeight(std::string const &name, std::string const &dataPUFileName, double systError);
     
-    /// A short-cut for the above version with a default name "WeightPileUp"
-    WeightPileUp(std::string const &dataPUFileName, double systError);
+    /// A short-cut for the above version with a default name "PileUpWeight"
+    PileUpWeight(std::string const &dataPUFileName, double systError);
     
     /// Default copy constructor
-    WeightPileUp(WeightPileUp const &) = default;
+    PileUpWeight(PileUpWeight const &) = default;
     
     /// Default move constructor
-    WeightPileUp(WeightPileUp &&) = default;
+    PileUpWeight(PileUpWeight &&) = default;
     
     /// Assignment operator is deleted
-    WeightPileUp &operator=(WeightPileUp const &) = delete;
+    PileUpWeight &operator=(PileUpWeight const &) = delete;
     
     /// Trivial destructor
-    virtual ~WeightPileUp() noexcept;
+    virtual ~PileUpWeight() noexcept;
 
 public:
     /**
@@ -111,7 +111,7 @@ public:
     virtual Plugin *Clone() const override;
     
     /// Returns weights for the current event
-    WeightPileUp::Weights const &GetWeights() const;
+    PileUpWeight::Weights const &GetWeights() const;
     
 private:
     /**

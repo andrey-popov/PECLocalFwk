@@ -1,4 +1,4 @@
-#include <PECFwk/extensions/WeightPileUp.hpp>
+#include <PECFwk/extensions/PileUpWeight.hpp>
 
 #include <PECFwk/core/FileInPath.hpp>
 #include <PECFwk/core/PileUpReader.hpp>
@@ -9,7 +9,7 @@
 #include <stdexcept>
 
 
-WeightPileUp::WeightPileUp(std::string const &name, std::string const &dataPUFileName,
+PileUpWeight::PileUpWeight(std::string const &name, std::string const &dataPUFileName,
   std::string const &mcPUFileName, double systError_):
     AnalysisPlugin(name),
     puPluginName("PileUp"), puPlugin(nullptr),
@@ -28,7 +28,7 @@ WeightPileUp::WeightPileUp(std::string const &name, std::string const &dataPUFil
 }
 
 
-WeightPileUp::WeightPileUp(std::string const &name, std::string const &dataPUFileName,
+PileUpWeight::PileUpWeight(std::string const &name, std::string const &dataPUFileName,
   double systError_):
     AnalysisPlugin(name),
     puPluginName("PileUp"), puPlugin(nullptr),
@@ -38,8 +38,8 @@ WeightPileUp::WeightPileUp(std::string const &name, std::string const &dataPUFil
 }
 
 
-WeightPileUp::WeightPileUp(std::string const &dataPUFileName, double systError_):
-    AnalysisPlugin("WeightPileUp"),
+PileUpWeight::PileUpWeight(std::string const &dataPUFileName, double systError_):
+    AnalysisPlugin("PileUpWeight"),
     puPluginName("PileUp"), puPlugin(nullptr),
     systError(systError_)
 {
@@ -47,11 +47,11 @@ WeightPileUp::WeightPileUp(std::string const &dataPUFileName, double systError_)
 }
 
 
-WeightPileUp::~WeightPileUp() noexcept
+PileUpWeight::~PileUpWeight() noexcept
 {}
 
 
-void WeightPileUp::BeginRun(Dataset const &)
+void PileUpWeight::BeginRun(Dataset const &)
 {
     // Save pointer to pile-up reader
     puPlugin = dynamic_cast<PileUpReader const *>(
@@ -65,7 +65,7 @@ void WeightPileUp::BeginRun(Dataset const &)
         // Check if a MC-truth histogram is available for the new dataset and update mcPUHist if
         //needed. Return on success. Make sure to rescale the histograms with "weight" option
         
-        throw std::logic_error("WeightPileUp::BeginRun: Reweighting with actual MC pile-up "
+        throw std::logic_error("PileUpWeight::BeginRun: Reweighting with actual MC pile-up "
          "distributions described in a file is not implemented yet.");
     }
     
@@ -108,19 +108,19 @@ void WeightPileUp::BeginRun(Dataset const &)
 }
 
 
-Plugin *WeightPileUp::Clone() const
+Plugin *PileUpWeight::Clone() const
 {
-    return new WeightPileUp(*this);
+    return new PileUpWeight(*this);
 }
 
 
-WeightPileUp::Weights const &WeightPileUp::GetWeights() const
+PileUpWeight::Weights const &PileUpWeight::GetWeights() const
 {
     return weights;
 }
 
 
-bool WeightPileUp::ProcessEvent()
+bool PileUpWeight::ProcessEvent()
 {
     // Read the expected number of pile-up events
     double const nTruth = puPlugin->GetExpectedPileUp();
@@ -152,7 +152,7 @@ bool WeightPileUp::ProcessEvent()
 }
 
 
-void WeightPileUp::ReadTargetDistribution(std::string const &dataPUFileName)
+void PileUpWeight::ReadTargetDistribution(std::string const &dataPUFileName)
 {
     FileInPath pathResolver;
     

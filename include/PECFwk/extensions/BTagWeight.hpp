@@ -15,7 +15,7 @@ class JetMETReader;
 
 
 /**
- * \class WeightBTagPlugin
+ * \class BTagWeight
  * \brief A plugin that implements a reweighting to account for b-tagging scale factors
  * 
  * Reweighting is performed according to a recipe described in [1]. Tag configuration is not
@@ -27,7 +27,7 @@ class JetMETReader;
  * This plugin exploits a JetReader (default name is "JetMET") and a number of services to access
  * b-tagging working points ("BTagWP"), efficiencies ("BTagEff"), and scale factors ("BTagSF").
  */
-class WeightBTagPlugin: public AnalysisPlugin
+class BTagWeight: public AnalysisPlugin
 {
 public:
     /// Supported systematical variations
@@ -42,22 +42,22 @@ public:
     
 public:
     /// Creates a service with the given name
-    WeightBTagPlugin(std::string const &name, BTagger bTagger, double minPt = 0.);
+    BTagWeight(std::string const &name, BTagger bTagger, double minPt = 0.);
     
-    /// A short-cut for the above version with a default name "WeightBTag"
-    WeightBTagPlugin(BTagger bTagger, double minPt = 0.);
+    /// A short-cut for the above version with a default name "BTagWeight"
+    BTagWeight(BTagger bTagger, double minPt = 0.);
         
     /// Default copy constructor
-    WeightBTagPlugin(WeightBTagPlugin const &) = default;
+    BTagWeight(BTagWeight const &) = default;
     
     /// Default move constructor
-    WeightBTagPlugin(WeightBTagPlugin &&) = default;
+    BTagWeight(BTagWeight &&) = default;
     
     /// Assignment operator is deleted
-    WeightBTagPlugin operator=(WeightBTagPlugin const &) = delete;
+    BTagWeight operator=(BTagWeight const &) = delete;
     
     /// Trivial virtual destructor
-    virtual ~WeightBTagPlugin() noexcept;
+    virtual ~BTagWeight() noexcept;
 
 public:
     /**
