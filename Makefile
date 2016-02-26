@@ -46,7 +46,7 @@ MAIN_LIB_PATH := $(LIB_DIR)/$(MAIN_LIB_NAME)
 
 
 # Building rules
-all: $(MAIN_LIB_PATH) link-libs unpack
+all: $(MAIN_LIB_PATH) link-libs
 
 $(MAIN_LIB_PATH): $(MODULES_STATIC)
 	@ mkdir -p $(LIB_DIR)
@@ -66,9 +66,9 @@ link-libs: $(MODULES_SHARED)
 $(MODULES):
 	@ +make -s -C $(MODULES_DIR)/$@
 
-unpack:
-	@ if [ `ls data/JERC/ | grep AK5PFchs.txt | wc -l` -eq 0 ]; \
-	 then tar -xzf data/JERC/Summer13_V5_AK5PFchs.tar.gz -C data/JERC/; fi
+# unpack:
+# 	@ if [ `ls data/JERC/ | grep AK5PFchs.txt | wc -l` -eq 0 ]; \
+# 	 then tar -xzf data/JERC/Summer13_V5_AK5PFchs.tar.gz -C data/JERC/; fi
 
 clean:
 	@ for m in $(MODULES); do make -s -C $(MODULES_DIR)/$$m clean; done
