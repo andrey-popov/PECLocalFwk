@@ -72,15 +72,11 @@ public:
      * \brief Creates a ROOT object in the given directory in the output file
      * 
      * The directory path may include subdirectories. Directories are created if they do not exist.
-     * Arguments 'args' are forwarded to the constructor of T. The created object is owned by the
-     * output file.
+     * In order to create an object in the root directory, use "". Arguments 'args' are forwarded
+     * to the constructor of T. The created object is owned by the output file.
      */
     template <typename T, typename ... Args>
-    T *Create(std::string const &inFileDirectory, Args ... args) const;
-    
-    /// A shortcut for the above method that creates the object in the root directory
-    template <typename T, typename ... Args>
-    T *Create(Args ... args) const;
+    T *Create(std::string const &inFileDirectory, Args const &... args) const;
     
     /**
      * \brief Writes and closes the output file
@@ -103,7 +99,7 @@ private:
 
 
 template <typename T, typename ... Args>
-T *TFileService::Create(std::string const &inFileDirectory, Args ... args) const
+T *TFileService::Create(std::string const &inFileDirectory, Args const &... args) const
 {
     // Make sure the output file exists
     if (not outFile)
@@ -129,11 +125,4 @@ T *TFileService::Create(std::string const &inFileDirectory, Args ... args) const
     
     
     return object;
-}
-
-
-template <typename T, typename ... Args>
-T *TFileService::Create(Args ... args) const
-{
-    return Create("", args...);
 }
