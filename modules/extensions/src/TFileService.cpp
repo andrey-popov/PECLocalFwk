@@ -1,13 +1,11 @@
 #include <PECFwk/extensions/TFileService.hpp>
 
 #include <PECFwk/core/Dataset.hpp>
-#include <PECFwk/core/ROOTLock.hpp>
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/filesystem.hpp>
 
 #include <algorithm>
-#include <stdexcept>
 
 
 using namespace std::literals::string_literals;
@@ -70,12 +68,6 @@ void TFileService::EndRun()
     outFile->Write();
     outFile.reset();
     ROOTLock::Unlock();
-}
-
-
-TFile *TFileService::GetFile() const
-{
-    return outFile.get();
 }
 
 

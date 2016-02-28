@@ -2,9 +2,12 @@
 
 #include <PECFwk/core/Service.hpp>
 
+#include <PECFwk/core/ROOTLock.hpp>
+
 #include <TFile.h>
 
 #include <memory>
+#include <stdexcept>
 #include <string>
 
 
@@ -12,7 +15,9 @@
  * \class TFileService
  * \brief Creates ROOT files and allows writing output into them
  * 
- * 
+ * This service opens for writing a ROOT file for each processed dataset and allows creation of
+ * ROOT objects, such as histograms and trees, to be stored in the file. The main motivation behind
+ * this service is to allow aggregating output of multiple plugins in a single output file.
  */
 class TFileService: public Service
 {
@@ -27,7 +32,7 @@ public:
      */
     TFileService(std::string const &name, std::string const &outFileName);
     
-    /// A short-cut for the above version with a default name "BTagEff"
+    /// A short-cut for the above version with a default name "TFileService"
     TFileService(std::string const &outFileName = "%");
     
     /// Default move constructor
@@ -64,14 +69,25 @@ public:
     virtual Service *Clone() const override;
     
     /**
+     * \brief Creates a ROOT object in the given directory in the output file
+     * 
+     * The directory path may include subdirectories. Directories are created if they do not exist.
+     * Arguments 'args' are forwarded to the constructor of T. The created object is owned by the
+     * output file.
+     */
+    template <typename T, typename ... Args>
+    T *Create(std::string const &inFileDirectory, Args ... args) const;
+    
+    /// A shortcut for the above method that creates the object in the root directory
+    template <typename T, typename ... Args>
+    T *Create(Args ... args) const;
+    
+    /**
      * \brief Writes and closes the output file
      * 
      * Reimplemented from Service.
      */
     virtual void EndRun() override;
-    
-    /// Returns non-owning pointer to the current output file
-    TFile *GetFile() const;
     
 private:
     /// Validates provided output path and creates directories if needed
@@ -84,3 +100,40 @@ private:
     /// Output file for the current dataset
     std::unique_ptr<TFile> outFile;
 };
+
+
+template <typename T, typename ... Args>
+T *TFileService::Create(std::string const &inFileDirectory, Args ... args) const
+{
+    // Make sure the output file exists
+    if (not outFile)
+        throw std::runtime_error("TFileService::Create: This method is called before the output "
+          "file is created.");
+    
+    
+    ROOTLock::Lock();
+    
+    // Change to the given directory. Create it if needed
+    TDirectory *d = outFile->GetDirectory(inFileDirectory.c_str());
+    
+    if (not d)
+        d = outFile->mkdir(inFileDirectory.c_str());
+    
+    d->cd();
+    
+    
+    // Create the ROOT object in the new current directory
+    T *object = new T(args...);
+    
+    ROOTLock::Unlock();
+    
+    
+    return object;
+}
+
+
+template <typename T, typename ... Args>
+T *TFileService::Create(Args ... args) const
+{
+    return Create("", args...);
+}
