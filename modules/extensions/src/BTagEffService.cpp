@@ -26,18 +26,56 @@ BTagEffService::BTagEffService(std::string const &fileName, std::string const &d
 }
 
 
-BTagEffService::BTagEffService(BTagEffService const &src):
-    Service(src),
-    srcFile(src.srcFile),   // shared
-    inFileDirectory(src.inFileDirectory),
-    processLabelMap(src.processLabelMap),
-    defaultProcessLabel(src.defaultProcessLabel),
-    effHists(src.effHists)  // histograms are shared
-{}
-
-
 BTagEffService::~BTagEffService() noexcept
 {}
+
+
+BTagEffService::BTagEffService(BTagEffService const &src) noexcept:
+    Service(src),
+    srcFile(src.srcFile),  // shared
+    inFileDirectory(src.inFileDirectory),
+    processLabelMap(src.processLabelMap),
+    defaultProcessLabel(src.defaultProcessLabel)
+{}
+
+
+void BTagEffService::BeginRun(Dataset const &dataset)
+{
+    // Find the label corresponding to the process in the dataset
+    std::string newProcessLabel;
+    auto const mapRuleIt = std::find_if(processLabelMap.begin(), processLabelMap.end(),
+      [&dataset](decltype(*processLabelMap.cbegin()) &rule){
+        return dataset.TestProcess(rule.first);});
+    
+    if (mapRuleIt != processLabelMap.end())
+        newProcessLabel = mapRuleIt->second;
+    else
+    {
+        // No label is defined for this dataset. Check if the default one is available
+        if (defaultProcessLabel.length() == 0)
+        {
+            std::ostringstream ost;
+            ost << "BTagEffService::BeginRun: Cannot find which histogram with b-tagging " <<
+              "efficiencies should be used for the dataset containing file \"" <<
+              dataset.GetFiles().front().GetBaseName() << ".root\". " <<
+              "No rule to define the histogram name is available for the dataset, and no " <<
+              "default name is specified.";
+            
+            throw std::runtime_error(ost.str());
+        }
+        
+        // Apparently, there is a default label. Use it
+        newProcessLabel = defaultProcessLabel;
+    }
+    
+    
+    // Clear the map with efficiency histograms if outdated
+    if (newProcessLabel != curProcessLabel)
+    {
+        effHists.clear();
+        curProcessLabel = newProcessLabel;
+    }
+}
 
 
 Service *BTagEffService::Clone() const
@@ -46,122 +84,42 @@ Service *BTagEffService::Clone() const
 }
 
 
-void BTagEffService::BeginRun(Dataset const &dataset)
+double BTagEffService::GetEfficiency(BTagger const &bTagger, double pt, double eta,
+  unsigned flavour) const
 {
-    // Clear the map with efficiency histograms
-    effHists.clear();
+    // Find the appropriate efficiency histogram. Load it if needed
+    auto histGroupIt = effHists.find(bTagger);
+    TH2 *hist = nullptr;
     
-    
-    // Find the label corresponding to the process in the dataset
-    std::string curProcessLabel;
-    auto const mapRuleIt = std::find_if(processLabelMap.begin(), processLabelMap.end(),
-      [&dataset](decltype(*processLabelMap.cbegin()) &rule){
-        return dataset.TestProcess(rule.first);});
-    
-    if (mapRuleIt != processLabelMap.end())
-        curProcessLabel = mapRuleIt->second;
+    if (histGroupIt == effHists.end())
+    {
+        // Try to load histograms for the given b-tagger
+        const_cast<BTagEffService *>(this)->LoadEfficiencies(bTagger);
+        hist = effHists.at(bTagger).at(flavour).get();
+    }
     else
-    {
-        // No label is defined for this dataset. Check if the default one is available
-        if (defaultProcessLabel.length() == 0)
-        {
-            std::ostringstream ost;
-            ost << "BTagEffService::BeginRun: Cannot find which histogram with b-tagging " <<
-             "efficiencies should be used for the dataset containing file \"" <<
-             dataset.GetFiles().front().GetBaseName() << ".root\". " <<
-             "No rule to define the histogram name is available for the dataset, and no " <<
-             "default name is specified.";
-            
-            throw std::runtime_error(ost.str());
-        }
-        
-        // Apparently, there is a default label. Use it
-        curProcessLabel = defaultProcessLabel;
-    }
+        hist = histGroupIt->second.at(flavour).get();
     
     
-    // Loop over possible working points
-    for (auto const &wp: {BTagger::WorkingPoint::Tight, BTagger::WorkingPoint::Medium,
-     BTagger::WorkingPoint::Loose})
-    {
-        std::string const wpCode(BTagger::WorkingPointToTextCode(wp));
-        
-        
-        // Read histograms for all jet flavours. This is not a thread-safe operation
-        ROOTLock::Lock();
-        
-        std::shared_ptr<TH2> bHist(dynamic_cast<TH2 *>(srcFile->Get(
-         (inFileDirectory + curProcessLabel + "_b_" + wpCode).c_str())));
-        std::shared_ptr<TH2> cHist(dynamic_cast<TH2 *>(srcFile->Get(
-         (inFileDirectory + curProcessLabel + "_c_" + wpCode).c_str())));
-        std::shared_ptr<TH2> udsHist(dynamic_cast<TH2 *>(srcFile->Get(
-         (inFileDirectory + curProcessLabel + "_uds_" + wpCode).c_str())));
-        std::shared_ptr<TH2> gHist(dynamic_cast<TH2 *>(srcFile->Get(
-         (inFileDirectory + curProcessLabel + "_g_" + wpCode).c_str())));
-        
-        // Make sure the histograms are not associated with a file
-        for (auto const &p: {bHist, cHist, udsHist, gHist})
-        {
-            if (p)
-                p->SetDirectory(nullptr);
-        }
-        
-        ROOTLock::Unlock();
-        
-        
-        // Add the histograms to the histogram map if the pointers are not null
-        if (bHist)
-            effHists[std::make_pair(wp, 5)] = bHist;
-        
-        if (cHist)
-            effHists[std::make_pair(wp, 4)] = cHist;
-        
-        if (udsHist)
-        {
-            effHists[std::make_pair(wp, 1)] = udsHist;
-            effHists[std::make_pair(wp, 2)] = udsHist;
-            effHists[std::make_pair(wp, 3)] = udsHist;
-        }
-        
-        if (gHist)
-        {
-            effHists[std::make_pair(wp, 21)] = gHist;
-            effHists[std::make_pair(wp, 0)] = gHist;
-            //^ Jets with unidentified flavour are considered along with gluons. The motivation is
-            //that pile-up jets usually obtain a flavour of either 0 or 21
-        }
-    }
-}
-
-
-double BTagEffService::GetEfficiency(BTagger::WorkingPoint wp, double pt, double eta, int flavour)
-  const
-{
-    // Find the appropriate efficiency histogram
-    auto histIt = effHists.find(std::make_pair(wp, abs(flavour)));
-    
-    if (histIt == effHists.end())
+    // Make sure the histogram exists
+    if (not hist)
     {
         std::ostringstream ost;
         ost << "BTagEffService::GetEfficiency: Failed to find an efficiency histogram for " <<
-          "working point " << BTagger::WorkingPointToTextCode(wp) << " and jet flavour " <<
-          flavour << ".";
-        
+          "b tagger " << bTagger.GetTextCode() << ", process label \"" << curProcessLabel <<
+          "\", jet flavour " << flavour << ".";
         throw std::runtime_error(ost.str());
     }
+
     
-    
-    // Find bin that contains the jet
-    int const bin = histIt->second->FindFixBin(pt, eta);
-    
-        
-    return histIt->second->GetBinContent(bin);
+    // Return the efficiency
+    return hist->GetBinContent(hist->FindFixBin(pt, eta));
 }
 
 
-double BTagEffService::GetEfficiency(BTagger::WorkingPoint wp, Jet const &jet)  const
+double BTagEffService::GetEfficiency(BTagger const &bTagger, Jet const &jet)  const
 {
-    return GetEfficiency(wp, jet.Pt(), jet.Eta(), jet.GetParentID());
+    return GetEfficiency(bTagger, jet.Pt(), jet.Eta(), jet.GetParentID());
 }
 
 
@@ -216,4 +174,58 @@ void BTagEffService::OpenInputFile(std::string const &fileName)
     // Make sure the in-file directory path is either empty or terminates with a slash
     if (inFileDirectory.length() > 0 and inFileDirectory[inFileDirectory.length() - 1] != '/')
         inFileDirectory += '/';
+}
+
+
+void BTagEffService::LoadEfficiencies(BTagger const &bTagger)
+{
+    using namespace std;
+    
+    string const bTaggerCode(bTagger.GetTextCode());
+    
+    
+    // Read histograms for all jet flavours. This is not a thread-safe operation
+    ROOTLock::Lock();
+    
+    shared_ptr<TH2> bHist(dynamic_cast<TH2 *>(srcFile->Get(
+      (inFileDirectory + bTaggerCode + "/" + curProcessLabel + "_b").c_str())));
+    shared_ptr<TH2> cHist(dynamic_cast<TH2 *>(srcFile->Get(
+      (inFileDirectory + bTaggerCode + "/" + curProcessLabel + "_c").c_str())));
+    shared_ptr<TH2> udsgHist(dynamic_cast<TH2 *>(srcFile->Get(
+      (inFileDirectory + bTaggerCode + "/" + curProcessLabel + "_udsg").c_str())));
+    
+    // Make sure the histograms are not associated with a file
+    for (auto const &p: {bHist, cHist, udsgHist})
+    {
+        if (p)
+            p->SetDirectory(nullptr);
+    }
+    
+    ROOTLock::Unlock();
+    
+    
+    // Make sure at least some histograms with efficiencies have been read from the file
+    if (not bHist and not cHist and not udsgHist)
+        throw runtime_error("BTagEffService::LoadEfficiencies: No histograms for b tagger "s +
+          bTaggerCode + " are present in the data file.");
+    
+    
+    // Add the histograms to the histogram map if the pointers are not null
+    auto &histMap = effHists[bTagger];
+    histMap.clear();
+    
+    if (bHist)
+        histMap[5] = bHist;
+    
+    if (cHist)
+        histMap[4] = cHist;
+    
+    if (udsgHist)
+    {
+        histMap[0] = udsgHist;
+        histMap[1] = udsgHist;
+        histMap[2] = udsgHist;
+        histMap[3] = udsgHist;
+        histMap[21] = udsgHist;
+    }
 }

@@ -83,7 +83,7 @@ double BTagWeight::CalcWeight(Variation var /*=Variation::Nominal*/) const
         else
         {
             // Only in this case the b-tagging efficiency is needed. Calculate it
-            double const eff = bTagEffService->GetEfficiency(bTagger.GetWorkingPoint(), jet);
+            double const eff = bTagEffService->GetEfficiency(bTagger, jet);
             
             if (eff < 1.)
                 weight *= (1. - sf * eff) / (1. - eff);

@@ -43,7 +43,7 @@ BTagger::Algorithm BTagger::GetAlgorithm() const
 
 std::string BTagger::GetTextCode() const
 {
-    return AlgorithmToTextCode(algo) + WorkingPointToTextCode(wp);;
+    return AlgorithmToTextCode(algo) + "_" + WorkingPointToTextCode(wp);;
 }
 
 
