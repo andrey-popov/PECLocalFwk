@@ -15,6 +15,7 @@
 
 class BTagWPService;
 class JetMETReader;
+class PileUpWeight;
 class TFileService;
 
 
@@ -22,7 +23,18 @@ class TFileService;
  * \class BTagEffHistograms
  * \brief Fills histograms that can be used to calculate b-tagging efficiency
  * 
- * (Documentation is to be added.)
+ * This plugin fills histograms with jet distributions in pt and |eta| for each dataset. The
+ * histograms are filled for various jet flavours (b, c, other) with all jets in an event and jets
+ * passing given working points of a b-tagger. These histograms can then be used to calculate
+ * b-tagging efficiencies.
+ * 
+ * By default, the histograms have very fine binning. It is foreseen that bins will be merged when
+ * the efficiencies are calculated.
+ * 
+ * This plugin only accounts for the event weight due to pile-up.
+ * 
+ * This plugin depends on a number of services and plugins: BTagWPService (default name "BTagWP"),
+ * TFileService ("TFileService"), JetMETReader("JetMET"), PileUpWeight ("PileUpWeight").
  */
 class BTagEffHistograms: public AnalysisPlugin
 {
@@ -135,6 +147,12 @@ private:
     
     /// Non-owning pointer to the service that provides b-tagging working points
     BTagWPService const *bTagWPService;
+    
+    /// Name of the plugin that performs pile-up reweighting
+    std::string puWeightPluginName;
+    
+    /// Non-owning pointer to the plugin that performs pile-up reweighting
+    PileUpWeight const *puWeightPlugin;
     
     /**
      * \brief Distributions of all and b-tagged jets with the given flavour

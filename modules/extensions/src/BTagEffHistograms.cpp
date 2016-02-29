@@ -3,6 +3,7 @@
 #include <PECFwk/core/BTagWPService.hpp>
 #include <PECFwk/core/JetMETReader.hpp>
 #include <PECFwk/core/Processor.hpp>
+#include <PECFwk/extensions/PileUpWeight.hpp>
 #include <PECFwk/extensions/TFileService.hpp>
 
 #include <cmath>
@@ -17,7 +18,8 @@ BTagEffHistograms::BTagEffHistograms(std::string const &name, BTagger::Algorithm
     algo(algo_), workingPoints(workingPoints_),
     fileServiceName("TFileService"), fileService(nullptr),
     jetPluginName("JetMET"), jetPlugin(nullptr),
-    bTagWPServiceName("BTagWP"), bTagWPService(nullptr)
+    bTagWPServiceName("BTagWP"), bTagWPService(nullptr),
+    puWeightPluginName("PileUpWeight"), puWeightPlugin(nullptr)
 {
     Initialize();
 }
@@ -29,7 +31,8 @@ BTagEffHistograms::BTagEffHistograms(BTagger::Algorithm algo_,
     algo(algo_), workingPoints(workingPoints_),
     fileServiceName("TFileService"), fileService(nullptr),
     jetPluginName("JetMET"), jetPlugin(nullptr),
-    bTagWPServiceName("BTagWP"), bTagWPService(nullptr)
+    bTagWPServiceName("BTagWP"), bTagWPService(nullptr),
+    puWeightPluginName("PileUpWeight"), puWeightPlugin(nullptr)
 {
     Initialize();
 }
@@ -47,6 +50,9 @@ void BTagEffHistograms::BeginRun(Dataset const &)
     
     jetPlugin = dynamic_cast<JetMETReader const *>(
       GetMaster().GetPluginBefore(jetPluginName, GetName()));
+    
+    puWeightPlugin = dynamic_cast<PileUpWeight const *>(
+      GetMaster().GetPluginBefore(puWeightPluginName, GetName()));
     
     
     // Construct the histograms for all jet flavours
@@ -120,6 +126,10 @@ void BTagEffHistograms::Initialize()
 
 bool BTagEffHistograms::ProcessEvent()
 {
+    // Calculate event weight
+    double const weight = puWeightPlugin->GetWeights().central;
+    
+    
     // Loop over reconstructed jets
     for (auto const &j: jetPlugin->GetJets())
     {
@@ -137,12 +147,12 @@ bool BTagEffHistograms::ProcessEvent()
         double const pt = j.Pt();
         double const eta = std::fabs(j.Eta());
         
-        group.denominator->Fill(pt, eta);
+        group.denominator->Fill(pt, eta, weight);
         
         for (auto const &wp: workingPoints)
         {
             if (bTagWPService->IsTagged(BTagger(algo, wp), j))
-                group.numerator.at(wp)->Fill(pt, eta);
+                group.numerator.at(wp)->Fill(pt, eta, weight);
         }
     }
     
