@@ -14,9 +14,9 @@ int main()
 {
     BTagger const bTagger(BTagger::Algorithm::CSV, BTagger::WorkingPoint::Tight);
     
-    BTagEffService bTagEffService("BTagEff_2012Bravo_v1.0.root", "in4_jPt30/");
-    bTagEffService.SetProcessLabel(Dataset::Process::ttSemilep, "ttbar-semilep");
-    bTagEffService.SetDefaultProcessLabel("ttbar-inc");
+    BTagEffService bTagEffService("BTagEff_74X_v1.0.root");
+    // bTagEffService.SetProcessLabel(Dataset::Process::ttSemilep, "ttbar-semilep");
+    bTagEffService.SetDefaultProcessLabel("ttbar");
     
     Dataset fakeDataset({Dataset::Process::ttbar, Dataset::Process::ttSemilep});
     
@@ -34,8 +34,7 @@ int main()
             
             for (auto const &f: {make_pair(5, "b"), make_pair(4, "c"), make_pair(0, "light")})
             {
-                double const eff =
-                  bTagEffService.GetEfficiency(bTagger.GetWorkingPoint(), pt, eta, f.first);
+                double const eff = bTagEffService.GetEfficiency(bTagger, pt, eta, f.first);
                 
                 cout << " " << left << setw(5) << f.second << " :  ";
                 

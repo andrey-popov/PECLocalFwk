@@ -5,8 +5,8 @@ This directory contains data files organized into several categories:
 
 ## BTag
 
- * `BTagEff_2012Bravo_v1.0.root` <br />
-   Outdated b-tagging efficiencies measured in simulation. Will be replaced.
+ * `BTagEff_74X_v1.0.root` <br />
+   Efficiencies of b-tagging with CSVv2 algorithm, which are measured in 74X simulation. The event selection includes standard requirements on leptons, MtW > 40 GeV, and at least four jets with pt > 30 GeV and |eta| < 2.4.
  * `BTagSF_74X_CSVv2.csv` <br />
    Scale factors for b-tagging with CSVv2 algorithm, as measured in `CMSSW_7_4_X`. The file is copied from [this page](https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation74X?rev=12#Supported_Algorithms_and_Operati).
 
