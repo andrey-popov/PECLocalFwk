@@ -16,7 +16,7 @@ class EventIDReader;
  * \class EventIDFilter
  * \brief Filters events based on their ID
  * 
- * Theis plugin filters events based on their ID (run, lumi, event numbers). The user specifies a
+ * This plugin filters events based on their ID (run, lumi, event numbers). The user specifies a
  * list of event IDs in a text file, and the plugin either keeps or rejects events whose IDs are
  * found in the list.
  * 
@@ -70,7 +70,7 @@ private:
     void LoadEventIDLists(std::string const &eventIDsFileName);
     
     /**
-     * \brief Checks jets in the current event and performs the selection
+     * \brief Checks ID of the current event
      * 
      * Implemented from Plugin.
      */

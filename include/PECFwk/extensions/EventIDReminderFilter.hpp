@@ -67,7 +67,7 @@ public:
     
 private:
     /**
-     * \brief Checks jets in the current event and performs the selection
+     * \brief Performs selection based on event number
      * 
      * Implemented from Plugin.
      */
