@@ -120,7 +120,7 @@ void BTagEffHistograms::Initialize()
     for (double pt = 100.; pt < 1001.; pt += 10.)
         ptBinning.push_back(pt);
     
-    etaBinning = {0., 0.5, 1., 1.5, 2., 2.4};
+    etaBinning = {0., 0.6, 1.2, 1.8, 2.4};
 }
 
 
