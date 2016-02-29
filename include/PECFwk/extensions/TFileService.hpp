@@ -120,6 +120,7 @@ T *TFileService::Create(std::string const &inFileDirectory, Args const &... args
     
     // Create the ROOT object in the new current directory
     T *object = new T(args...);
+    d->Append(object);
     
     ROOTLock::Unlock();
     
