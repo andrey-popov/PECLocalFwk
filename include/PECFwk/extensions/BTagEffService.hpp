@@ -44,16 +44,15 @@ public:
     /**
      * \brief Creates a service with the given name
      * 
-     * The arguments are the path to a ROOT file with b-tagging efficiencies and an (optional)
-     * name of directory with efficiency histograms in the file. The file name is resolved with
-     * the help of FileInPath class adding a postfix "BTag/" to the standard location. If the file
-     * is not found, an exception is thrown.
+     * The path to the ROOT file containing b-tagging efficiencies may include names of in-file
+     * directories separated from the rest of the path with a colon. The path is resolved with the
+     * help of FileInPath class adding a postfix "BTag/" to the standard location. If the file is
+     * not found or the provided path is misformatted, an exception is thrown.
      */
-    BTagEffService(std::string const &name, std::string const &fileName,
-      std::string const &directory);
+    BTagEffService(std::string const &name, std::string const &path);
     
     /// A short-cut for the above version with a default name "BTagEff"
-    BTagEffService(std::string const &fileName, std::string const &directory = "");
+    BTagEffService(std::string const &path);
     
     /// Default move constructor
     BTagEffService(BTagEffService &&) = default;
@@ -120,11 +119,11 @@ public:
     void SetProcessLabel(std::list<Dataset::Process> const &codes, std::string const &label);
     
 private:
-    /// Opens input file and adjusts name of the in-file directory
-    void OpenInputFile(std::string const &fileName);
-    
     /// Reads histograms with efficiencies for the given b tagger and current process label
     void LoadEfficiencies(BTagger const &bTagger);
+    
+    /// Opens input file and extracts name of the in-file directory
+    void OpenInputFile(std::string const &path);
     
 private:
     /**

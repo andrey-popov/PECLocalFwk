@@ -9,20 +9,20 @@
 #include <stdexcept>
 
 
-BTagEffService::BTagEffService(std::string const &name, std::string const &fileName,
-  std::string const &directory):
-    Service(name),
-    inFileDirectory(directory)
+using namespace std::literals::string_literals;
+
+
+BTagEffService::BTagEffService(std::string const &name, std::string const &path):
+    Service(name)
 {
-    OpenInputFile(fileName);
+    OpenInputFile(path);
 }
 
 
-BTagEffService::BTagEffService(std::string const &fileName, std::string const &directory /*= ""*/):
-    Service("BTagEff"),
-    inFileDirectory(directory)
+BTagEffService::BTagEffService(std::string const &path):
+    Service("BTagEff")
 {
-    OpenInputFile(fileName);
+    OpenInputFile(path);
 }
 
 
@@ -157,26 +157,6 @@ void BTagEffService::SetProcessLabel(std::list<Dataset::Process> const &codes,
 }
 
 
-void BTagEffService::OpenInputFile(std::string const &fileName)
-{
-    // Guard creation of a ROOT file
-    ROOTLock::Lock();
-    
-    // Resolve path to the source file and open it. If the file is missing, pathBuilder will throw
-    //an exception
-    FileInPath pathBuilder;
-    TFile *fp = TFile::Open(pathBuilder.Resolve("BTag", fileName).c_str());
-    srcFile.reset(fp);
-    
-    ROOTLock::Unlock();
-    
-    
-    // Make sure the in-file directory path is either empty or terminates with a slash
-    if (inFileDirectory.length() > 0 and inFileDirectory[inFileDirectory.length() - 1] != '/')
-        inFileDirectory += '/';
-}
-
-
 void BTagEffService::LoadEfficiencies(BTagger const &bTagger)
 {
     using namespace std;
@@ -228,4 +208,43 @@ void BTagEffService::LoadEfficiencies(BTagger const &bTagger)
         histMap[3] = udsgHist;
         histMap[21] = udsgHist;
     }
+}
+
+
+void BTagEffService::OpenInputFile(std::string const &path)
+{
+    // Split the given path into file path and in-file directory
+    unsigned const nSep = std::count(path.begin(), path.end(), ':');
+    std::string filePath;
+    
+    if (nSep == 0)
+    {
+        filePath = path;
+        inFileDirectory = "";
+    }
+    else if (nSep == 1)
+    {
+        auto const pos = path.find(":");
+        filePath = path.substr(0, pos);
+        inFileDirectory = path.substr(pos + 1);
+        
+        // Make sure the in-file directory terminates with a slash
+        if (inFileDirectory != "" and inFileDirectory[inFileDirectory.length() - 1] != '/')
+            inFileDirectory += '/';
+    }
+    else
+        throw std::runtime_error("BTagEffService::OpenInputFile: Path \""s + path +
+          "\" constains too many colons.");
+    
+    
+    // Guard creation of a ROOT file
+    ROOTLock::Lock();
+    
+    // Resolve path to the source file and open it. If the file is missing, pathBuilder will throw
+    //an exception
+    FileInPath pathBuilder;
+    TFile *fp = TFile::Open(pathBuilder.Resolve("BTag", filePath).c_str());
+    srcFile.reset(fp);
+    
+    ROOTLock::Unlock();
 }
