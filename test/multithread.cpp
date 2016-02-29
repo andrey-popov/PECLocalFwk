@@ -55,10 +55,9 @@ int main()
     // Register b-tagging services
     manager.RegisterService(new BTagWPService);
     
-    BTagEffService *bTagEffService =
-      new BTagEffService("BTagEff_2012Bravo_v1.0.root", "in4_jPt30/");
-    bTagEffService->SetProcessLabel(Dataset::Process::ttSemilep, "ttbar-semilep");
-    bTagEffService->SetDefaultProcessLabel("ttbar-inc");
+    BTagEffService *bTagEffService = new BTagEffService("BTagEff_74X_v1.0.root");
+    // bTagEffService->SetProcessLabel(Dataset::Process::ttSemilep, "ttbar-semilep");
+    bTagEffService->SetDefaultProcessLabel("ttbar");
     manager.RegisterService(bTagEffService);
     
     BTagSFService *bTagSFService = new BTagSFService(bTagger, "BTagSF_74X_CSVv2.csv");
