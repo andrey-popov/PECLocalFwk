@@ -104,7 +104,7 @@ bool PECJetMETReader::ProcessEvent()
         
         
         // Loose physics selection
-        if (not j.TestBit(0) /* "loose" jet ID */)
+        if (not j.TestBit(1) /* "loose" jet ID */)
             continue;
         
         // User-defined selection on momentum
