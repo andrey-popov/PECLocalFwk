@@ -23,7 +23,7 @@ class PECTriggerFilter: public AnalysisPlugin
 {
 public:
     /// Creates plugin with the given name
-    PECTriggerFilter(std::string const name = "PECTriggerFilter");
+    PECTriggerFilter(std::string const name = "TriggerFilter");
     
     /// Default copy constructor
     PECTriggerFilter(PECTriggerFilter const &) = default;
@@ -105,7 +105,7 @@ public:
     /** 
      * \brief Construct a filter with the given trigger selection
      * 
-     * A short-cut for the above version with a default name "PECTriggerFilterData".
+     * A short-cut for the above version with a default name "TriggerFilter".
      */
     template<typename C>
     PECTriggerFilterData(C const &ranges);
@@ -184,7 +184,7 @@ PECTriggerFilterData::PECTriggerFilterData(std::string const &name, C const &ran
 
 template<typename C>
 PECTriggerFilterData::PECTriggerFilterData(C const &ranges_):
-    PECTriggerFilter("PECTriggerFilterData"),
+    PECTriggerFilter("TriggerFilter"),
     currentRange(nullptr)
 {
     ConstructRanges(ranges_);
@@ -236,7 +236,7 @@ public:
     /** 
      * \brief Construct a filter with the given trigger selection
      * 
-     * A short-cut for the above version with a default name "PECTriggerFilterMC".
+     * A short-cut for the above version with a default name "TriggerFilter".
      */
     template<typename C>
     PECTriggerFilterMC(C const &ranges);
@@ -333,7 +333,7 @@ PECTriggerFilterMC::PECTriggerFilterMC(std::string const &name, C const &ranges_
 
 template<typename C>
 PECTriggerFilterMC::PECTriggerFilterMC(C const &ranges_):
-    PECTriggerFilter("PECTriggerFilterMC"),
+    PECTriggerFilter("TriggerFilter"),
     buffer(nullptr)
 {
     ConstructRanges(ranges_);
