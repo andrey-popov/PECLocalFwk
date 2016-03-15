@@ -3,24 +3,21 @@
 #include <algorithm>
 
 
-using namespace std;
-
-
-GenParticle::GenParticle():
+GenParticle::GenParticle() noexcept:
     Candidate(),
     pdgId(0)
 {}
 
 
-GenParticle::GenParticle(TLorentzVector const &p4_, int pdgId_ /*= 0*/):
+GenParticle::GenParticle(TLorentzVector const &p4_, int pdgId_ /*= 0*/) noexcept:
     Candidate(p4_),
     pdgId(pdgId_)
 {}
 
 
-void GenParticle::SetPdgId(int pdgId_)
+void GenParticle::AddDaughter(GenParticle const *p)
 {
-    pdgId = pdgId_;
+    daughters.push_back(p);
 }
 
 
@@ -30,21 +27,43 @@ void GenParticle::AddMother(GenParticle const *p)
 }
 
 
-void GenParticle::AddDaughter(GenParticle const *p)
+GenParticle const *GenParticle::FindFirstDaughter(std::initializer_list<int> const &pdgIds) const
 {
-    daughters.push_back(p);
+    for (auto const &daughterPointer: daughters)
+    {
+        if (std::any_of(pdgIds.begin(), pdgIds.end(),
+          [=](int pdgId){return (pdgId == daughterPointer->pdgId);}))
+        return daughterPointer;
+    }
+    
+    return nullptr;
 }
 
 
-int GenParticle::GetPdgId() const
+GenParticle const *GenParticle::FindFirstDaughterRecursive(
+  std::initializer_list<int> const &pdgIds) const
 {
-    return pdgId;
+    // First check PDG ID of this particle
+    if (std::any_of(pdgIds.begin(), pdgIds.end(), [this](int id){return (this->pdgId == id);}))
+        return this;
+    
+    // If this is not the particle that is being looked for, check all the daughters
+    for (auto const &daughterPointer: daughters)
+    {
+        auto const p = daughterPointer->FindFirstDaughterRecursive(pdgIds);
+        
+        if (p != nullptr)
+            return p;
+    }
+    
+    // If the control reaches this point, no particle with a specified PDG ID has been found
+    return nullptr;
 }
 
 
-GenParticle::collection_t const &GenParticle::GetMothers() const
+GenParticle::collection_t const &GenParticle::GetDaughters() const
 {
-    return mothers;
+    return daughters;
 }
 
 
@@ -66,41 +85,20 @@ int GenParticle::GetFirstMotherPdgId() const
 }
 
 
-GenParticle::collection_t const &GenParticle::GetDaughters() const
+GenParticle::collection_t const &GenParticle::GetMothers() const
 {
-    return daughters;
+    return mothers;
 }
 
 
-GenParticle const *GenParticle::FindFirstDaughter(initializer_list<int> const &pdgIds) const
+int GenParticle::GetPdgId() const
 {
-    for (auto const &daughterPointer: daughters)
-    {
-        if (any_of(pdgIds.begin(), pdgIds.end(),
-         [=](int pdgId){return (pdgId == daughterPointer->pdgId);}))
-        return daughterPointer;
-    }
-    
-    return nullptr;
+    return pdgId;
 }
 
 
-GenParticle const *GenParticle::FindFirstDaughterRecursive(initializer_list<int> const &pdgIds)
- const
+void GenParticle::SetPdgId(int pdgId_)
 {
-    // First check PDG ID of this particle
-    if (any_of(pdgIds.begin(), pdgIds.end(), [this](int id){return (this->pdgId == id);}))
-        return this;
-    
-    // If this is not the particle that is being looked for, check all the daughters
-    for (auto const &daughterPointer: daughters)
-    {
-        auto const p = daughterPointer->FindFirstDaughterRecursive(pdgIds);
-        
-        if (p != nullptr)
-            return p;
-    }
-    
-    // If the control reaches this point, no particle with a specified PDG ID has been found
-    return nullptr;
+    pdgId = pdgId_;
 }
+
