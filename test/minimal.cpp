@@ -10,6 +10,7 @@
 #include <PECFwk/extensions/MetFilter.hpp>
 
 #include <PECFwk/PECReader/PECGeneratorReader.hpp>
+#include <PECFwk/PECReader/PECGenParticleReader.hpp>
 #include <PECFwk/PECReader/PECInputData.hpp>
 #include <PECFwk/PECReader/PECJetMETReader.hpp>
 #include <PECFwk/PECReader/PECLeptonReader.hpp>
@@ -80,6 +81,7 @@ int main()
     processor.RegisterPlugin(new MetFilter(MetFilter::Mode::MtW, 40.));
     processor.RegisterPlugin(new PECPileUpReader);
     processor.RegisterPlugin(new PECGeneratorReader);
+    processor.RegisterPlugin(new PECGenParticleReader);
     processor.RegisterPlugin(new BTagWeight(bTagger));
     
     
@@ -92,6 +94,8 @@ int main()
       dynamic_cast<PileUpReader const *>(processor.GetPlugin("PileUp"));
     PECGeneratorReader const *generatorReader =
       dynamic_cast<PECGeneratorReader const *>(processor.GetPlugin("Generator"));
+    GenParticleReader const *genParticleReader =
+      dynamic_cast<GenParticleReader const *>(processor.GetPlugin("GenParticles"));
     BTagWeight const *bTagReweighter =
       dynamic_cast<BTagWeight const *>(processor.GetPlugin("BTagWeight"));
     
@@ -142,6 +146,18 @@ int main()
         
         cout << "\nPile-up info:\n #PV: " << puReader->GetNumVertices() << ", rho: " <<
           puReader->GetRho() << '\n';
+        
+        cout << "\nGenerator-level particles:\n";
+        
+        for (auto const &p: genParticleReader->GetParticles())
+        {
+            cout << " PDG ID: " << p.GetPdgId() << ", daughters PDG ID:";
+            
+            for (auto const &d: p.GetDaughters())
+                cout << " " << d->GetPdgId();
+            
+            cout << '\n';
+        }
         
         cout << "\nNominal GEN-level weight: " << generatorReader->GetNominalWeight() << '\n';
         cout << "Weight for b-tagging scale factors: " << bTagReweighter->CalcWeight() << '\n';
