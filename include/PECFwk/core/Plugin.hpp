@@ -120,6 +120,14 @@ public:
      */
     void SetMaster(Processor const *processor);
     
+protected:
+    /**
+     * \brief Returns a pointer to a precedent plugin in the path with the given name
+     * 
+     * The plugin is requested from the master. If it is not found, an exception is thrown.
+     */
+    Plugin const *GetDependencyPlugin(std::string const &name) const;
+    
 private:
     /**
      * \brief A hook to implement actual processing of a new event from the current dataset
