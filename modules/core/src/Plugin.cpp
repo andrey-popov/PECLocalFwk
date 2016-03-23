@@ -15,10 +15,12 @@ Plugin::~Plugin()
 {}
 
 
-void Plugin::SetMaster(Processor const *processor)
-{
-    master = processor;
-}
+void Plugin::BeginRun(Dataset const &)
+{}
+
+
+void Plugin::EndRun()
+{}
 
 
 Processor const &Plugin::GetMaster() const
@@ -38,12 +40,10 @@ string const &Plugin::GetName() const
 }
 
 
-void Plugin::BeginRun(Dataset const &)
-{}
-
-
-void Plugin::EndRun()
-{}
+void Plugin::SetMaster(Processor const *processor)
+{
+    master = processor;
+}
 
 
 Plugin::EventOutcome Plugin::ProcessEventToOutcome()
