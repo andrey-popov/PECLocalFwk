@@ -100,9 +100,14 @@ public:
         pp8TeV,
         pp13TeV,
         
+        BSM,          ///< Common category for BSM signals
+        
         tHq,          ///< tHq with any couplings
         tHqExotic,    ///< tHq with kappa_t = -1
         tHqSM,        ///< Standard-Model tHq (kappa_t = +1)
+        
+        ZPrime,
+        WPrime,
         
         ttbar,        ///< Generic category for any ttbar dataset
         ttInclusive,  ///< Inclusive ttbar, i.e. the dataset contains any decays
