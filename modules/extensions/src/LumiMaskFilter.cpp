@@ -4,6 +4,7 @@
 #include <PECFwk/core/Processor.hpp>
 
 #include <algorithm>
+#include <iostream>
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
@@ -209,6 +210,22 @@ void LumiMaskFilter::LoadLumiMask(std::string const &lumiMaskFileName)
         std::sort(lumiRanges.begin(), lumiRanges.end(),
           [](lumiRange_t const &a, lumiRange_t const &b){return (a.first < b.first);});
     }
+    
+    
+    // Print out the mask
+    #ifdef DEBUG
+    cout << "Loaded luminoisty mask:\n";
+    
+    for (auto const &p: lumiMask)
+    {
+        cout << "  " << p.first << ":";
+        
+        for (auto const &range: p.second)
+            cout << " [" << range.first << ", " << range.second << "],";
+        
+        cout << endl;
+    }
+    #endif
 }
 
 
