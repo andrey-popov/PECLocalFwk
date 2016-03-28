@@ -62,6 +62,10 @@ void PECTriggerFilterData::BeginRun(Dataset const &dataset)
     
     // Set up the pointer to PECInputData and register reading of the trigger tree
     PECTriggerFilter::BeginRun(dataset);
+    
+    // Reset the current range in case this is not the first dataset processed by this instance of
+    //the plugin. Without this, the plugin would not set up reading of the appropriate branches
+    currentRange = nullptr;
 }
 
 
