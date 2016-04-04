@@ -6,31 +6,16 @@
 #include <PECFwk/core/Processor.hpp>
 #include <PECFwk/core/PhysicsObjects.hpp>
 #include <PECFwk/core/ROOTLock.hpp>
+#include <PECFwk/extensions/TFileService.hpp>
 
-#include <sys/stat.h>
 
-
-BasicKinematicsPlugin::BasicKinematicsPlugin(std::string const &name,
-  std::string const &outDirectory_):
+BasicKinematicsPlugin::BasicKinematicsPlugin(std::string const name /*= "BasicKinematics"*/):
     AnalysisPlugin(name),
+    fileServiceName("TFileService"), fileService(nullptr),
     leptonPluginName("Leptons"), leptonPlugin(nullptr),
     jetmetPluginName("JetMET"), jetmetPlugin(nullptr),
-    puPluginName("PileUp"), puPlugin(nullptr),
-    outDirectory(outDirectory_)
-{
-    CreateOutputDirectory();
-}
-
-
-BasicKinematicsPlugin::BasicKinematicsPlugin(std::string const &outDirectory_):
-    AnalysisPlugin("BasicKinematics"),
-    leptonPluginName("Leptons"), leptonPlugin(nullptr),
-    jetmetPluginName("JetMET"), jetmetPlugin(nullptr),
-    puPluginName("PileUp"), puPlugin(nullptr),
-    outDirectory(outDirectory_)
-{
-    CreateOutputDirectory();
-}
+    puPluginName("PileUp"), puPlugin(nullptr)
+{}
 
 
 BasicKinematicsPlugin::~BasicKinematicsPlugin() noexcept
@@ -39,33 +24,31 @@ BasicKinematicsPlugin::~BasicKinematicsPlugin() noexcept
 
 BasicKinematicsPlugin::BasicKinematicsPlugin(BasicKinematicsPlugin const &src):
     AnalysisPlugin(src),
+    fileServiceName(src.fileServiceName), fileService(nullptr),
     leptonPluginName(src.leptonPluginName), leptonPlugin(nullptr),
     jetmetPluginName(src.jetmetPluginName), jetmetPlugin(nullptr),
-    puPluginName(src.puPluginName), puPlugin(nullptr),
-    outDirectory(src.outDirectory)
+    puPluginName(src.puPluginName), puPlugin(nullptr)
 {}
 
 
-void BasicKinematicsPlugin::BeginRun(Dataset const &dataset)
+void BasicKinematicsPlugin::BeginRun(Dataset const &)
 {
+    // Save pointer to the file service
+    fileService = dynamic_cast<TFileService const *>(GetMaster().GetService(fileServiceName));
+    
     // Save pointers to reader plugins
     leptonPlugin = dynamic_cast<LeptonReader const *>(GetDependencyPlugin(leptonPluginName));
     jetmetPlugin = dynamic_cast<JetMETReader const *>(GetDependencyPlugin(jetmetPluginName));
     puPlugin = dynamic_cast<PileUpReader const *>(GetDependencyPlugin(puPluginName));
     
     
-    // Creation of ROOT objects is not thread-safe and must be protected
+    // Create the output tree in the root directory of the output file
+    tree = fileService->Create<TTree>("", "Vars", "Basic kinematical variables");
+    
+    
+    // Declare branches. This is not a thread-safe operation, and this it must be protected
     ROOTLock::Lock();
     
-    // Create the output file
-    file.reset(
-      new TFile((outDirectory + dataset.GetFiles().front().GetBaseName() + ".root").c_str(),
-        "recreate"));
-    
-    // Create the tree
-    tree.reset(new TTree("Vars", "Basic kinematical variables"));
-    
-    // Assign branch addresses
     tree->Branch("Pt_Lep", &Pt_Lep);
     tree->Branch("Eta_Lep", &Eta_Lep);
     tree->Branch("Pt_J1", &Pt_J1);
@@ -78,7 +61,6 @@ void BasicKinematicsPlugin::BeginRun(Dataset const &dataset)
     tree->Branch("MtW", &MtW);
     tree->Branch("nPV", &nPV);
     
-    // End of critical block
     ROOTLock::Unlock();
 }
 
@@ -86,37 +68,6 @@ void BasicKinematicsPlugin::BeginRun(Dataset const &dataset)
 Plugin *BasicKinematicsPlugin::Clone() const
 {
     return new BasicKinematicsPlugin(*this);
-}
-
-
-void BasicKinematicsPlugin::EndRun()
-{
-    // Operations with ROOT objects performed here are not thread-safe and must be guarded
-    ROOTLock::Lock();
-    
-    // Write the tree and close the file
-    file->cd();
-    tree->Write("", TObject::kOverwrite);
-    
-    // Delete the objects
-    tree.reset();
-    file.reset();
-    
-    ROOTLock::Unlock();
-}
-
-
-void BasicKinematicsPlugin::CreateOutputDirectory()
-{
-    // Make sure the directory path ends with a slash
-    if (outDirectory.back() != '/')
-        outDirectory += '/';
-    
-    // Create the output directory if it does not exist
-    struct stat dirStat;
-    
-    if (stat(outDirectory.c_str(), &dirStat) != 0)  // the directory does not exist
-        mkdir(outDirectory.c_str(), 0755);
 }
 
 

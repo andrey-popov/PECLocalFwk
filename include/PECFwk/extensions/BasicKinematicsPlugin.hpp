@@ -2,33 +2,30 @@
 
 #include <PECFwk/core/AnalysisPlugin.hpp>
 
-#include <TFile.h>
 #include <TTree.h>
 
-#include <memory>
 #include <string>
 
 
 class LeptonReader;
 class JetMETReader;
 class PileUpReader;
+class TFileService;
 
 
 /**
  * \class BasicKinematicsPlugin
- * \brief A plugin to store basic kinematical information
+ * \brief A plugin that evaluates and stores basic kinematical variables
  * 
  * This plugin represents an example of producing custom trees with some representative
- * observables.
+ * observables. It uses a TFileService with a default name "TFileService" to create the output tree.
+ * Inputs are access with dedicated readers with default names "Leptons", "JetMET", and "PileUp".
  */
 class BasicKinematicsPlugin: public AnalysisPlugin
 {
 public:
     /// Constructor
-    BasicKinematicsPlugin(std::string const &name, std::string const &outDirectory);
-    
-    /// A short-cut for the above version with a default name "BasicKinematics"
-    BasicKinematicsPlugin(std::string const &outDirectory);
+    BasicKinematicsPlugin(std::string const name = "BasicKinematics");
     
     /// Default move constructor
     BasicKinematicsPlugin(BasicKinematicsPlugin &&) = default;
@@ -48,7 +45,7 @@ private:
      * the copy constructor must not be used in a generic case and made private to prevent this.
      */
     BasicKinematicsPlugin(BasicKinematicsPlugin const &src);
-
+    
 public:
     /**
      * \brief Creates a new output file and sets up a tree
@@ -64,25 +61,21 @@ public:
      */
     virtual Plugin *Clone() const override;
     
-    /**
-     * \brief Writes the output tree
-     * 
-     * Reimplemented from Plugin.
-     */
-    virtual void EndRun() override;
-
 private:
-    /// Creates output directory if it does not exist
-    void CreateOutputDirectory();
-    
     /**
      * \brief Computes representative observables for the current event and fills the tree
      * 
      * Implemented from Plugin.
      */
     virtual bool ProcessEvent() override;
-
+    
 private:
+    /// Name of TFileService
+    std::string fileServiceName;
+    
+    /// Non-owning pointer to TFileService
+    TFileService const *fileService;
+    
     /// Name of the plugin that produces leptons
     std::string leptonPluginName;
     
@@ -101,14 +94,8 @@ private:
     /// Non-owning pointer to the plugin that reads information about pile-up
     PileUpReader const *puPlugin;
     
-    /// Directory to store output files
-    std::string outDirectory;
-    
-    /// Current output file
-    std::unique_ptr<TFile> file;
-    
-    /// Current output tree
-    std::unique_ptr<TTree> tree;
+    /// Non-owning pointer to the output tree
+    TTree *tree;
     
     // Output buffers
     Float_t Pt_Lep, Eta_Lep;

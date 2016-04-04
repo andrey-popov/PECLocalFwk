@@ -9,6 +9,7 @@
 #include <PECFwk/extensions/JetFilter.hpp>
 #include <PECFwk/extensions/LeptonFilter.hpp>
 #include <PECFwk/extensions/MetFilter.hpp>
+#include <PECFwk/extensions/TFileService.hpp>
 
 #include <PECFwk/PECReader/PECGeneratorReader.hpp>
 #include <PECFwk/PECReader/PECInputData.hpp>
@@ -52,7 +53,9 @@ int main()
     RunManager manager(datasets.begin(), datasets.end());
     
     
-    // Register b-tagging services
+    // Register services
+    manager.RegisterService(new TFileService("output"));
+    
     manager.RegisterService(new BTagWPService);
     
     BTagEffService *bTagEffService = new BTagEffService("BTagEff_74X_v1.0.root");
