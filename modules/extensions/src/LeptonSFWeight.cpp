@@ -47,8 +47,7 @@ LeptonSFWeight::~LeptonSFWeight() noexcept
 void LeptonSFWeight::BeginRun(Dataset const &)
 {
     // Save pointers to the plugin that provides leptons
-    leptonPlugin = dynamic_cast<LeptonReader const *>(
-      GetMaster().GetPluginBefore(leptonPluginName, GetName()));
+    leptonPlugin = dynamic_cast<LeptonReader const *>(GetDependencyPlugin(leptonPluginName));
 }
 
 

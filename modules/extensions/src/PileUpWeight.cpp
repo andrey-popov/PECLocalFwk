@@ -54,8 +54,7 @@ PileUpWeight::~PileUpWeight() noexcept
 void PileUpWeight::BeginRun(Dataset const &)
 {
     // Save pointer to pile-up reader
-    puPlugin = dynamic_cast<PileUpReader const *>(
-      GetMaster().GetPluginBefore(puPluginName, GetName()));
+    puPlugin = dynamic_cast<PileUpReader const *>(GetDependencyPlugin(puPluginName));
     
     
     // Load the distribution of expected pile-up as generated for the current dataset. (This is)

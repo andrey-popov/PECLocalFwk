@@ -33,8 +33,7 @@ PECLeptonReader::~PECLeptonReader() noexcept
 void PECLeptonReader::BeginRun(Dataset const &)
 {
     // Save pointer to the plugin providing access to input data
-    inputDataPlugin = dynamic_cast<PECInputData const *>(
-      GetMaster().GetPluginBefore(inputDataPluginName, GetName()));
+    inputDataPlugin = dynamic_cast<PECInputData const *>(GetDependencyPlugin(inputDataPluginName));
     
     
     // Set up the trees. Branches with properties that are currently not utilized, are disabled

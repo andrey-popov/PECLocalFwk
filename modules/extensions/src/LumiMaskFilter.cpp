@@ -40,8 +40,7 @@ LumiMaskFilter::~LumiMaskFilter()
 void LumiMaskFilter::BeginRun(Dataset const &)
 {
     // Save pointer to plugin that produces jets
-    eventIDPlugin = dynamic_cast<EventIDReader const *>(
-      GetMaster().GetPluginBefore(eventIDPluginName, GetName()));
+    eventIDPlugin = dynamic_cast<EventIDReader const *>(GetDependencyPlugin(eventIDPluginName));
 }
 
 

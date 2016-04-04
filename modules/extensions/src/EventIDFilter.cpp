@@ -57,8 +57,7 @@ void EventIDFilter::BeginRun(Dataset const &dataset)
     
     
     // Save pointer to plugin that produces jets
-    eventIDPlugin = dynamic_cast<EventIDReader const *>(
-      GetMaster().GetPluginBefore(eventIDPluginName, GetName()));
+    eventIDPlugin = dynamic_cast<EventIDReader const *>(GetDependencyPlugin(eventIDPluginName));
     
     
     // Make a short-cut for list of event IDs for the new atomic dataset

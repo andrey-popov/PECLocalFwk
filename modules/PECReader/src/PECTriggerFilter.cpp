@@ -24,8 +24,7 @@ PECTriggerFilter::~PECTriggerFilter() noexcept
 void PECTriggerFilter::BeginRun(Dataset const &)
 {
     // Find the plugin that reads input files
-    inputDataPlugin = dynamic_cast<PECInputData const *>(
-      GetMaster().GetPluginBefore(inputDataPluginName, GetName()));
+    inputDataPlugin = dynamic_cast<PECInputData const *>(GetDependencyPlugin(inputDataPluginName));
     
     // Register reading the tree with trigger information and by default disable all branches
     inputDataPlugin->LoadTree(triggerTreeName);

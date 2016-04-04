@@ -48,14 +48,12 @@ void PECJetMETReader::ConfigureLeptonCleaning(std::string const leptonPluginName
 void PECJetMETReader::BeginRun(Dataset const &)
 {
     // Save pointer to the plugin providing access to input data
-    inputDataPlugin = dynamic_cast<PECInputData const *>(
-      GetMaster().GetPluginBefore(inputDataPluginName, GetName()));
+    inputDataPlugin = dynamic_cast<PECInputData const *>(GetDependencyPlugin(inputDataPluginName));
     
     
     // Save pointer to plugin that produces leptons
     if (leptonPluginName != "")
-        leptonPlugin = dynamic_cast<LeptonReader const *>(
-          GetMaster().GetPluginBefore(leptonPluginName, GetName()));
+        leptonPlugin = dynamic_cast<LeptonReader const *>(GetDependencyPlugin(leptonPluginName));
     
     
     // Set up the tree. Branches with properties that are not currently not used, are disabled

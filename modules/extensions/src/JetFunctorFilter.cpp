@@ -39,8 +39,7 @@ JetFunctorFilter::JetFunctorFilter(JetFunctorFilter const &src) noexcept:
 void JetFunctorFilter::BeginRun(Dataset const &)
 {
     // Save pointer to plugin that produces jets
-    jetPlugin = dynamic_cast<JetMETReader const *>(
-      GetMaster().GetPluginBefore(jetPluginName, GetName()));
+    jetPlugin = dynamic_cast<JetMETReader const *>(GetDependencyPlugin(jetPluginName));
 }
 
 

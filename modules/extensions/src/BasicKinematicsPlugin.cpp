@@ -49,14 +49,9 @@ BasicKinematicsPlugin::BasicKinematicsPlugin(BasicKinematicsPlugin const &src):
 void BasicKinematicsPlugin::BeginRun(Dataset const &dataset)
 {
     // Save pointers to reader plugins
-    leptonPlugin = dynamic_cast<LeptonReader const *>(
-      GetMaster().GetPluginBefore(leptonPluginName, GetName()));
-    
-    jetmetPlugin = dynamic_cast<JetMETReader const *>(
-      GetMaster().GetPluginBefore(jetmetPluginName, GetName()));
-    
-    puPlugin = dynamic_cast<PileUpReader const *>(
-      GetMaster().GetPluginBefore(puPluginName, GetName()));
+    leptonPlugin = dynamic_cast<LeptonReader const *>(GetDependencyPlugin(leptonPluginName));
+    jetmetPlugin = dynamic_cast<JetMETReader const *>(GetDependencyPlugin(jetmetPluginName));
+    puPlugin = dynamic_cast<PileUpReader const *>(GetDependencyPlugin(puPluginName));
     
     
     // Creation of ROOT objects is not thread-safe and must be protected

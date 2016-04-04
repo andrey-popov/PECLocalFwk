@@ -29,8 +29,7 @@ PECPileUpReader::~PECPileUpReader() noexcept
 void PECPileUpReader::BeginRun(Dataset const &)
 {
     // Save pointer to the plugin providing access to input data
-    inputDataPlugin = dynamic_cast<PECInputData const *>(
-      GetMaster().GetPluginBefore(inputDataPluginName, GetName()));
+    inputDataPlugin = dynamic_cast<PECInputData const *>(GetDependencyPlugin(inputDataPluginName));
     
     
     // Set up the tree with pile-up information. Attributes of the PileUpInfo class that are not

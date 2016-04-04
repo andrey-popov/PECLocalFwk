@@ -60,8 +60,7 @@ void LeptonFilter::AddSelectionBin(Lepton::Flavour flavour, double minPt, double
 void LeptonFilter::BeginRun(Dataset const &)
 {
     // Save pointer to plugin that produces leptons
-    leptonPlugin = dynamic_cast<LeptonReader const *>(
-      GetMaster().GetPluginBefore(leptonPluginName, GetName()));
+    leptonPlugin = dynamic_cast<LeptonReader const *>(GetDependencyPlugin(leptonPluginName));
 }
 
 

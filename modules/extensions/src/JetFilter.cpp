@@ -56,8 +56,7 @@ void JetFilter::AddSelectionBin(unsigned nJets, unsigned nTags)
 void JetFilter::BeginRun(Dataset const &)
 {
     // Save pointer to plugin that produces jets
-    jetPlugin = dynamic_cast<JetMETReader const *>(
-      GetMaster().GetPluginBefore(jetPluginName, GetName()));
+    jetPlugin = dynamic_cast<JetMETReader const *>(GetDependencyPlugin(jetPluginName));
     
     // Save pointer to service that provides b-tagging thresholds
     bTagWPService = dynamic_cast<BTagWPService const *>(GetMaster().GetService(bTagWPServiceName));

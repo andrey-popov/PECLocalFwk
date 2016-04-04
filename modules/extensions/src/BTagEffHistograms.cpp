@@ -48,11 +48,8 @@ void BTagEffHistograms::BeginRun(Dataset const &)
     fileService = dynamic_cast<TFileService const *>(GetMaster().GetService(fileServiceName));
     bTagWPService = dynamic_cast<BTagWPService const *>(GetMaster().GetService(bTagWPServiceName));
     
-    jetPlugin = dynamic_cast<JetMETReader const *>(
-      GetMaster().GetPluginBefore(jetPluginName, GetName()));
-    
-    puWeightPlugin = dynamic_cast<PileUpWeight const *>(
-      GetMaster().GetPluginBefore(puWeightPluginName, GetName()));
+    jetPlugin = dynamic_cast<JetMETReader const *>(GetDependencyPlugin(jetPluginName));
+    puWeightPlugin = dynamic_cast<PileUpWeight const *>(GetDependencyPlugin(puWeightPluginName));
     
     
     // Construct the histograms for all jet flavours

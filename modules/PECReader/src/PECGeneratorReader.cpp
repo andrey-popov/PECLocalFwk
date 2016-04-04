@@ -40,8 +40,7 @@ void PECGeneratorReader::BeginRun(Dataset const &dataset)
     
     
     // Save pointer to the plugin providing access to input data
-    inputDataPlugin = dynamic_cast<PECInputData const *>(
-      GetMaster().GetPluginBefore(inputDataPluginName, GetName()));
+    inputDataPlugin = dynamic_cast<PECInputData const *>(GetDependencyPlugin(inputDataPluginName));
     
     
     // Set up the tree with generator information. Only some attributes of the PEC object are read

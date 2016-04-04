@@ -37,8 +37,7 @@ BTagWeight::~BTagWeight() noexcept
 void BTagWeight::BeginRun(Dataset const &)
 {
     // Save pointer to plugin that produces jets
-    jetPlugin = dynamic_cast<JetMETReader const *>(
-      GetMaster().GetPluginBefore(jetPluginName, GetName()));
+    jetPlugin = dynamic_cast<JetMETReader const *>(GetDependencyPlugin(jetPluginName));
     
     // Save pointers to services that provide b-tagging thresholds, efficiencies, and scale factors
     bTagWPService = dynamic_cast<BTagWPService const *>(GetMaster().GetService(bTagWPServiceName));

@@ -41,14 +41,12 @@ MetFilter::~MetFilter()
 void MetFilter::BeginRun(Dataset const &)
 {
     // Save pointer to plugin that produces MET
-    metPlugin = dynamic_cast<JetMETReader const *>(
-      GetMaster().GetPluginBefore(metPluginName, GetName()));
+    metPlugin = dynamic_cast<JetMETReader const *>(GetDependencyPlugin(metPluginName));
     
     
     // In case of filtering on MtW, also save pointer to plugin producing leptons
     if (mode == Mode::MtW)
-        leptonPlugin = dynamic_cast<LeptonReader const *>(
-          GetMaster().GetPluginBefore(leptonPluginName, GetName()));
+        leptonPlugin = dynamic_cast<LeptonReader const *>(GetDependencyPlugin(leptonPluginName));
 }
 
 

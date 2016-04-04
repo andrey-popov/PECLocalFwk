@@ -44,8 +44,7 @@ BTagWeightCSVShape::~BTagWeightCSVShape() noexcept
 void BTagWeightCSVShape::BeginRun(Dataset const &)
 {
     // Save pointer to plugin that produces jets
-    jetPlugin = dynamic_cast<JetMETReader const *>(
-      GetMaster().GetPluginBefore(jetPluginName, GetName()));
+    jetPlugin = dynamic_cast<JetMETReader const *>(GetDependencyPlugin(jetPluginName));
 }
 
 
