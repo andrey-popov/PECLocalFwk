@@ -97,8 +97,10 @@ bool PECJetMETReader::ProcessEvent()
     // Process jets in the current event
     for (pec::Jet const &j: bfJets)
     {
+        // Read jet momentum and apply corrections to it
         TLorentzVector p4;
         p4.SetPtEtaPhiM(j.Pt(), j.Eta(), j.Phi(), j.M());
+        p4 *= j.JECFactor();
         
         
         // Loose physics selection
@@ -133,8 +135,8 @@ bool PECJetMETReader::ProcessEvent()
         }
         
         
-        // Build the jet object. Raw jet momentum is stored, so it needs to be corrected
-        Jet jet(p4 * j.JECFactor());
+        // Build the jet object. At this point jet momentum must be fully corrected
+        Jet jet(p4);
         
         jet.SetBTag(BTagger::Algorithm::CSV, j.BTagCSV());
         jet.SetArea(j.Area());
