@@ -135,8 +135,8 @@ bool PECJetMETReader::ProcessEvent()
         }
         
         
-        // Build the jet object
-        Jet jet(p4);  // Here the momentum is assumed to be fully corrected
+        // Build the jet object. Raw jet momentum is stored, so it needs to be corrected
+        Jet jet(p4 * j.JECFactor());
         
         jet.SetBTag(BTagger::Algorithm::CSV, j.BTagCSV());
         jet.SetArea(j.Area());
