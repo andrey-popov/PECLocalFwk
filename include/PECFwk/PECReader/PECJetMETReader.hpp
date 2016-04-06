@@ -55,7 +55,7 @@ public:
      * LeptonReader, and if the separation from a lepton is less than dR, the jet is dropped.
      * 
      * The cleaning is enabled by default, with parameters specified in the prototype. It can be
-     * disabled by providing an emptry name ("") for the LeptonReader.
+     * disabled by providing an empty name ("") for the LeptonReader.
      */
     void ConfigureLeptonCleaning(std::string const leptonPluginName = "Leptons", double dR = 0.3);
     
@@ -72,6 +72,16 @@ public:
      * Implemented from Plugin.
      */
     virtual Plugin *Clone() const override;
+    
+    /**
+     * \brief Returns radius parameter used in the jet clustering algorithm
+     * 
+     * The radius is hard-coded in the current implementation, but it will be made configurable in
+     * future if jets with larger radii are added.
+     * 
+     * Implemented from JetMETReader.
+     */
+    virtual double GetJetRadius() const override;
     
     /// Specifiy desired selection on jets
     void SetSelection(double minPt, double maxAbsEta);

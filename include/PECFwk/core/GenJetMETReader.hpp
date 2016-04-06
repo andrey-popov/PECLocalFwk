@@ -38,6 +38,9 @@ public:
     /// Returns collection of corrected jets in the current event
     std::vector<GenJet> const &GetJets() const;
     
+    /// Returns radius parameter used in the jet clustering algorithm
+    virtual double GetJetRadius() const = 0;
+    
     /// Returns corrected MET in the current event
     MET const &GetMET() const;
     

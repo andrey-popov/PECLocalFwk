@@ -54,6 +54,16 @@ public:
      */
     virtual Plugin *Clone() const override;
     
+    /**
+     * \brief Returns radius parameter used in the jet clustering algorithm
+     * 
+     * The radius is hard-coded in the current implementation, but it will be made configurable in
+     * future if jets with larger radii are added.
+     * 
+     * Implemented from GenJetMETReader.
+     */
+    virtual double GetJetRadius() const override;
+    
     /// Specifiy desired selection on jets
     void SetSelection(double minPt, double maxAbsEta);
     

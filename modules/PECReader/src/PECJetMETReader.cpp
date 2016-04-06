@@ -74,6 +74,12 @@ Plugin *PECJetMETReader::Clone() const
 }
 
 
+double PECJetMETReader::GetJetRadius() const
+{
+    return 0.4;
+}
+
+
 void PECJetMETReader::SetSelection(double minPt_, double maxAbsEta_)
 {
     minPt = minPt_;
