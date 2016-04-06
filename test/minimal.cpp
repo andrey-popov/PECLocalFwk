@@ -10,6 +10,7 @@
 #include <PECFwk/extensions/MetFilter.hpp>
 
 #include <PECFwk/PECReader/PECGeneratorReader.hpp>
+#include <PECFwk/PECReader/PECGenJetMETReader.hpp>
 #include <PECFwk/PECReader/PECGenParticleReader.hpp>
 #include <PECFwk/PECReader/PECInputData.hpp>
 #include <PECFwk/PECReader/PECJetMETReader.hpp>
@@ -69,9 +70,11 @@ int main()
     processor.RegisterPlugin(BuildPECTriggerFilter(false, triggerRanges));
     processor.RegisterPlugin(new PECLeptonReader);
     processor.RegisterPlugin(new LeptonFilter("LeptonFilter", Lepton::Flavour::Muon, 22., 2.1));
+    processor.RegisterPlugin(new PECGenJetMETReader);
     
     PECJetMETReader *jetReader = new PECJetMETReader;
     jetReader->SetSelection(30., 2.4);
+    jetReader->SetGenJetReader();
     processor.RegisterPlugin(jetReader);
     
     JetFilter *jetFilter = new JetFilter(0., bTagger);
@@ -139,8 +142,20 @@ int main()
         cout << "\nAnalysis jets:\n";
         
         for (auto const &j: jetReader->GetJets())
+        {
             cout << " pt: " << j.Pt() << ", eta: " << j.Eta() << ", b-tag: " <<
               j.BTag(BTagger::Algorithm::CSV) << ", flavour: " << j.GetParentID() << '\n';
+            
+            cout << "  pt of matched GEN jet: ";
+            GenJet const *genJet = j.MatchedGenJet();
+            
+            if (genJet)
+                cout << genJet->Pt();
+            else
+                cout << "(none)";
+            
+            cout << '\n';
+        }
         
         cout << "\nMET: " << jetReader->GetMET().Pt() << '\n';
         

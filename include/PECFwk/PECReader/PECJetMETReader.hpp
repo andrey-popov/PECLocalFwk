@@ -3,6 +3,7 @@
 #include <PECFwk/core/JetMETReader.hpp>
 
 #include <PECFwk/core/LeptonReader.hpp>
+#include <PECFwk/core/GenJetMETReader.hpp>
 #include <PECFwk/PECReader/Candidate.hpp>
 #include <PECFwk/PECReader/Jet.hpp>
 
@@ -20,8 +21,11 @@ class PECInputData;
  * cleaned against tight leptons produced by a LeptonReader with name "Leptons". This behaviour
  * can be configured with method ConfigureLeptonCleaning.
  * 
- * Currently the plugin is not able to reapply JEC, does not perform matching to GEN-level jets,
- * and neglects any systematic variations.
+ * If the name of a plugin that reads generator-level jets is provided with the help of the method
+ * SetGenJetReader, angular matching to them is performed. The maximal allowed angular distance for
+ * matching is set to half of the radius parameter of reconstructed jets.
+ * 
+ * Currently the plugin is not able to reapply JEC and neglects any systematic variations.
  */
 class PECJetMETReader: public JetMETReader
 {
@@ -83,7 +87,10 @@ public:
      */
     virtual double GetJetRadius() const override;
     
-    /// Specifiy desired selection on jets
+    /// Specifies name of the plugin that provides generator-level jets
+    void SetGenJetReader(std::string const name = "GenJetMET");
+    
+    /// Specifies desired selection on jets
     void SetSelection(double minPt, double maxAbsEta);
     
 private:
@@ -146,4 +153,14 @@ private:
      * Exploited in jet cleaning.
      */
     double leptonDR2;
+    
+    /**
+     * \brief Name of the plugin that produces generator-level jets
+     * 
+     * The name can be empty. In this case no matching to generator-level jets is performed.
+     */
+    std::string genJetPluginName;
+    
+    /// Non-owning pointer to a plugin that produces generator-level jets
+    GenJetMETReader const *genJetPlugin;
 };

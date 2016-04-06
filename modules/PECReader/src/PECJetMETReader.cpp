@@ -1,6 +1,7 @@
 #include <PECFwk/PECReader/PECJetMETReader.hpp>
 
 #include <PECFwk/core/Processor.hpp>
+#include <PECFwk/core/PhysicsObjects.hpp>
 #include <PECFwk/core/ROOTLock.hpp>
 #include <PECFwk/PECReader/PECInputData.hpp>
 
@@ -17,7 +18,8 @@ PECJetMETReader::PECJetMETReader(std::string name /*= "JetMET"*/):
     treeName("pecJetMET/JetMET"),
     bfJetPointer(&bfJets), bfMETPointer(&bfMETs),
     minPt(0.), maxAbsEta(std::numeric_limits<double>::infinity()),
-    leptonPluginName("Leptons"), leptonPlugin(nullptr), leptonDR2(0.3 * 0.3)
+    leptonPluginName("Leptons"), leptonPlugin(nullptr), leptonDR2(0.3 * 0.3),
+    genJetPluginName(""), genJetPlugin(nullptr)
 {}
 
 
@@ -29,11 +31,12 @@ PECJetMETReader::PECJetMETReader(PECJetMETReader const &src) noexcept:
     bfJetPointer(&bfJets), bfMETPointer(&bfMETs),
     minPt(src.minPt), maxAbsEta(src.maxAbsEta),
     leptonPluginName(src.leptonPluginName), leptonPlugin(src.leptonPlugin),
-    leptonDR2(src.leptonDR2)
+    leptonDR2(src.leptonDR2),
+    genJetPluginName(src.genJetPluginName), genJetPlugin(src.genJetPlugin)
 {}
 
 
-PECJetMETReader::~PECJetMETReader()
+PECJetMETReader::~PECJetMETReader() noexcept
 {}
 
 
@@ -51,9 +54,12 @@ void PECJetMETReader::BeginRun(Dataset const &)
     inputDataPlugin = dynamic_cast<PECInputData const *>(GetDependencyPlugin(inputDataPluginName));
     
     
-    // Save pointer to plugin that produces leptons
+    // Save pointers to plugins that produce leptons and generator-level jets
     if (leptonPluginName != "")
         leptonPlugin = dynamic_cast<LeptonReader const *>(GetDependencyPlugin(leptonPluginName));
+    
+    if (genJetPluginName != "")
+        genJetPlugin = dynamic_cast<GenJetMETReader const *>(GetDependencyPlugin(genJetPluginName));
     
     
     // Set up the tree. Branches with properties that are not currently not used, are disabled
@@ -77,6 +83,12 @@ Plugin *PECJetMETReader::Clone() const
 double PECJetMETReader::GetJetRadius() const
 {
     return 0.4;
+}
+
+
+void PECJetMETReader::SetGenJetReader(std::string const name /*= "GenJetMET"*/)
+{
+    genJetPluginName = name;
 }
 
 
@@ -150,6 +162,31 @@ bool PECJetMETReader::ProcessEvent()
         // jet.SetPullAngle(j.PullAngle());
         
         jet.SetParentID(j.Flavour());
+        
+        
+        // Perform matching to generator-level jets if the corresponding reader is available. Choose
+        //the closest jet but require that the angular separation is not larger than half of the
+        //radius parameter of the reconstructed jets
+        if (genJetPlugin)
+        {
+            double minDR2 = std::pow(GetJetRadius() / 2., 2);
+            GenJet const *matchedGenJet = nullptr;
+            
+            for (auto const &genJet: genJetPlugin->GetJets())
+            {
+                double const dR2 = std::pow(p4.Eta() - genJet.Eta(), 2) +
+                 std::pow(TVector2::Phi_mpi_pi(p4.Phi() - genJet.Phi()), 2);
+                //^ Do not use TLorentzVector::DeltaR to avoid calculating sqrt
+                
+                if (dR2 < minDR2)
+                {
+                    matchedGenJet = &genJet;
+                    minDR2 = dR2;
+                }
+            }
+            
+            jet.SetMatchedGenJet(matchedGenJet);
+        }
         
         
         jets.push_back(jet);
