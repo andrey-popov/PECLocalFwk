@@ -43,6 +43,7 @@ void PECLeptonReader::BeginRun(Dataset const &)
     ROOTLock::Lock();
     TTree *t = inputDataPlugin->ExposeTree(electronTreeName);
     t->SetBranchStatus("electrons.dB", false);
+    t->SetBranchStatus("electrons.etaSC", false);
     t->SetBranchStatus("electrons.mvaId*", false);
     t->SetBranchAddress("electrons", &bfElectronPointer);
     

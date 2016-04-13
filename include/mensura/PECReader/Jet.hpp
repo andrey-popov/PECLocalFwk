@@ -9,8 +9,8 @@ namespace pec
  * \class Jet
  * \brief Represents a reconstructed jet
  * 
- * Stored four-momentum (via the Candidate base class) is uncorrected. Some properties of a jet
- * (especially of a soft one) might be left uninitialised if they are not expected to be used in an
+ * Stores four-momentum (via the Candidate base class) is uncorrected. Some properties of a jet
+ * (especially of a soft one) might be left uninitialized if they are not expected to be used in an
  * analysis. Properties that make sence for simulations only (like flavours) are not expected to be
  * set in case of real data.
  */
@@ -18,29 +18,32 @@ class Jet: public CandidateWithID
 {
 public:
     /// Constructor with no parameters
-    Jet();
-    
-    /// Copy constructor
-    Jet(Jet const &src);
-    
-    /// Assignment operator
-    Jet &operator=(Jet const &src);
+    Jet() noexcept;
     
 public:
     /// Resets the object to a state right after the default initialisation
     virtual void Reset();
     
     /// Sets full jet energy correction factor
-    void SetJECFactor(float jecFactor);
+    void SetCorrFactor(float jecFactor);
     
-    /// Sets relative uncertainty of the full jet energy correction factor
+    /// Sets relative uncertainty of the JEC factor
     void SetJECUncertainty(float jecUncertainty);
+    
+    /// Sets relative uncertainty of the JER smearing factor
+    void SetJERUncertainty(float jecUncertainty);
+    
+    /// Sets the value of the cMVA b-tagging discriminator
+    void SetBTagCMVA(float bTag);
     
     /// Sets the value of the CSV b-tagging discriminator
     void SetBTagCSV(float bTag);
     
     /// Sets mass of the secondary vertex associated with the jet
     void SetSecVertexMass(float mass);
+    
+    /// Sets value of the pile-up discriminator
+    void SetPileUpID(float pileUpMVA);
     
     /// Sets jet area
     void SetArea(float area);
@@ -71,23 +74,38 @@ public:
     /**
      * \brief Returns full jet energy correction factor
      * 
-     * The raw momentum should be rescaled using this factor in order to apply full JEC. The
-     * returned value might be zero if only raw momentum is saved and the correction must be
-     * applied by the user.
+     * The raw momentum should be rescaled using this factor in order to apply full JEC and JER. The
+     * returned value might be zero if only raw momentum is saved and the correction must be applied
+     * by the user.
      */
-    float JECFactor() const;
+    float CorrFactor() const;
     
     /**
-     * \brief Returns relative uncertainty of the jet energy correction factor
+     * \brief Returns relative uncertainty of the JEC factor
      * 
      * Jet four-momentum corresponding to the up/down variation in the JEC systematics can be
-     * obtained as P4() * JECFactor() * (1 +/- JECUncertainty()). If only raw momentum has been
+     * obtained as P4() * CorrFactor() * (1 +/- JECUncertainty()). If only raw momentum has been
      * stored and the correction is to be applied by the user, the method returns zero.
      */
     float JECUncertainty() const;
     
+    /**
+     * \brief Returns relative uncertainty of the JER smearing factor
+     * 
+     * Jet four-momentum corresponding to the up/down variation in the JER systematics can be
+     * obtained as P4() * CorrFactor() * (1 +/- JERUncertainty()). If only raw momentum has been
+     * stored and the correction is to be applied by the user, the method returns zero.
+     */
+    float JERUncertainty() const;
+    
+    /// Returns the value of the cMVA b-tagging discriminator
+    float BTagCMVA() const;
+    
     /// Returns the value of the CSV b-tagging discriminator
     float BTagCSV() const;
+    
+    /// Returns value of the pile-up discriminator
+    float PileUpID() const;
     
     /**
      * \brief Returns mass of the secondary vertex associated with the jet
@@ -133,20 +151,30 @@ private:
      * 
      * Set to zero if only raw momentum is stored.
      */
-    Float_t jecFactor;
+    Float_t corrFactor;
     
     /**
-     * \brief Relative uncertainty of the full jet energy correction factor
+     * \brief Relative uncertainty of JEC factor
      * 
      * Set to zero if only raw momentum is stored.
      */
     Float_t jecUncertainty;
     
-    /// Value of b-tagging discriminator
-    Float_t bTagCSV;
+    /**
+     * \brief Relative uncertainty of JER smearing factor
+     * 
+     * Set to zero if only raw momentum is stored.
+     */
+    Float_t jerUncertainty;
+    
+    /// Values of b-tagging discriminators
+    Float_t bTagCMVA, bTagCSV;
     
     /// Mass of the secondary vertex associated to the jet (if any), GeV/c^2
     Float_t secVertexMass;
+    
+    /// Value of an MVA discriminator against pile-up
+    Float_t pileUpMVA;
     
     /// Jet area
     Float_t area;

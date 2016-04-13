@@ -66,7 +66,13 @@ void PECJetMETReader::BeginRun(Dataset const &)
     inputDataPlugin->LoadTree(treeName);
     TTree *tree = inputDataPlugin->ExposeTree(treeName);
     ROOTLock::Lock();
+    tree->SetBranchStatus("jets.jecUncertainty", false);
+    tree->SetBranchStatus("jets.jerUncertainty", false);
+    tree->SetBranchStatus("jets.bTagCMVA", false);
     tree->SetBranchStatus("jets.secVertexMass", false);
+    tree->SetBranchStatus("jets.pileUpMVA", false);
+    tree->SetBranchStatus("jets.area", false);
+    tree->SetBranchStatus("jets.charge", false);
     tree->SetBranchStatus("jets.pullAngle", false);
     tree->SetBranchAddress("jets", &bfJetPointer);
     tree->SetBranchAddress("METs", &bfMETPointer);
@@ -118,7 +124,7 @@ bool PECJetMETReader::ProcessEvent()
         // Read jet momentum and apply corrections to it
         TLorentzVector p4;
         p4.SetPtEtaPhiM(j.Pt(), j.Eta(), j.Phi(), j.M());
-        p4 *= j.JECFactor();
+        p4 *= j.CorrFactor();
         
         
         // Loose physics selection
@@ -157,8 +163,8 @@ bool PECJetMETReader::ProcessEvent()
         Jet jet(p4);
         
         jet.SetBTag(BTagger::Algorithm::CSV, j.BTagCSV());
-        jet.SetArea(j.Area());
-        jet.SetCharge(j.Charge());
+        // jet.SetArea(j.Area());
+        // jet.SetCharge(j.Charge());
         // jet.SetPullAngle(j.PullAngle());
         
         jet.SetParentID(j.Flavour());
