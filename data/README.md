@@ -15,5 +15,5 @@ This directory contains data files organized into several categories:
 
 ## PileUp
 
- * `Run2015D_SingleMuon_v1.0_finebin.root`, `Run2015D_SingleElectron_v1.0_finebin.root` <br />
+ * `Run2015D_SingleMuon_v2_finebin.root`, `Run2015D_SingleElectron_v2_finebin.root` <br />
    Profiles of pile-up in data collected in Run2015D. They are constructed as described [here](https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJSONFileforData?rev=22#2015_Pileup_JSON_Files), using an effective minimum-bias cross section of 69 mb. The "golden" certification file was used. In case of electrons, runs with wrongly reconstructed online beam spot (listed [here](https://hypernews.cern.ch/HyperNews/CMS/get/physics-validation/2556.html)) are excluded.

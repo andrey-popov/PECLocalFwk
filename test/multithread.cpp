@@ -42,7 +42,7 @@ int main()
     
     // Triggers
     list<TriggerRange> triggerRanges;
-    triggerRanges.emplace_back(0, -1, "IsoMu18", 2244.966, "IsoMu18");
+    triggerRanges.emplace_back(0, -1, "IsoMu18", 2289.901, "IsoMu18");
     
     
     // Common definition of b-tagging that will be used everywhere
