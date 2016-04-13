@@ -1,6 +1,6 @@
 # Check if an installation path of PECFwk is provided
-ifeq ($(PEC_FWK_INSTALL), )
-  $(error Mandatory environment variable PEC_FWK_INSTALL is not set)
+ifeq ($(MENSURA_INSTALL), )
+  $(error Mandatory environment variable MENSURA_INSTALL is not set)
 endif
 
 # Make sure ROOT is available
@@ -15,11 +15,11 @@ endif
 
 
 # Flags to control compilation and linking
-INCLUDE := -I$(PEC_FWK_INSTALL)/include -I$(shell root-config --incdir)
+INCLUDE := -I$(MENSURA_INSTALL)/include -I$(shell root-config --incdir)
 OPFLAGS := -O2
 CFLAGS := -Wall -Wextra -std=c++14 $(INCLUDE) $(OPFLAGS)
 LDFLAGS := $(shell root-config --libs) -lTreePlayer -lHistPainter \
- -L$(PEC_FWK_INSTALL)/lib -lPECFwk -lPECReader -Wl,-rpath=$(PEC_FWK_INSTALL)/lib \
+ -L$(MENSURA_INSTALL)/lib -lmensura -lPECReader -Wl,-rpath=$(MENSURA_INSTALL)/lib \
  -L$(BOOST_ROOT)/lib -lboost_filesystem -Wl,-rpath=$(BOOST_ROOT)/lib
 
 

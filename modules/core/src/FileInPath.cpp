@@ -13,11 +13,11 @@ using namespace std;
 FileInPath::FileInPath()
 {
     // Read the install path from the environment
-    char const *path = getenv("PEC_FWK_INSTALL");
+    char const *path = getenv("MENSURA_INSTALL");
     
     if (not path)
         throw runtime_error("FileInPath::FileInPath: Mandatory environment variable "
-         "PEC_FWK_INSTALL is not defined.");
+         "MENSURA_INSTALL is not defined.");
     
     
     installPath = path;
@@ -54,7 +54,7 @@ string FileInPath::Resolve(string const &prefix, string const &path) const
         canonicalPrefix += '/';
     
     
-    // Try to resolve the path w.r.t. $PEC_FWK_INSTALL/data/
+    // Try to resolve the path w.r.t. $MENSURA_INSTALL/data/
     string tryPath = installPath + "/data/" + canonicalPrefix + path;
     
     if (boost::filesystem::exists(tryPath))

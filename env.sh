@@ -38,7 +38,8 @@ function set_environment
         
         "-p")
         
-        export PEC_FWK_INSTALL=`pwd`
+        export MENSURA_INSTALL=`pwd`
+        export PEC_FWK_INSTALL=`pwd`  # Provided for backward compatibility
         #echo "Framework-specific variables have been set"
         ;;
     esac

@@ -64,8 +64,8 @@ public:
      * with any one). The second parameter is the name of a file with MC distributions over the
      * "true" number of pile-up interactions before any event selection (it might differ from
      * the nominal distribution due to a bug in random-number engine). The both file names are
-     * resolved w.r.t. directory $PEC_FWK_INSTALL/data/PileUp/. The last parameter is a
-     * desired systematical variation as defined in [1].
+     * resolved w.r.t. directory $MENSURA_INSTALL/data/PileUp/. The last parameter is a desired
+     * systematical variation as defined in [1].
      * [1] https://twiki.cern.ch/twiki/bin/view/CMS/PileupSystematicErrors
      */
     PileUpWeight(std::string const &name, std::string const &dataPUFileName,

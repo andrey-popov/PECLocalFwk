@@ -1,5 +1,5 @@
 # Standard definitions
-include $(PEC_FWK_INSTALL)/Makefile.inc
+include $(MENSURA_INSTALL)/Makefile.inc
 
 
 # Paths to source and object files
@@ -45,7 +45,7 @@ $(OBJ_DIR)/%.o: $(SOURCE_DIR)/%.cpp
 
 $(SOURCE_DIR)/$(DICT_CPP_NAME).cpp: $(SOURCE_DIR)/classes.h $(SOURCE_DIR)/classes_def.xml
 	@ cd $(SOURCE_DIR); \
-		rootcling -f $(DICT_CPP_NAME).cpp -s $(LIB_NAME) -I$(PEC_FWK_INSTALL)/include \
+		rootcling -f $(DICT_CPP_NAME).cpp -s $(LIB_NAME) -I$(MENSURA_INSTALL)/include \
 		classes.h classes_def.xml
 	@ touch -r $(SOURCE_DIR)/$(DICT_CPP_NAME).cpp $(SOURCE_DIR)/$(DICT_PCM_NAME)
     #^ In the first command of the recipe, rootcling produces cpp and pcm files. The $(DICT_PATH)

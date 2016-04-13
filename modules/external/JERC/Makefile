@@ -1,5 +1,5 @@
 # Standard definitions
-include $(PEC_FWK_INSTALL)/Makefile.inc
+include $(MENSURA_INSTALL)/Makefile.inc
 
 
 # Paths to source and object files

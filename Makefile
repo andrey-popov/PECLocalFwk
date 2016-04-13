@@ -1,6 +1,6 @@
 # Check if the installation path of PECFwk is provided
-ifeq ($(PEC_FWK_INSTALL), )
-  $(error Mandatory environment variable PEC_FWK_INSTALL is not set)
+ifeq ($(MENSURA_INSTALL), )
+  $(error Mandatory environment variable MENSURA_INSTALL is not set)
 endif
 
 # Make sure ROOT is available
@@ -37,7 +37,7 @@ MODULES := $(MODULES_STATIC) $(MODULES_SHARED)
 
 LIB_DIR := lib
 # Library built from modules that do not produce shared libraries on their own
-MAIN_LIB_NAME := libPECFwk.so
+MAIN_LIB_NAME := libmensura.so
 MAIN_LIB_PATH := $(LIB_DIR)/$(MAIN_LIB_NAME)
 
 
@@ -54,14 +54,15 @@ $(MAIN_LIB_PATH): $(MODULES_STATIC)
 	@ $(CC) -shared -Wl,-soname,$(MAIN_LIB_NAME).4 -o $@.4.0 \
 		-Wl,--whole-archive $(MODULE_STATIC_LIBS) -Wl,--no-whole-archive
 	@ ln -sf $(MAIN_LIB_NAME).4.0 $@.4; ln -sf $(MAIN_LIB_NAME).4 $@
+	@ ln -sf $(MAIN_LIB_NAME) $(LIB_DIR)/libPECFwk.so
 
 link-libs: $(MODULES_SHARED)
 	@ mkdir -p $(LIB_DIR)
 	@ cd $(LIB_DIR); for m in $(MODULES_SHARED); \
-		do for f in `find $(PEC_FWK_INSTALL)/$(MODULES_DIR)/$$m/lib/ -regex ".*/lib.*\.so.*$$"`; \
+		do for f in `find $(MENSURA_INSTALL)/$(MODULES_DIR)/$$m/lib/ -regex ".*/lib.*\.so.*$$"`; \
 			do ln -sf $$f .; done \
 		done
-	@ cd $(LIB_DIR); ln -sf $(wildcard $(PEC_FWK_INSTALL)/$(MODULES_DIR)/PECReader/lib/*.pcm) .
+	@ cd $(LIB_DIR); ln -sf $(wildcard $(MENSURA_INSTALL)/$(MODULES_DIR)/PECReader/lib/*.pcm) .
 
 $(MODULES):
 	@ +make -s -C $(MODULES_DIR)/$@
