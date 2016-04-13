@@ -28,21 +28,21 @@ int main()
 {
     // Input datasets
     list<Dataset> datasets;
-    string const filePrefix("/gridgroup/cms/popov/PECData/2015Bravo/");
+    string const filePrefix("/gridgroup/cms/popov/PECData/2015Charlie/");
     
     datasets.emplace_back(Dataset({Dataset::Process::ttbar}, Dataset::Generator::POWHEG));
     Dataset *d = &datasets.back();
-    d->AddFile(filePrefix + "ttbar-pw_3.0.0_VmF_p1.root", 831.76, 96834559);
-    d->AddFile(filePrefix + "ttbar-pw_3.0.0_VmF_p2.root", 831.76, 96834559);
-    d->AddFile(filePrefix + "ttbar-pw_3.0.0_VmF_p3.root", 831.76, 96834559);
-    d->AddFile(filePrefix + "ttbar-pw_3.0.0_VmF_p4.root", 831.76, 96834559);
-    d->AddFile(filePrefix + "ttbar-pw_3.0.0_VmF_p5.root", 831.76, 96834559);
+    d->AddFile(filePrefix + "ttbar-pw_3.1.0_wdo_p1.root", 831.76, 97994442);
+    d->AddFile(filePrefix + "ttbar-pw_3.1.0_wdo_p2.root", 831.76, 97994442);
+    d->AddFile(filePrefix + "ttbar-pw_3.1.0_wdo_p3.root", 831.76, 97994442);
+    d->AddFile(filePrefix + "ttbar-pw_3.1.0_wdo_p4.root", 831.76, 97994442);
+    d->AddFile(filePrefix + "ttbar-pw_3.1.0_wdo_p5.root", 831.76, 97994442);
     //^ Only a fraction of available files included here
     
     
     // Triggers
     list<TriggerRange> triggerRanges;
-    triggerRanges.emplace_back(0, -1, "IsoMu20", 2244.966, "IsoMu20");
+    triggerRanges.emplace_back(0, -1, "IsoMu18", 2244.966, "IsoMu18");
     
     
     // Common definition of b-tagging that will be used everywhere
@@ -74,7 +74,7 @@ int main()
     manager.RegisterPlugin(new PECInputData);
     manager.RegisterPlugin(BuildPECTriggerFilter(false, triggerRanges));
     manager.RegisterPlugin(new PECLeptonReader);
-    manager.RegisterPlugin(new LeptonFilter("LeptonFilter", Lepton::Flavour::Muon, 22., 2.1));
+    manager.RegisterPlugin(new LeptonFilter("LeptonFilter", Lepton::Flavour::Muon, 20., 2.4));
     
     PECJetMETReader *jetReader = new PECJetMETReader;
     jetReader->SetSelection(30., 2.4);
