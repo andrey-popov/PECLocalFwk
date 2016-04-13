@@ -1,4 +1,4 @@
-#include <PECFwk/core/ReaderPlugin.hpp>
+#include <mensura/core/ReaderPlugin.hpp>
 
 
 ReaderPlugin::ReaderPlugin(std::string const &name):

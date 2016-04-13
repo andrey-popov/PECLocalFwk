@@ -1,4 +1,4 @@
-#include <PECFwk/core/AnalysisPlugin.hpp>
+#include <mensura/core/AnalysisPlugin.hpp>
 
 
 AnalysisPlugin::AnalysisPlugin(std::string const &name):

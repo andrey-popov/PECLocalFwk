@@ -1,8 +1,8 @@
-#include <PECFwk/core/PECReader.hpp>
+#include <mensura/core/PECReader.hpp>
 
-#include <PECFwk/extensions/CalculatePzNu.hpp>
-#include <PECFwk/core/ROOTLock.hpp>
-#include <PECFwk/core/Logger.hpp>
+#include <mensura/extensions/CalculatePzNu.hpp>
+#include <mensura/core/ROOTLock.hpp>
+#include <mensura/core/Logger.hpp>
 
 #include <TVector3.h>
 #include <TObjString.h>

@@ -1,7 +1,7 @@
-#include <PECFwk/extensions/LumiMaskFilter.hpp>
+#include <mensura/extensions/LumiMaskFilter.hpp>
 
-#include <PECFwk/core/EventIDReader.hpp>
-#include <PECFwk/core/Processor.hpp>
+#include <mensura/core/EventIDReader.hpp>
+#include <mensura/core/Processor.hpp>
 
 #include <algorithm>
 #include <iostream>

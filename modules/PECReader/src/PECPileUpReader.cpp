@@ -1,8 +1,8 @@
-#include <PECFwk/PECReader/PECPileUpReader.hpp>
+#include <mensura/PECReader/PECPileUpReader.hpp>
 
-#include <PECFwk/core/Processor.hpp>
-#include <PECFwk/core/ROOTLock.hpp>
-#include <PECFwk/PECReader/PECInputData.hpp>
+#include <mensura/core/Processor.hpp>
+#include <mensura/core/ROOTLock.hpp>
+#include <mensura/PECReader/PECInputData.hpp>
 
 
 PECPileUpReader::PECPileUpReader(std::string const name /*= "PileUp"*/):

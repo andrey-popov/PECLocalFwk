@@ -1,7 +1,7 @@
-#include <PECFwk/core/RunManager.hpp>
+#include <mensura/core/RunManager.hpp>
 
-#include <PECFwk/core/Processor.hpp>
-#include <PECFwk/core/Logger.hpp>
+#include <mensura/core/Processor.hpp>
+#include <mensura/core/Logger.hpp>
 
 #include <thread>
 #include <vector>

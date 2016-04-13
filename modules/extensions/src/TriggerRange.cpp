@@ -1,4 +1,4 @@
-#include <PECFwk/extensions/TriggerRange.hpp>
+#include <mensura/extensions/TriggerRange.hpp>
 
 #include <boost/algorithm/string/predicate.hpp>
 

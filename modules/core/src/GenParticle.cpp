@@ -1,4 +1,4 @@
-#include <PECFwk/core/GenParticle.hpp>
+#include <mensura/core/GenParticle.hpp>
 
 #include <algorithm>
 

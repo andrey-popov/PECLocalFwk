@@ -1,4 +1,4 @@
-#include <PECFwk/extensions/EventCounter.hpp>
+#include <mensura/extensions/EventCounter.hpp>
 
 #include <stdexcept>
 #include <iostream>

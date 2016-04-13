@@ -1,7 +1,7 @@
-#include <PECFwk/extensions/EventIDFilter.hpp>
+#include <mensura/extensions/EventIDFilter.hpp>
 
-#include <PECFwk/core/EventIDReader.hpp>
-#include <PECFwk/core/Processor.hpp>
+#include <mensura/core/EventIDReader.hpp>
+#include <mensura/core/Processor.hpp>
 
 #include <algorithm>
 #include <fstream>

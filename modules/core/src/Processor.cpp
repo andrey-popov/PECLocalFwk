@@ -1,8 +1,8 @@
-#include <PECFwk/core/Processor.hpp>
+#include <mensura/core/Processor.hpp>
 
-#include <PECFwk/core/Logger.hpp>
-#include <PECFwk/core/ROOTLock.hpp>
-#include <PECFwk/core/RunManager.hpp>
+#include <mensura/core/Logger.hpp>
+#include <mensura/core/ROOTLock.hpp>
+#include <mensura/core/RunManager.hpp>
 
 #include <iostream>
 #include <mutex>

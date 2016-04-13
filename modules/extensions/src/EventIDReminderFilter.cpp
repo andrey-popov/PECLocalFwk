@@ -1,7 +1,7 @@
-#include <PECFwk/extensions/EventIDReminderFilter.hpp>
+#include <mensura/extensions/EventIDReminderFilter.hpp>
 
-#include <PECFwk/core/EventIDReader.hpp>
-#include <PECFwk/core/Processor.hpp>
+#include <mensura/core/EventIDReader.hpp>
+#include <mensura/core/Processor.hpp>
 
 
 EventIDReminderFilter::EventIDReminderFilter(std::string const &name,

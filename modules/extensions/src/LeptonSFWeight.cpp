@@ -1,9 +1,9 @@
-#include <PECFwk/extensions/LeptonSFWeight.hpp>
+#include <mensura/extensions/LeptonSFWeight.hpp>
 
-#include <PECFwk/core/FileInPath.hpp>
-#include <PECFwk/core/LeptonReader.hpp>
-#include <PECFwk/core/Processor.hpp>
-#include <PECFwk/core/ROOTLock.hpp>
+#include <mensura/core/FileInPath.hpp>
+#include <mensura/core/LeptonReader.hpp>
+#include <mensura/core/Processor.hpp>
+#include <mensura/core/ROOTLock.hpp>
 
 #include <TFile.h>
 

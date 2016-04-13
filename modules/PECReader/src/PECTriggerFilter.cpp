@@ -1,8 +1,8 @@
-#include <PECFwk/PECReader/PECTriggerFilter.hpp>
+#include <mensura/PECReader/PECTriggerFilter.hpp>
 
-#include <PECFwk/core/Processor.hpp>
-#include <PECFwk/core/ROOTLock.hpp>
-#include <PECFwk/PECReader/PECInputData.hpp>
+#include <mensura/core/Processor.hpp>
+#include <mensura/core/ROOTLock.hpp>
+#include <mensura/PECReader/PECInputData.hpp>
 
 #include <algorithm>
 

@@ -1,9 +1,9 @@
-#include <PECFwk/extensions/JetCorrector.hpp>
+#include <mensura/extensions/JetCorrector.hpp>
 
-#include <PECFwk/core/FileInPath.hpp>
-#include <PECFwk/core/ROOTLock.hpp>
+#include <mensura/core/FileInPath.hpp>
+#include <mensura/core/ROOTLock.hpp>
 
-#include <PECFwk/external/JERC/JetCorrectorParameters.hpp>
+#include <mensura/external/JERC/JetCorrectorParameters.hpp>
 
 #include <stdexcept>
 

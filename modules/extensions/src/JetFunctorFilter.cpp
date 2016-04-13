@@ -1,7 +1,7 @@
-#include <PECFwk/extensions/JetFunctorFilter.hpp>
+#include <mensura/extensions/JetFunctorFilter.hpp>
 
-#include <PECFwk/core/JetMETReader.hpp>
-#include <PECFwk/core/Processor.hpp>
+#include <mensura/core/JetMETReader.hpp>
+#include <mensura/core/Processor.hpp>
 
 #include <sstream>
 #include <stdexcept>

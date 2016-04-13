@@ -1,9 +1,9 @@
-#include <PECFwk/extensions/PileUpWeight.hpp>
+#include <mensura/extensions/PileUpWeight.hpp>
 
-#include <PECFwk/core/FileInPath.hpp>
-#include <PECFwk/core/PileUpReader.hpp>
-#include <PECFwk/core/Processor.hpp>
-#include <PECFwk/core/ROOTLock.hpp>
+#include <mensura/core/FileInPath.hpp>
+#include <mensura/core/PileUpReader.hpp>
+#include <mensura/core/Processor.hpp>
+#include <mensura/core/ROOTLock.hpp>
 
 #include <cstdlib>
 #include <stdexcept>

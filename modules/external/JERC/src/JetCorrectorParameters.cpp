@@ -4,7 +4,7 @@
 //
 // Generic parameters for Jet corrections
 //
-#include <PECFwk/external/JERC/JetCorrectorParameters.hpp>
+#include <mensura/external/JERC/JetCorrectorParameters.hpp>
 #include "Utilities.cpp"
 #include <iostream>
 #include <iomanip>

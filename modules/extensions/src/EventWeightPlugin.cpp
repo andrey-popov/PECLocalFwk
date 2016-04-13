@@ -1,4 +1,4 @@
-#include <PECFwk/extensions/EventWeightPlugin.hpp>
+#include <mensura/extensions/EventWeightPlugin.hpp>
 
 #include <stdexcept>
 #include <sstream>

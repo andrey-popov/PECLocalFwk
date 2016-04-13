@@ -1,6 +1,6 @@
-#include <PECFwk/core/Plugin.hpp>
+#include <mensura/core/Plugin.hpp>
 
-#include <PECFwk/core/Processor.hpp>
+#include <mensura/core/Processor.hpp>
 
 #include <sstream>
 #include <stdexcept>

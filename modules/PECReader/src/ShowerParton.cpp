@@ -1,4 +1,4 @@
-#include <PECFwk/PECReader/ShowerParton.hpp>
+#include <mensura/PECReader/ShowerParton.hpp>
 
 #include <stdexcept>
 

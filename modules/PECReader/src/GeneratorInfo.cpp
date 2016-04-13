@@ -1,4 +1,4 @@
-#include <PECFwk/PECReader/GeneratorInfo.hpp>
+#include <mensura/PECReader/GeneratorInfo.hpp>
 
 #include <algorithm>
 #include <stdexcept>

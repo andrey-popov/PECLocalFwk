@@ -1,7 +1,7 @@
-#include <PECFwk/extensions/JetResolutionFactor.hpp>
+#include <mensura/extensions/JetResolutionFactor.hpp>
 
-#include <PECFwk/core/FileInPath.hpp>
-#include <PECFwk/core/ROOTLock.hpp>
+#include <mensura/core/FileInPath.hpp>
+#include <mensura/core/ROOTLock.hpp>
 
 #include <TFile.h>
 

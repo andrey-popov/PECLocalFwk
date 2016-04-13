@@ -3,9 +3,9 @@
 // Author: Konstantinos Kousouris, Philipp Schieferdecker
 // Email:  kkousour@fnal.gov, philipp.schieferdecker@cern.ch
 
-#include <PECFwk/external/JERC/FactorizedJetCorrector.hpp>
-#include <PECFwk/external/JERC/SimpleJetCorrector.hpp>
-#include <PECFwk/external/JERC/JetCorrectorParameters.hpp>
+#include <mensura/external/JERC/FactorizedJetCorrector.hpp>
+#include <mensura/external/JERC/SimpleJetCorrector.hpp>
+#include <mensura/external/JERC/JetCorrectorParameters.hpp>
 #include "Utilities.cpp"
 #include "Math/PtEtaPhiE4D.h"
 #include "Math/Vector3D.h"

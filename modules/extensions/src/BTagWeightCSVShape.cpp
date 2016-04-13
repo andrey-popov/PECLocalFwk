@@ -1,11 +1,11 @@
-#include <PECFwk/extensions/BTagWeightCSVShape.hpp>
+#include <mensura/extensions/BTagWeightCSVShape.hpp>
 
-#include <PECFwk/core/BTagger.hpp>
-#include <PECFwk/core/FileInPath.hpp>
-#include <PECFwk/core/JetMETReader.hpp>
-#include <PECFwk/core/PhysicsObjects.hpp>
-#include <PECFwk/core/Processor.hpp>
-#include <PECFwk/core/ROOTLock.hpp>
+#include <mensura/core/BTagger.hpp>
+#include <mensura/core/FileInPath.hpp>
+#include <mensura/core/JetMETReader.hpp>
+#include <mensura/core/PhysicsObjects.hpp>
+#include <mensura/core/Processor.hpp>
+#include <mensura/core/ROOTLock.hpp>
 
 #include <TFile.h>
 #include <TH3.h>
