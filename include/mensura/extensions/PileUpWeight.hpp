@@ -17,20 +17,12 @@ class PileUpReader;
  * \brief Plugin that implements reweighting for additional pp interactions ("pile-up")
  * 
  * This plugin performs reweighting on pile-up based on the expected number of pile-up
- * interactions, or "true" simulated pile-up. The idea follows the official recipe [1].
+ * interactions, or the "true" simulated pile-up. The idea follows the official recipe [1].
  * 
- * The input parameters for the algorithm are a file with the target (data) distribution of pile-up
- * (normally this file is created by script pileupCalc.py [2]) and an amount of scaling of the
- * number of pile-up interactions that is used to account for the systematical variation (as
- * described in [3]).
- * 
- * In past there were problems with the random-number engine exploited to admix pile-up to MC,
- * which made the actual pile-up distribution in MC deviate from the nominal one. This plugin is
- * capable of handling such cases, allowing user to supply a ROOT file with actual pile-up MC
- * histograms, which are then used instead of nominal one.
- * 
- * The nominal MC pile-up distribution used by default is Startup2015 for 25 ns (adopted in
- * RunIISpring15DR74-Asympt25ns).
+ * Inputs needed for the reweighting are the target (data) distribution of pile-up (normally it is
+ * constructed with the help of script pileupCalc.py [2]), the pile-up profile used in simulation,
+ * and the desired systematic variation as described in [3]. It is possible to provide individual
+ * simulated profile for every process, although usually a common one would suffice.
  * 
  * This plugin exploits a PileUpReader with the default name "PileUp".
  * 
@@ -56,32 +48,26 @@ public:
     
 public:
     /**
-     * \brief Constructor
+     * \brief Creates a plugin with the given name
      * 
-     * The first argument is the name of a file containing "true" data distribution over number
-     * of pile-up interactions. The file must contain a histogram named "pileup" that describes
-     * the distribution. No assumption about binning of the histogram is made (the code works
-     * with any one). The second parameter is the name of a file with MC distributions over the
-     * "true" number of pile-up interactions before any event selection (it might differ from
-     * the nominal distribution due to a bug in random-number engine). The both file names are
-     * resolved w.r.t. directory $MENSURA_INSTALL/data/PileUp/. The last parameter is a desired
-     * systematical variation as defined in [1].
+     * Input arguments specify names of files containing distributions of "true" number of pile-up
+     * interactions in data and simulation. By default, provided file names are resolved with
+     * respect to directory data/PileUp/. The data file must contain a histogram named "pileup"
+     * that describes the distribution. The file with profiles in simulation may contain individual
+     * distributions for some or all processes (named according to labels returned by method
+     * Dataset::GetSourceDatasetID), and, in addition to them, it must include the default
+     * distribution named "nominal". Input histograms with arbitrary normalization and binning
+     * (including variable one) are supported.
+     * 
+     * The last argument sets desired systematical variation as defined in [1].
      * [1] https://twiki.cern.ch/twiki/bin/view/CMS/PileupSystematicErrors
      */
     PileUpWeight(std::string const &name, std::string const &dataPUFileName,
       std::string const &mcPUFileName, double systError);
     
-    /**
-     * \brief Constuctor
-     * 
-     * See documentation for PileUpWeight(string const &, string const &, double). The only
-     * difference is that this version does not require a file with MC-truth pile-up
-     * distributions, and reweighting is performed with the nominal MC distribution.
-     */
-    PileUpWeight(std::string const &name, std::string const &dataPUFileName, double systError);
-    
     /// A short-cut for the above version with a default name "PileUpWeight"
-    PileUpWeight(std::string const &dataPUFileName, double systError);
+    PileUpWeight(std::string const &dataPUFileName, std::string const &mcPUFileName,
+      double systError);
     
     /// Default copy constructor
     PileUpWeight(PileUpWeight const &) = default;
