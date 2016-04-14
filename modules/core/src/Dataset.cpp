@@ -45,6 +45,7 @@ string Dataset::File::GetDirName() const noexcept
 
 
 Dataset::Dataset() noexcept:
+    sourceDatasetID(""),
     processCodes({Process::Undefined}),
     generator(Generator::Undefined),
     showerGenerator(ShowerGenerator::Undefined)
@@ -54,6 +55,7 @@ Dataset::Dataset() noexcept:
 Dataset::Dataset(list<Dataset::Process> &&processCodes_,
  Dataset::Generator generator_ /*= Dataset::Generator::Undefined*/,
  Dataset::ShowerGenerator showerGenerator_ /*= Dataset::ShowerGenerator::Undefined*/) noexcept:
+    sourceDatasetID(""),
     processCodes(SortProcessCodes(move(processCodes_))),
     generator(generator_),
     showerGenerator(showerGenerator_)
@@ -65,6 +67,7 @@ Dataset::Dataset(list<Dataset::Process> &&processCodes_,
 Dataset::Dataset(list<Dataset::Process> const &processCodes_,
  Dataset::Generator generator_ /*= Dataset::Generator::Undefined*/,
  Dataset::ShowerGenerator showerGenerator_ /*= Dataset::ShowerGenerator::Undefined*/) noexcept:
+    sourceDatasetID(""),
     processCodes(SortProcessCodes(processCodes_)),
     generator(generator_),
     showerGenerator(showerGenerator_)
@@ -76,6 +79,7 @@ Dataset::Dataset(list<Dataset::Process> const &processCodes_,
 Dataset::Dataset(Dataset::Process process,
  Dataset::Generator generator_ /*= Dataset::Generator::Undefined*/,
  Dataset::ShowerGenerator showerGenerator_ /*= Dataset::ShowerGenerator::Undefined*/) noexcept:
+    sourceDatasetID(""),
     processCodes({process}),
     generator(generator_),
     showerGenerator(showerGenerator_)
@@ -84,29 +88,33 @@ Dataset::Dataset(Dataset::Process process,
 }
 
 
-Dataset::Dataset(Dataset &&src) noexcept:
-    files(move(src.files)),
-    processCodes(move(src.processCodes)),
-    generator(src.generator), showerGenerator(src.showerGenerator),
-    flags(move(src.flags))
-{}
-
-
 void Dataset::AddFile(string const &name, double xSec, unsigned long nEvents) noexcept
 {
     files.emplace_back(name, xSec, nEvents);
+    
+    if (sourceDatasetID == "")
+        SetDefaultSourceDatasetID();
 }
 
 
 void Dataset::AddFile(Dataset::File const &file) noexcept
 {
     files.push_back(file);
+    
+    if (sourceDatasetID == "")
+        SetDefaultSourceDatasetID();
 }
 
 
 list<Dataset::File> const &Dataset::GetFiles() const
 {
     return files;
+}
+
+
+std::string const &Dataset::GetSourceDatasetID() const
+{
+    return sourceDatasetID;
 }
 
 
@@ -168,6 +176,8 @@ Dataset Dataset::CopyParameters() const
 {
     Dataset emptyDataset(processCodes, generator, showerGenerator);
     emptyDataset.flags = flags;
+    // The sourceDatasetID is intentionally not copied. It will be set when files are added to
+    //the newly created dataset
     
     return emptyDataset;
 }
@@ -192,6 +202,34 @@ void Dataset::UnsetFlag(string const &flagName)
 bool Dataset::TestFlag(string const &flagName) const
 {
     return (flags.count(flagName) > 0);
+}
+
+
+void Dataset::SetDefaultSourceDatasetID()
+{
+    if (files.size() == 0)
+        throw std::runtime_error("Dataset::SetDefaultSourceDatasetID: Cannot be executed when "
+          "the list of files is empty.");
+    
+    
+    // Set the ID label to the short name of the last input file and strip the part number postfix
+    //from it if present
+    sourceDatasetID = files.back().GetBaseName();
+    unsigned lastChar = sourceDatasetID.size() - 1;
+    
+    if (sourceDatasetID[lastChar] >= '0' and sourceDatasetID[lastChar] <= '9')
+    {
+        --lastChar;
+        
+        while (sourceDatasetID[lastChar] >= '0' and sourceDatasetID[lastChar] <= '9')
+         --lastChar;
+        
+        if (sourceDatasetID[lastChar] == 'p' and sourceDatasetID[lastChar - 1] == '_')
+        {
+            // There is a postfix with the part number. Update the ID label stripping the postfix
+            sourceDatasetID = sourceDatasetID.substr(0, lastChar - 1);
+        }
+    }
 }
 
 

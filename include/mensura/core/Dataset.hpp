@@ -19,11 +19,16 @@
  * corresponding cross sections and numbers of events in the parent datasets processed in Grid. It
  * also attaches one or more codes to specify physics process represendted by the dataset. If
  * several process codes are provided, they describe the process at different levels of
- * detalisation, e.g. ttbar and semileptonic ttbar; they are never scrict synonyms. In addition,
- * information about generators of the hard process and the showering can be specified.
+ * detalisation, e.g. ttbar and semileptonic ttbar; they are never strict synonyms. In addition,
+ * information about generators of the hard process and the showering can be provided.
  * 
- * Moreover, the user can define arbitrary boolean flags binded with an instance of the class. Their
- * usage is not governed by the framework.
+ * For each dataset a label is attached, which identifies uniquely the source dataset from which
+ * the files were produced (usually, the dataset processed in Grid). Currently this label is set
+ * automatically, and it coinsides with the base name of the first file in the dataset, with the
+ * part number postfix stripped off.
+ * 
+ * The user can also define arbitrary boolean flags binded with an instance of the class. Their
+ * usage is not restricted by the framework.
  */
 class Dataset
 {
@@ -171,8 +176,8 @@ public:
     /// Default copy constructor
     Dataset(Dataset const &) = default;
     
-    /// Move constructor
-    Dataset(Dataset &&src) noexcept;
+    /// Default move constructor
+    Dataset(Dataset &&) noexcept = default;
     
     /// Default assignment operator
     Dataset &operator=(Dataset const &) = default;
@@ -192,6 +197,9 @@ public:
      * \brief Returns the list of the files
      */
     std::list<File> const &GetFiles() const;
+    
+    /// Returns label that uniquely identifies the source dataset
+    std::string const &GetSourceDatasetID() const;
     
     /**
      * \brief Returns the hard-process generator
@@ -226,8 +234,10 @@ public:
     bool IsMC() const;
     
     /**
-     * \brief Creates a new instance of Dataset with exactly the same parameters but with an
-     * empty file list
+     * \brief Creates a clone of this dataset with an empty file list
+     * 
+     * The ID label of the source dataset is not copied as it will be set automatically when files
+     * are added to the newly created dataset.
      */
     Dataset CopyParameters() const;
     
@@ -253,6 +263,9 @@ public:
     bool TestFlag(std::string const &flagName) const;
     
 private:
+    /// Sets source dataset ID based on the name of the last added file
+    void SetDefaultSourceDatasetID();
+    
     /// Orders process codes from most general to most specialised
     static std::list<Process> SortProcessCodes(std::list<Process> &&processCodes);
     
@@ -274,6 +287,9 @@ private:
 private:
     /// Source files
     std::list<File> files;
+    
+    /// A label that uniquely identifies the source dataset
+    std::string sourceDatasetID;
     
     /**
      * \brief Description of the physical process
