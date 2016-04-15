@@ -1,6 +1,7 @@
 #include <mensura/core/PhysicsObjects.hpp>
 
 #include <limits>
+#include <sstream>
 #include <stdexcept>
 
 
@@ -32,6 +33,18 @@ void Candidate::SetPtEtaPhiM(double pt, double eta, double phi, double mass) noe
 void Candidate::SetPxPyPzE(double px, double py, double pz, double E) noexcept
 {
     p4.SetPxPyPzE(px, py, pz, E);
+}
+
+
+void Candidate::SetUserFloat(std::string const &label, double value)
+{
+    userFloats[label] = value;
+}
+
+
+void Candidate::SetUserInt(std::string const &label, long value)
+{
+    userInts[label] = value;
 }
 
 
@@ -68,6 +81,38 @@ double Candidate::M() const noexcept
 double Candidate::E() const noexcept
 {
     return p4.E();
+}
+
+
+double Candidate::UserFloat(std::string const &label) const
+{
+    auto const res = userFloats.find(label);
+    
+    if (res == userFloats.end())
+    {
+        std::ostringstream ost;
+        ost << "Candidate::UserFloat: Real-valued property with label \"" << label <<
+          "\" is not defined.";
+        throw std::out_of_range(ost.str());
+    }
+    else
+        return res->second;
+}
+
+
+long Candidate::UserInt(std::string const &label) const
+{
+    auto const res = userInts.find(label);
+    
+    if (res == userInts.end())
+    {
+        std::ostringstream ost;
+        ost << "Candidate::UserInt: Integer-valued property with label \"" << label <<
+          "\" is not defined.";
+        throw std::out_of_range(ost.str());
+    }
+    else
+        return res->second;
 }
 
 

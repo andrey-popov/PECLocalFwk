@@ -11,6 +11,7 @@
 #include <TLorentzVector.h>
 
 #include <map>
+#include <unordered_map>
 
 
 // Forward declarations
@@ -19,7 +20,10 @@ class GenJet;
 
 /**
  * \class Candidate
- * \brief Represents a general object with a 4-momentum
+ * \brief Represents a general object with a four-momentum
+ * 
+ * An object of this class can also contain an arbitrary number of real- and integer-valued
+ * properties defined by user.
  */
 class Candidate
 {
@@ -31,19 +35,25 @@ public:
     Candidate(TLorentzVector const &p4_) noexcept;
 
 public:
-    /// Sets the 4-momentum
+    /// Sets four-momentum
     void SetP4(TLorentzVector const &p4_) noexcept;
     
-    /// Sets the 4-momentum
+    /// Sets four-momentum
     void SetPtEtaPhiM(double pt, double eta, double phi, double mass) noexcept;
     
-    /// Sets the 4-momentum
+    /// Sets four-momentum
     void SetPxPyPzE(double px, double py, double pz, double E) noexcept;
     
-    /// The 4-momentum
+    /// Sets or changes value of a user-defined real-valued property
+    void SetUserFloat(std::string const &label, double value);
+    
+    /// Sets or changes value of a user-defined integer-valued property
+    void SetUserInt(std::string const &label, long value);
+    
+    /// Four-momentum
     TLorentzVector const &P4() const noexcept;
     
-    /// Transverse momentum
+    /// Transverse momentum, GeV/c
     double Pt() const noexcept;
     
     /// Pseudorapidity
@@ -52,17 +62,38 @@ public:
     /// Azimuthal angle
     double Phi() const noexcept;
     
-    /// Mass
+    /// Mass, GeV/c^2
     double M() const noexcept;
     
-    /// Energy
+    /// Energy, GeV
     double E() const noexcept;
+    
+    /**
+     * \brief Returns value of the user-defined property with the given label
+     * 
+     * An exception of thrown if no property with the given label is defined.
+     */
+    double UserFloat(std::string const &label) const;
+    
+    /**
+     * \brief Returns value of the user-defined property with the given label
+     * 
+     * An exception of thrown if no property with the given label is defined.
+     */
+    long UserInt(std::string const &label) const;
     
     /// Ordering operator
     bool operator<(Candidate const &rhs) const noexcept;
 
 private:
-    TLorentzVector p4;  ///< The 4-momentum
+    /// Four-momentum
+    TLorentzVector p4;
+    
+    /// Map implementing user-defined real-valued properties
+    std::unordered_map<std::string, double> userFloats;
+    
+    /// Map implementing user-defined integer-valued properties
+    std::unordered_map<std::string, long> userInts;
 };
 
 
