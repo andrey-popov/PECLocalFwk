@@ -4,8 +4,9 @@
 
 #include <mensura/core/PhysicsObjects.hpp>
 
-#include <TH2D.h>
+#include <TH2.h>
 
+#include <functional>
 #include <list>
 #include <memory>
 
@@ -17,25 +18,53 @@ class LeptonReader;
  * \class LeptonSFWeight
  * \brief A plugin to reweight events to account for lepton scale factors
  * 
- * The scale factors are provided as one or more 2D histograms, which encode dependence on lepton
- * transverse momentum and signed (!) pseudorapidity. If several histograms are provided, scale
- * factors read from each of them are multiplied together. The user specifies which lepton flavour
- * is considered. If an event contains several leptons of that flavour (accessed through a
- * LeptonReader with a default name "Leptons"), the final event weight is a multiplication of scale
- * factors for all of the leptons.
+ * Only leptons of one selected flavour are considered in the computation. If more than one lepton
+ * of that flavour are found, their scale factors are multiplied together.
  * 
- * Currently no systematic uncertainty is evaluated.
+ * Scale factors are stored in a ROOT file in the form of one or more two-dimensional histograms.
+ * Meaning of x and y parameters of each histogram can be specified with a TObjString written in
+ * the file. It must have the same name as the histogram, with a postfix "__params" added. The
+ * parameter string must be composed of labels defining x and y parameters, separated by a
+ * semicolon, for instance "pt;absEta". Following labels are supported: "pt", "eta", "etaSC",
+ * "absEta", "absEtaSC". It no parameter string is found, transverse momentum and (signed)
+ * pseudorapidity of the lepton are taken parameters of the histogram.
+ * 
+ * Currently systematic uncertainty is not evaluated.
  */
 class LeptonSFWeight: public EventWeightPlugin
 {
+private:
+    /**
+     * \brief An auxiliar wrapper around a 2D histogram containing a scale factor
+     * 
+     * Meaning of x and y parameters of the histogram is not predefined. Instead, values of this
+     * parameters are computed using functions that are set at run time.
+     */
+    struct HistAdjustableParams
+    {
+        HistAdjustableParams() = default;
+        HistAdjustableParams(HistAdjustableParams const &) = default;
+        HistAdjustableParams(HistAdjustableParams &&) = default;
+        
+        /**
+         * \brief Histogram with a scale factor
+         * 
+         * The histogram is shared among all clones of this plugin.
+         */
+        std::shared_ptr<TH2 const> hist;
+        
+        /// Functions to evaluate x and y parameters of the histogram
+        std::function<double (Lepton const &)> x, y;
+    };
+    
 public:
     /**
-     * \brief Constructor
+     * \brief Creates a reweighting plugin targeting leptons of given flavour
      * 
-     * The arguments are: name of the plugin, lepton flavour to be considered, name of the ROOT
-     * file containing 2D histograms with scale factors, and names of the histograms. The file name
-     * is resolved with the help of FileInPath, with a postfix "LeptonSF/". If one of the histogram
-     * is not found, the constructor throws an exception.
+     * Name of the ROOT file with scale factors is resolved using FileInPath with respect to
+     * directory data/LeptonSF/. When multiple histograms are specified, corresponding scale
+     * factors are multiplied together. If some of the histograms are not found, an exception is
+     * thrown.
      */
     LeptonSFWeight(std::string const &name, Lepton::Flavour targetFlavour,
       std::string const &srcFileName, std::list<std::string> const &histogramNames);
@@ -93,10 +122,6 @@ private:
     /// Flavour of leptons, to which the scale factors should be applied
     Lepton::Flavour targetFlavour;
     
-    /**
-     * \brief Histograms with different components of scale factors
-     * 
-     * They are shared among all copies of this.
-     */
-    std::vector<std::shared_ptr<TH2D const>> sfComponents;
+    /// Wrappers around histograms containing scale factors
+    std::vector<HistAdjustableParams> sfComponents;
 };

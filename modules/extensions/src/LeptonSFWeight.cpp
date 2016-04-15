@@ -6,9 +6,32 @@
 #include <mensura/core/ROOTLock.hpp>
 
 #include <TFile.h>
+#include <TObjString.h>
 
+#include <boost/algorithm/string.hpp>
+
+#include <cmath>
 #include <sstream>
 #include <stdexcept>
+
+
+// An auxiliary function to construct functions to evaluate lepton parameters based on their
+//names
+std::function<double (Lepton const &)> BuildParamExpression(std::string paramName)
+{
+    if (paramName == "pt")
+        return [](Lepton const &l){return l.Pt();};
+    else if (paramName == "eta")
+        return [](Lepton const &l){return l.Eta();};
+    else if (paramName == "etaSC")
+        return [](Lepton const &l){return l.UserFloat("etaSC");};
+    else if (paramName == "absEta")
+        return [](Lepton const &l){return std::abs(l.Eta());};
+    else if (paramName == "absEtaSC")
+        return [](Lepton const &l){return std::abs(l.UserFloat("etaSC"));};
+    else
+        throw std::invalid_argument(paramName);
+}
 
 
 LeptonSFWeight::LeptonSFWeight(std::string const &name,
@@ -69,19 +92,71 @@ void LeptonSFWeight::LoadScaleFactors(std::string const &srcFileName,
     
     for (std::string const &histName: histogramNames)
     {
-        TH2D *hist = dynamic_cast<TH2D *>(srcFile->Get(histName.c_str()));
+        HistAdjustableParams sfObject;
+        
+        // Read the histogram with scale factors
+        TH2 *hist = dynamic_cast<TH2 *>(srcFile->Get(histName.c_str()));
         
         if (not hist)
         {
             std::ostringstream message;
-            message << "LeptonSFWeight::LeptonSFWeight: Cannot find histogram \"" <<
+            message << "LeptonSFWeight::LoadScaleFactors: Cannot find histogram \"" <<
               histName << "\" in file \"" << srcFilePath << "\".";
             
             throw std::runtime_error(message.str());
         }
         
         hist->SetDirectory(nullptr);
-        sfComponents.emplace_back(hist);
+        sfObject.hist.reset(hist);
+        
+        
+        // Set up parameters of the histogram
+        TObjString *paramNamesRawStr =
+          dynamic_cast<TObjString *>(srcFile->Get((histName + "__params").c_str()));
+        
+        if (not paramNamesRawStr)
+        {
+            // No string describing parameters of the histogram is provided. Use default ones
+            sfObject.x = [](Lepton const &l){return l.Pt();};
+            sfObject.y = [](Lepton const &l){return l.Eta();};
+        }
+        else
+        {
+            // Parse the string with parameter names
+            std::string const paramNamesRaw(paramNamesRawStr->GetString().Data());
+            std::vector<std::string> paramNames;
+            boost::split(paramNames, paramNamesRaw, boost::is_any_of(";"));
+            
+            if (paramNames.size() != 2)
+            {
+                std::ostringstream message;
+                message << "LeptonSFWeight::LoadScaleFactors: Parameter string \"" <<
+                  histName << "__params\" in file \"" << srcFilePath << "\" has value \"" <<
+                  paramNamesRaw << "\" and defines " << paramNames.size() <<
+                  " parameters, while it must define exactly 2.";
+                throw std::runtime_error(message.str());
+            }
+            
+            
+            // Set expressions to evaluate inputs for the histogram
+            try
+            {
+                sfObject.x = BuildParamExpression(paramNames[0]);
+                sfObject.y = BuildParamExpression(paramNames[1]);
+            }
+            catch (std::invalid_argument const &excp)
+            {
+                std::ostringstream message;
+                message << "LeptonSFWeight::LoadScaleFactors: Unrecognized parameter \"" <<
+                  excp.what() << "\" found in parameter string \"" << histName <<
+                  "__params\" in file \"" << srcFilePath <<
+                  "\". The value of the parameter string is \"" << paramNamesRaw << "\".";
+                throw std::runtime_error(message.str());
+            }
+        }
+        
+        
+        sfComponents.emplace_back(std::move(sfObject));
     }
     
     srcFile.reset();
@@ -106,10 +181,10 @@ bool LeptonSFWeight::ProcessEvent()
             continue;
         
         // Loop over components of the scale factor
-        for (auto const &hist: sfComponents)
+        for (auto const &sfObject: sfComponents)
         {
-            int const bin = hist->FindFixBin(lepton.Pt(), lepton.Eta());
-            scaleFactor *= hist->GetBinContent(bin);
+            int const bin = sfObject.hist->FindFixBin(sfObject.x(lepton), sfObject.y(lepton));
+            scaleFactor *= sfObject.hist->GetBinContent(bin);
         }
     }
     
