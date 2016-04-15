@@ -5,6 +5,7 @@
 #include <mensura/PECReader/PECInputData.hpp>
 
 #include <algorithm>
+#include <cmath>
 
 
 PECLeptonReader::PECLeptonReader(std::string const name /*= "Leptons"*/):
@@ -43,7 +44,6 @@ void PECLeptonReader::BeginRun(Dataset const &)
     ROOTLock::Lock();
     TTree *t = inputDataPlugin->ExposeTree(electronTreeName);
     t->SetBranchStatus("electrons.dB", false);
-    t->SetBranchStatus("electrons.etaSC", false);
     t->SetBranchStatus("electrons.mvaId*", false);
     t->SetBranchAddress("electrons", &bfElectronPointer);
     
@@ -84,12 +84,16 @@ bool PECLeptonReader::ProcessEvent()
         Lepton lepton(Lepton::Flavour::Electron, p4);
         lepton.SetRelIso(l.RelIso());
         lepton.SetCharge(l.Charge());
+        lepton.SetUserFloat("etaSC", l.EtaSC());
         
         looseLeptons.push_back(lepton);
         
         
         // Further selection for a tight electron
-        if (not l.BooleanID(3) /* "tight" cut-based ID */ or not l.TestBit(0) /* EB-EE gap */)
+        double const absEtaSC = std::abs(l.EtaSC());
+        
+        if (not l.BooleanID(3) /* "tight" cut-based ID */ or
+          (absEtaSC > 1.4442 and absEtaSC < 1.5660) /* EB-EE gap */)
             continue;
         
         leptons.push_back(lepton);
