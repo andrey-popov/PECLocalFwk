@@ -13,10 +13,10 @@ int main()
 {
     BTagger const bTagger(BTagger::Algorithm::CSV, BTagger::WorkingPoint::Medium);
     
-    BTagSFService bTagSFService(bTagger, "BTagSF_74X_CSVv2.csv");
+    BTagSFService bTagSFService(bTagger, "BTagSF_76X_CSVv2.csv");
     bTagSFService.SetMeasurement(BTagSFService::Flavour::Bottom, "mujets");
     bTagSFService.SetMeasurement(BTagSFService::Flavour::Charm, "mujets");
-    bTagSFService.SetMeasurement(BTagSFService::Flavour::Light, "comb");
+    bTagSFService.SetMeasurement(BTagSFService::Flavour::Light, "incl");
     
     
     cout << fixed;
