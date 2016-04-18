@@ -18,9 +18,11 @@ PECJetMETReader::PECJetMETReader(std::string name /*= "JetMET"*/):
     treeName("pecJetMET/JetMET"),
     bfJetPointer(&bfJets), bfMETPointer(&bfMETs),
     minPt(0.), maxAbsEta(std::numeric_limits<double>::infinity()),
-    leptonPluginName("Leptons"), leptonPlugin(nullptr), leptonDR2(0.3 * 0.3),
+    leptonPluginName("Leptons"), leptonPlugin(nullptr),
     genJetPluginName(""), genJetPlugin(nullptr)
-{}
+{
+    leptonDR2 = std::pow(GetJetRadius(), 2);
+}
 
 
 PECJetMETReader::PECJetMETReader(PECJetMETReader const &src) noexcept:
@@ -40,11 +42,17 @@ PECJetMETReader::~PECJetMETReader() noexcept
 {}
 
 
-void PECJetMETReader::ConfigureLeptonCleaning(std::string const leptonPluginName_ /*= "Leptons"*/,
-  double dR /*= 0.3*/)
+void PECJetMETReader::ConfigureLeptonCleaning(std::string const leptonPluginName_, double dR)
 {
     leptonPluginName = leptonPluginName_;
     leptonDR2 = dR * dR;
+}
+
+
+void PECJetMETReader::ConfigureLeptonCleaning(std::string const leptonPluginName_ /*= "Leptons"*/)
+{
+    leptonPluginName = leptonPluginName_;
+    leptonDR2 = std::pow(GetJetRadius(), 2);
 }
 
 

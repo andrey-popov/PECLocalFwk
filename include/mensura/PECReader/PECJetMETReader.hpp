@@ -58,10 +58,13 @@ public:
      * the (eta, phi) metric. Each jets is checked against all tight leptons produced by the
      * LeptonReader, and if the separation from a lepton is less than dR, the jet is dropped.
      * 
-     * The cleaning is enabled by default, with parameters specified in the prototype. It can be
-     * disabled by providing an empty name ("") for the LeptonReader.
+     * The cleaning is enabled by default, with the lepton reader called "Leptons" and dR equal to
+     * the jet radius. It can be disabled by providing an empty name ("") for the lepton reader.
      */
-    void ConfigureLeptonCleaning(std::string const leptonPluginName = "Leptons", double dR = 0.3);
+    void ConfigureLeptonCleaning(std::string const leptonPluginName, double dR);
+    
+    /// A short-cut for the above method that uses jet radius as the minimal allowed separation
+    void ConfigureLeptonCleaning(std::string const leptonPluginName = "Leptons");
     
     /**
      * \brief Sets up reading of a tree containing jets and MET
