@@ -55,7 +55,7 @@ int main()
     
     
     // Register services
-    manager.RegisterService(new TFileService("output"));
+    manager.RegisterService(new TFileService("output/%"));
     
     manager.RegisterService(new BTagWPService);
     
@@ -92,7 +92,7 @@ int main()
     
     
     // Finally, the plugin to calculate some observables
-    manager.RegisterPlugin(new BasicKinematicsPlugin("basicTuples"));
+    manager.RegisterPlugin(new BasicKinematicsPlugin);
     
     
     // Process the datasets
