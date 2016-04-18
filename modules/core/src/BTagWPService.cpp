@@ -8,13 +8,13 @@ BTagWPService::BTagWPService(std::string name /*= "BTagWPService"*/):
     Service(name)
 {
     // Set thresholds corresponding to official working points [1]
-    //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation74X?rev=12
-    SetThreshold({BTagger::Algorithm::CSV, BTagger::WorkingPoint::Loose}, 0.605);
-    SetThreshold({BTagger::Algorithm::CSV, BTagger::WorkingPoint::Medium}, 0.890);
-    SetThreshold({BTagger::Algorithm::CSV, BTagger::WorkingPoint::Tight}, 0.970);
-    SetThreshold({BTagger::Algorithm::JP, BTagger::WorkingPoint::Loose}, 0.275);
-    SetThreshold({BTagger::Algorithm::JP, BTagger::WorkingPoint::Medium}, 0.545);
-    SetThreshold({BTagger::Algorithm::JP, BTagger::WorkingPoint::Tight}, 0.790);
+    //[1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation76X?rev=24#Supported_Algorithms_and_Operati
+    SetThreshold({BTagger::Algorithm::CSV, BTagger::WorkingPoint::Loose}, 0.460);
+    SetThreshold({BTagger::Algorithm::CSV, BTagger::WorkingPoint::Medium}, 0.800);
+    SetThreshold({BTagger::Algorithm::CSV, BTagger::WorkingPoint::Tight}, 0.935);
+    SetThreshold({BTagger::Algorithm::CMVA, BTagger::WorkingPoint::Loose}, -0.715);
+    SetThreshold({BTagger::Algorithm::CMVA, BTagger::WorkingPoint::Medium}, 0.185);
+    SetThreshold({BTagger::Algorithm::CMVA, BTagger::WorkingPoint::Tight}, 0.875);
 }
 
 
