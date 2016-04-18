@@ -123,6 +123,11 @@ bool PECTriggerFilterData::ProcessEvent()
 
 
 
+PECTriggerFilterMC::TriggerWithBuffer::TriggerWithBuffer(TriggerRange const *trigger_) noexcept:
+    trigger(trigger_)
+{}
+
+
 // PECTriggerFilterMC(std::string const &name, C const &ranges);
 // (Defined in the header)
 
@@ -143,68 +148,52 @@ void PECTriggerFilterMC::BeginRun(Dataset const &dataset)
     PECTriggerFilter::BeginRun(dataset);
     
     
-    // Create buffers into which the trigger decision will be read. They are allocated in a single
-    //block. The number of buffers cannot exceed ranges.size(), but it might be smaller if some
-    //MC triggers are repeated in several TriggerRange objects. For the sake of simplicity and
-    //performance, no attempt to count distinctive triggers is made, and an array of size
-    //ranges.size() is allocated.
-    buffer = new Bool_t[ranges.size()];
+    // Create buffers into which trigger decisions will be read. After the map is filled, it is not
+    //modified, and thus it is possible to operate with pointers to its values
+    buffers.clear();
     
-    
-    // Set statuses and addresses of relevant branches of the trigger tree. Take into account that
-    //the same trigger might be specified in several trigger ranges
-    ROOTLock::Lock();
-    
-    triggerTree->SetBranchStatus("*", false);
-    unsigned curBufferIndex = 0;
-    
-    for (unsigned i = 0; i < ranges.size(); ++i)
+    for (auto const &r: ranges)
     {
-        std::string const &curTriggerName = ranges.at(i).first->GetMCTriggerPattern();
+        for (auto const &triggerPattern: r.trigger->GetMCTriggers())
+            buffers[triggerPattern];
+            //^ Note that same trigger pattern can be included in more than one range
+    }
+    
+    
+    // Set statuses and addresses of relevant branches of the trigger tree
+    ROOTLock::Lock();
+    triggerTree->SetBranchStatus("*", false);
+    
+    for (auto &b: buffers)
+    {
+        // Get the corresponding branch of the tree and make sure it exists
+        TBranch *branch = triggerTree->GetBranch((b.first + "__accept").c_str());
         
-        
-        // Try to find name of the current trigger in previous ranges
-        unsigned iPrev = 0;
-        
-        for (; iPrev < i; ++iPrev)
-            if (ranges.at(iPrev).first->GetMCTriggerPattern() == curTriggerName)
-                break;
-        
-        
-        if (iPrev == i)
-        //^ This means that the current trigger has not been encountered before
+        if (not branch)
         {
-            // Get the corresponding branch of the tree
-            TBranch *branch = triggerTree->GetBranch((curTriggerName + "__accept").c_str());
-            
-            if (not branch)
-            {
-                ROOTLock::Unlock();
-                throw std::runtime_error("PECTriggerFilterMC::BeginRun: State of the trigger "s +
-                 "\"HLT_" + curTriggerName + "_v*\" is not stored in the source tree.");
-            }
-            
-            
-            // Set the status and address of the branch
-            branch->SetStatus(true);
-            branch->SetAddress(buffer + curBufferIndex);
-            
-            // Store the address also in ranges
-            ranges.at(i).second = buffer + curBufferIndex;
-            
-            
-            // Increment the buffer counter
-            ++curBufferIndex;
+            ROOTLock::Unlock();
+            throw std::runtime_error("PECTriggerFilterMC::BeginRun: State of the trigger "s +
+             "\"HLT_" + b.first + "_v*\" is not stored in the source tree.");
         }
-        else
-        //^ The trigger has already been encountered, the tree had already been adjusted
-        {
-            // Only need to set the pointer to buffer in ranges
-            ranges.at(i).second = ranges.at(iPrev).second;
-        }
+        
+        
+        // Set the status and address of the branch
+        branch->SetStatus(true);
+        branch->SetAddress(&b.second);
     }
     
     ROOTLock::Unlock();
+    
+    
+    // In each TriggerRange wrapper, save pointers to associated buffers. This is needed to be
+    //able to evaluate whether at least one trigger in a given range has accepted an event
+    for (auto &r: ranges)
+    {
+        r.buffers.clear();
+        
+        for (auto const &triggerPattern: r.trigger->GetMCTriggers())
+            r.buffers.emplace_back(&buffers[triggerPattern]);
+    }
 }
 
 
@@ -219,13 +208,27 @@ double PECTriggerFilterMC::GetWeight() const
     double weight = 0.;
     
     for (auto const &r: ranges)
-        if (*r.second)
-        //^ The trigger in this range has fired
+    {
+        // Check if at least one trigger in the current range has accepted the event
+        bool accept = false;
+        
+        for (auto const &b: r.buffers)
+            if (*b)
+            {
+                accept = true;
+                break;
+            }
+        
+        
+        // Increase the weight with the contribution from the current range if the event is
+        //accepted
+        if (accept)
         {
-            weight += r.first->GetLuminosity();
+            weight += r.trigger->GetLuminosity();
             //^ It is also possible to account for the trigger scale factor here, multiplying the
             //effective luminosity by it
         }
+    }
     
     
     return weight;
@@ -237,12 +240,16 @@ bool PECTriggerFilterMC::ProcessEvent()
     // Read branches with trigger decisions
     inputDataPlugin->ReadEventFromTree(triggerTreeName);
     
-    // Check all the requested triggers
-    for (auto const &r: ranges)
-        if (*r.second)
-        //^ The event is accepted by the MC trigger in this range
-            return true;
     
-    // The workflow reaches this point if only no trigger accepts the event
+    // Check if at least of the buffers equals true, which would mean that the event is accepted by
+    //at least one trigger
+    for (auto const &b: buffers)
+    {
+        if (b.second == true)
+            return true;
+    }
+    
+    
+    // If control reaches this point, the event has not been accepted by any trigger
     return false;
 }

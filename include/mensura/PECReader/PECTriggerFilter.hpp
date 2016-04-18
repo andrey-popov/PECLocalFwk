@@ -6,6 +6,7 @@
 
 #include <Rtypes.h>
 
+#include <map>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -31,8 +32,6 @@ public:
 public:
     /**
      * \brief Requests reading of the tree with trigger information
-     * 
-     * All branches of the tree are disabled.
      * 
      * Reimplemented from Plugin.
      */
@@ -190,17 +189,37 @@ void PECTriggerFilterData::ConstructRanges(C const &ranges_)
 
 /**
  * \class PECTriggerFilterMC
- * \brief Implements a trigger selection for data
+ * \brief Implements trigger selection in simulation
  * 
  * The selection is described by a collection of TriggerRange objects. All provided MC triggers
  * must be present.
  * 
  * An event passes the trigger selection if it is accepted by at least one of the MC triggers. It
- * is assigned a weight calculated as a sum of integrated luminosities for all triggers that accept
- * the event.
+ * is assigned a weight calculated as a sum of integrated luminosities of all data-taking periods
+ * whose triggers (at least one if several are defined) accept the event.
  */
 class PECTriggerFilterMC: public PECTriggerFilter
 {
+private:
+    /**
+     * \brief An auxiliary structure that combines a TriggerRange object with buffers into which
+     * decisions of the corresponding triggers are read
+     */
+    struct TriggerWithBuffer
+    {
+        /// Constructor with a trivial initialization
+        TriggerWithBuffer(TriggerRange const *trigger) noexcept;
+        
+        /// Non-owning pointer to a TriggerRange object
+        TriggerRange const *trigger;
+        
+        /**
+         * \brief Non-owning pointers to buffers into which decision of MC triggers from the
+         * TriggerRange object are read
+         */
+        std::vector<Bool_t *> buffers;
+    };
+    
 public:
     /**
      * \brief Constructs a filter with the given name and trigger selection
@@ -254,7 +273,7 @@ public:
      * integrated luminosities of those ranges for which the event is accepted by the corresponding
      * MC triggers.
      */
-    virtual double GetWeight() const;
+    virtual double GetWeight() const override;
     
 private:
     /// Stores pointers to provided TriggerRange objects in the internal collection
@@ -270,32 +289,21 @@ private:
     virtual bool ProcessEvent() override;
     
 private:
-    /**
-     * \brief Non-owning pointers to TriggerRange objects that define the trigger selection and
-     * buffers that store trigger decisions
-     * 
-     * The buffers to which pair::second point, store decisions of the corresponding MC triggers.
-     * All the buffers are allocated in a block, to which the attribute 'buffer' points. Such
-     * organization is preferred to using Bool_t in pair::second because the same MC trigger
-     * might be specified in several trigger ranges.
-     */
-    std::vector<std::pair<TriggerRange const *, Bool_t *>> ranges;
+    /// Wrappers for TriggerRange objects that define the trigger selection
+    std::vector<TriggerWithBuffer> ranges;
     
     /**
-     * \brief Buffer into which trigger decisions are read
+     * \brief Buffers into which decisions of MC triggers are read
      * 
-     * Points to a dynamically allocated array. The buffers are normally accessed via pointers
-     * in ranges::value_type::second. This variable is only used to initialize them and set
-     * addresses of branches.
+     * The buffers can be shared among multiple ranges.
      */
-    Bool_t *buffer;
+    std::map<std::string, Bool_t> buffers;
 };
 
 
 template<typename C>
 PECTriggerFilterMC::PECTriggerFilterMC(std::string const &name, C const &ranges_):
-    PECTriggerFilter(name),
-    buffer(nullptr)
+    PECTriggerFilter(name)
 {
     ConstructRanges(ranges_);
 }
@@ -303,8 +311,7 @@ PECTriggerFilterMC::PECTriggerFilterMC(std::string const &name, C const &ranges_
 
 template<typename C>
 PECTriggerFilterMC::PECTriggerFilterMC(C const &ranges_):
-    PECTriggerFilter("TriggerFilter"),
-    buffer(nullptr)
+    PECTriggerFilter("TriggerFilter")
 {
     ConstructRanges(ranges_);
 }
@@ -323,7 +330,7 @@ void PECTriggerFilterMC::ConstructRanges(C const &ranges_)
     ranges.reserve(ranges_.size());
     
     for (typename C::const_iterator it = ranges_.cbegin(); it != ranges_.cend(); ++it)
-        ranges.emplace_back(&*it, nullptr);
+        ranges.emplace_back(&*it);
 }
 
 
