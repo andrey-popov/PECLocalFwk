@@ -110,7 +110,7 @@ bool PECLeptonReader::ProcessEvent()
         
         
         // Selection to define a loose muon
-        if (p4.Pt() < 10. or fabs(p4.Eta()) > 2.5 or l.RelIso() > 0.25 or
+        if (p4.Pt() < 10. or fabs(p4.Eta()) > 2.4 or l.RelIso() > 0.25 or
           not l.TestBit(0) /* "loose" ID */)
             continue;
         
