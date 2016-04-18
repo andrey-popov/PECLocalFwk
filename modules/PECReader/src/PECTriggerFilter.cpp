@@ -17,10 +17,6 @@ PECTriggerFilter::PECTriggerFilter(std::string const name /*= "PECTriggerFilter"
 {}
 
 
-PECTriggerFilter::~PECTriggerFilter() noexcept
-{}
-
-
 void PECTriggerFilter::BeginRun(Dataset const &)
 {
     // Find the plugin that reads input files
@@ -45,10 +41,6 @@ double PECTriggerFilter::GetWeight() const
 
 // PECTriggerFilterData::PECTriggerFilterData(C const &ranges);
 // (Defined in the header)
-
-
-PECTriggerFilterData::~PECTriggerFilterData() noexcept
-{}
 
 
 void PECTriggerFilterData::BeginRun(Dataset const &dataset)
@@ -137,12 +129,6 @@ bool PECTriggerFilterData::ProcessEvent()
 
 // PECTriggerFilterMC(C const &ranges);
 // (Defined in the header)
-
-
-PECTriggerFilterMC::~PECTriggerFilterMC() noexcept
-{
-    delete [] buffer;
-}
 
 
 void PECTriggerFilterMC::BeginRun(Dataset const &dataset)

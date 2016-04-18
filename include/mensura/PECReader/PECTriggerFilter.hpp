@@ -25,17 +25,8 @@ public:
     /// Creates plugin with the given name
     PECTriggerFilter(std::string const name = "TriggerFilter");
     
-    /// Default copy constructor
-    PECTriggerFilter(PECTriggerFilter const &) = default;
-    
-    /// Default move constructor
-    PECTriggerFilter(PECTriggerFilter &&) = default;
-    
     /// Assignment operator is deleted
     PECTriggerFilter &operator=(PECTriggerFilter const &) = delete;
-    
-    /// Trivial destructor
-    virtual ~PECTriggerFilter() noexcept;
     
 public:
     /**
@@ -109,18 +100,6 @@ public:
      */
     template<typename C>
     PECTriggerFilterData(C const &ranges);
-    
-    /// Default copy constructor
-    PECTriggerFilterData(PECTriggerFilterData const &) = default;
-    
-    /// Default move constructor
-    PECTriggerFilterData(PECTriggerFilterData &&) = default;
-    
-    /// Assignment operator is deleted
-    PECTriggerFilterData &operator=(PECTriggerFilterData const &) = delete;
-    
-    /// Trivial destructor
-    virtual ~PECTriggerFilterData() noexcept;
     
 public:
     /**
@@ -240,15 +219,6 @@ public:
      */
     template<typename C>
     PECTriggerFilterMC(C const &ranges);
-    
-    /// Default move constructor
-    PECTriggerFilterMC(PECTriggerFilterMC &&) = default;
-    
-    /// Assignment operator is deleted
-    PECTriggerFilterMC &operator=(PECTriggerFilterMC const &) = delete;
-    
-    /// Destructor
-    virtual ~PECTriggerFilterMC() noexcept;
     
 private:
     /**
