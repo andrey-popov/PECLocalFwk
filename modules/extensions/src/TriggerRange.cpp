@@ -2,27 +2,39 @@
 
 #include <boost/algorithm/string/predicate.hpp>
 
-
-using namespace std;
+#include <sstream>
+#include <stdexcept>
 
 
 TriggerRange::TriggerRange(unsigned long firstRun, unsigned long lastRun,
-  string const &dataTriggerPattern_, double intLumi_, string const &mcTriggerPattern_):
+  std::initializer_list<std::string> const &dataTriggers_, double intLumi_,
+  std::initializer_list<std::string> const &mcTriggers_):
     firstEvent(firstRun, true), lastEvent(lastRun, false),
-    dataTriggerPattern(GetTriggerBasename(dataTriggerPattern_)), intLumi(intLumi_),
-    mcTriggerPattern(GetTriggerBasename(mcTriggerPattern_))
-{}
-
-
-bool TriggerRange::InRange(EventID const &eventID) const
+    intLumi(intLumi_)
 {
-    return (firstEvent <= eventID and eventID <= lastEvent);
+    FillTriggerSet(dataTriggers, dataTriggers_);
+    FillTriggerSet(mcTriggers, mcTriggers_);
 }
 
 
-string const &TriggerRange::GetDataTriggerPattern() const
+TriggerRange::TriggerRange(unsigned long firstRun, unsigned long lastRun,
+  std::string const &dataTrigger, double intLumi_, std::string const &mcTrigger):
+    firstEvent(firstRun, true), lastEvent(lastRun, false), intLumi(intLumi_)
 {
-    return dataTriggerPattern;
+    dataTriggers.emplace(GetTriggerBasename(dataTrigger));
+    mcTriggers.emplace(GetTriggerBasename(mcTrigger));
+}
+
+
+std::set<std::string> const &TriggerRange::GetDataTriggers() const
+{
+    return dataTriggers;
+}
+
+
+std::string const &TriggerRange::GetDataTriggerPattern() const
+{
+    return *dataTriggers.begin();
 }
 
 
@@ -32,22 +44,35 @@ double TriggerRange::GetLuminosity() const
 }
 
 
-string const &TriggerRange::GetMCTriggerPattern() const
+std::set<std::string> const &TriggerRange::GetMCTriggers() const
 {
-    return mcTriggerPattern;
+    return mcTriggers;
 }
 
 
-void TriggerRange::SetDataTrigger(string const &pattern, double intLumi_)
+std::string const &TriggerRange::GetMCTriggerPattern() const
 {
-    dataTriggerPattern = GetTriggerBasename(pattern);
+    return *mcTriggers.begin();
+}
+
+
+bool TriggerRange::InRange(EventID const &eventID) const
+{
+    return (firstEvent <= eventID and eventID <= lastEvent);
+}
+
+
+void TriggerRange::SetDataTriggers(std::initializer_list<std::string> const &dataTriggers_,
+  double intLumi_)
+{
+    FillTriggerSet(dataTriggers, dataTriggers_);
     intLumi = intLumi_;
 }
 
 
-void TriggerRange::SetMCTrigger(string const &pattern)
+void TriggerRange::SetMCTriggers(std::initializer_list<std::string> const &mcTriggers_)
 {
-    mcTriggerPattern = GetTriggerBasename(pattern);
+    FillTriggerSet(mcTriggers, mcTriggers_);
 }
 
 
@@ -58,11 +83,30 @@ void TriggerRange::SetRange(EventID const &firstEvent_, EventID const &lastEvent
 }
 
 
-string TriggerRange::GetTriggerBasename(string const &name)
+void TriggerRange::FillTriggerSet(std::set<std::string> &target,
+  std::initializer_list<std::string> const &triggerNames)
+{
+    for (auto const &pattern: triggerNames)
+    {
+        auto const res = target.emplace(GetTriggerBasename(pattern));
+        
+        if (not res.second)
+        {
+            std::ostringstream message;
+            message << "TriggerRange::FillTriggerSet: Found a duplicate for provided trigger " <<
+              "trigger pattern \"" << pattern << "\", which translates into representation \"" <<
+              GetTriggerBasename(pattern) << "\".";
+            throw std::runtime_error(message.str());
+        }
+    }
+}
+
+
+std::string TriggerRange::GetTriggerBasename(std::string const &name)
 {
     // The name might (or might not) contain a prefix "HLT_" and/or a postfix with version
     //number of the form "_v\d+", "_v\*", or "_v". They are stripped off if found
-    string basename(name);
+    std::string basename(name);
     
     // First, the prefix
     if (boost::starts_with(basename, "HLT_"))
