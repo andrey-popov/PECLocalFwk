@@ -17,7 +17,7 @@ This directory contains data files organized into several categories:
 
  * `ElectronSF_2015D_76Xv1.root` <br />
    Scale factors for electron reconstruction and tight working point of cut-based ID. Adapted from [here](https://twiki.cern.ch/twiki/bin/view/CMS/EgammaIDRecipesRun2?rev=16#Electron_efficiencies_and_scale). The histograms are parameterized with electron transverse momentum and pseudorapidity of the associated supercluster. No appropriate scale factors are available for single-electron triggers.
- * `MuonScaleFactors_2012_53X.root` <br />
+ * `MuonSF_2015D_76Xv1.root` <br />
    Scale factors for muon identification and isolation (tight working points in both cases) and triggers `IsoMu20 OR IsoTkMu20`. Adapted from [here](https://twiki.cern.ch/twiki/bin/view/CMS/MuonReferenceEffsRun2?rev=9#Results_for_CMSSW_7_6_X_dataset). Histogram errors are updated to include the additional uncertainties recommended by the reference. The trigger scale factors derived for Run2015D are combined taking corresponding integrated luminosities into account; Run2015C is ignored. No scale factors for `IsoMu18` are available.
 
 
