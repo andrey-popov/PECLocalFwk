@@ -90,35 +90,46 @@ bool PECTriggerFilterData::ProcessEvent()
         }
         
         
-        // A valid trigger range has been found. Get the corresponding branch of the tree and
-        //assign the buffer to it
+        // A valid trigger range has been found. Assign buffers to branches containing decisions of
+        //triggers included in this range. Note that the trigger list cannot contain duplicates,
+        //and thus there is no need to protect the buffer against them
         currentRange = *res;
+        
+        buffers.assign(currentRange->GetDataTriggers().size(), false);
+        unsigned currentBufferIndex = 0;
         
         ROOTLock::Lock();
         triggerTree->SetBranchStatus("*", false);
         
-        TBranch *branch =
-         triggerTree->GetBranch((currentRange->GetDataTriggerPattern() + "__accept").c_str());
-        
-        if (not branch)
+        for (auto const &triggerPattern: currentRange->GetDataTriggers())
         {
-            ROOTLock::Unlock();
-            throw std::runtime_error("PECTriggerFilterData::ProcessEvent: State of the trigger "s +
-             "\"HLT_" + currentRange->GetDataTriggerPattern() + "_v*\" is not stored in the "
-             "source tree.");
+            TBranch *branch = triggerTree->GetBranch((triggerPattern + "__accept").c_str());
+            
+            if (not branch)
+            {
+                ROOTLock::Unlock();
+                throw std::runtime_error("PECTriggerFilterData::ProcessEvent: Decision of "s +
+                 "trigger \"HLT_" + triggerPattern + "_v*\" is not stored in the tree.");
+            }
+            
+            branch->SetStatus(true);
+            branch->SetAddress(&buffers.at(currentBufferIndex));
+            ++currentBufferIndex;
         }
         
-        branch->SetStatus(true);
-        branch->SetAddress(&bfAccepted);
         ROOTLock::Unlock();
     }
     
     
-    // Now as the tree has been set up propertly, read it
+    // Now that the tree has been set up propertly, read it and check if the event is accepted by
+    //at least one trigger
     inputDataPlugin->ReadEventFromTree(triggerTreeName);
     
+    for (auto const &decision: buffers)
+        if (decision)
+            return true;
     
-    return bfAccepted;
+    return false;
 }
 
 
@@ -172,8 +183,8 @@ void PECTriggerFilterMC::BeginRun(Dataset const &dataset)
         if (not branch)
         {
             ROOTLock::Unlock();
-            throw std::runtime_error("PECTriggerFilterMC::BeginRun: State of the trigger "s +
-             "\"HLT_" + b.first + "_v*\" is not stored in the source tree.");
+            throw std::runtime_error("PECTriggerFilterMC::BeginRun: Decision of trigger "s +
+             "\"HLT_" + b.first + "_v*\" is not stored in the tree.");
         }
         
         

@@ -6,6 +6,7 @@
 
 #include <Rtypes.h>
 
+#include <deque>
 #include <map>
 #include <stdexcept>
 #include <utility>
@@ -72,8 +73,8 @@ protected:
  * \brief Implements a trigger selection for data
  * 
  * The selection is described by a collection of TriggerRange objects. They must provide a valid
- * data trigger for each event in the dataset that will be processed; if the trigger corresponding
- * to a specific event is not found in the trigger tree, an exception is thrown.
+ * set of data triggers for each event in the dataset that will be processed. If one of the
+ * triggers is not found in the trigger tree, an exception is thrown.
  * 
  * Only necessary branches of the trigger tree are read. The GetWeight method always returns 1.
  */
@@ -85,7 +86,7 @@ public:
      * 
      * The trigger selection is described by an STL collection of TriggerRange objects. Internally,
      * only pointers to the TriggerRange objects are stored; therefore, the objects must be
-     * available during the lifetime of PECTriggerFilter. They are not owned by the object. The
+     * available during the lifetime of PECTriggerFilter. They are not owned by this object. The
      * trigger ranges are expected not to overlap. Otherwise the behaviour of trigger selection is
      * undefined.
      */
@@ -130,24 +131,23 @@ private:
     virtual bool ProcessEvent() override;
     
 private:
-    /**
-     * \brief Pointers to TriggerRange objects that define the trigger selection
-     * 
-     * The pointed-to objects must be available during the lifetime of PECTriggerFilter. They are
-     * not owned by this class.
-     */
+    /// Non-owning pointers to TriggerRange objects that define the trigger selection
     std::vector<TriggerRange const *> ranges;
     
     /**
-     * \brief Pointer to the current TriggerRange object
+     * \brief Non-owning pointer to the current TriggerRange object
      * 
      * If the current event does not match any TriggerRange object or no attempt to find the
      * corresponding range has been made yet, the poiter is null.
      */
     TriggerRange const *currentRange;
     
-    /// Buffer into which decision of the selected trigger is read
-    Bool_t bfAccepted;
+    /**
+     * \brief Buffers into which decision of triggers in the current range are read
+     * 
+     * Use deque instead of a vector to avoid the vector<bool> specialization.
+     */
+    std::deque<Bool_t> buffers;
 };
 
 

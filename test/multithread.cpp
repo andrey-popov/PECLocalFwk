@@ -42,7 +42,8 @@ int main()
     
     // Triggers
     list<TriggerRange> triggerRanges;
-    triggerRanges.emplace_back(0, -1, "IsoMu18", 2289.901, "IsoMu18");
+    triggerRanges.emplace_back(TriggerRange(0, -1, {"IsoMu20", "IsoTkMu20"}, 2289.901,
+      {"IsoMu20", "IsoTkMu20"}));
     
     
     // Common definition of b-tagging that will be used everywhere
@@ -74,7 +75,7 @@ int main()
     manager.RegisterPlugin(new PECInputData);
     manager.RegisterPlugin(BuildPECTriggerFilter(false, triggerRanges));
     manager.RegisterPlugin(new PECLeptonReader);
-    manager.RegisterPlugin(new LeptonFilter("LeptonFilter", Lepton::Flavour::Muon, 20., 2.4));
+    manager.RegisterPlugin(new LeptonFilter("LeptonFilter", Lepton::Flavour::Muon, 22., 2.4));
     
     PECJetMETReader *jetReader = new PECJetMETReader;
     jetReader->SetSelection(30., 2.4);
