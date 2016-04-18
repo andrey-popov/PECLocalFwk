@@ -106,7 +106,7 @@ double BTagSFService::GetScaleFactor(double pt, double eta, int flavour,
         ptOutOfRange = true;
         pt = ptRange.first;
     }
-    else if (pt > ptRange.second)
+    else if (pt >= ptRange.second)
     {
         ptOutOfRange = true;
         pt = std::nextafter(float(ptRange.second), 0.f);
