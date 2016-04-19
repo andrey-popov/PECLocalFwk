@@ -4,21 +4,8 @@
 #include <sstream>
 
 
-using namespace std;
-
-
-EventWeightPlugin::EventWeightPlugin(string const &name_):
+EventWeightPlugin::EventWeightPlugin(std::string const &name_):
     AnalysisPlugin(name_)
-{}
-
-
-EventWeightPlugin::EventWeightPlugin(EventWeightPlugin const &src) noexcept:
-    AnalysisPlugin(src),
-    weights(src.weights)
-{}
-
-
-EventWeightPlugin::~EventWeightPlugin() noexcept
 {}
 
 
@@ -28,7 +15,7 @@ double EventWeightPlugin::GetWeight() const
 }
 
 
-unsigned EventWeightPlugin::GetNumSystSources() const noexcept
+unsigned EventWeightPlugin::GetNumVariations() const noexcept
 {
     return (weights.size() - 1) / 2;
 }
@@ -37,14 +24,13 @@ unsigned EventWeightPlugin::GetNumSystSources() const noexcept
 double EventWeightPlugin::GetWeightUp(unsigned iSource) const
 {
     // Make sure the index makes sense
-    if (iSource >= GetNumSystSources())
+    if (iSource >= GetNumVariations())
     {
-        ostringstream ost;
-        ost << "EventWeightPlugin::GetWeightUp: Trying to access systematical variation for "
-         "source #" << iSource << " while only " << GetNumSystSources() <<
-         " sources are available.";
+        std::ostringstream message;
+        message << "EventWeightPlugin::GetWeightUp: Trying to access systematic variation for "
+          "source #" << iSource << " while only " << GetNumVariations() << " sources are defined.";
         
-        throw logic_error(ost.str());
+        throw std::out_of_range(message.str());
     }
     
     
@@ -56,14 +42,13 @@ double EventWeightPlugin::GetWeightUp(unsigned iSource) const
 double EventWeightPlugin::GetWeightDown(unsigned iSource) const
 {
     // Make sure the index makes sense
-    if (iSource >= GetNumSystSources())
+    if (iSource >= GetNumVariations())
     {
-        ostringstream ost;
-        ost << "EventWeightPlugin::GetWeightDown: Trying to access systematical variation for "
-         "source #" << iSource << " while only " << GetNumSystSources() <<
-         " sources are available.";
+        std::ostringstream message;
+        message << "EventWeightPlugin::GetWeightDown: Trying to access systematic variation for "
+          "source #" << iSource << " while only " << GetNumVariations() << " sources are defined.";
         
-        throw logic_error(ost.str());
+        throw std::out_of_range(message.str());
     }
     
     
@@ -72,7 +57,7 @@ double EventWeightPlugin::GetWeightDown(unsigned iSource) const
 }
 
 
-vector<double> const &EventWeightPlugin::GetWeights() const noexcept
+std::vector<double> const &EventWeightPlugin::GetWeights() const noexcept
 {
     return weights;
 }
