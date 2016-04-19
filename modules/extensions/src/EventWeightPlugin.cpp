@@ -27,8 +27,9 @@ double EventWeightPlugin::GetWeightUp(unsigned iSource) const
     if (iSource >= GetNumVariations())
     {
         std::ostringstream message;
-        message << "EventWeightPlugin::GetWeightUp: Trying to access systematic variation for "
-          "source #" << iSource << " while only " << GetNumVariations() << " sources are defined.";
+        message << "EventWeightPlugin[\"" << GetName() << "\"]::GetWeightUp: Trying to access "
+          "systematic variation for source #" << iSource << " while only " << GetNumVariations() <<
+          " sources are defined.";
         
         throw std::out_of_range(message.str());
     }
@@ -45,8 +46,9 @@ double EventWeightPlugin::GetWeightDown(unsigned iSource) const
     if (iSource >= GetNumVariations())
     {
         std::ostringstream message;
-        message << "EventWeightPlugin::GetWeightDown: Trying to access systematic variation for "
-          "source #" << iSource << " while only " << GetNumVariations() << " sources are defined.";
+        message << "EventWeightPlugin[\"" << GetName() << "\"]::GetWeightDown: Trying to access "
+          "systematic variation for source #" << iSource << " while only " << GetNumVariations() <<
+          " sources are defined.";
         
         throw std::out_of_range(message.str());
     }

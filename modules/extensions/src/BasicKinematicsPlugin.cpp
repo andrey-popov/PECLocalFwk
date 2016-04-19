@@ -6,7 +6,9 @@
 #include <mensura/core/Processor.hpp>
 #include <mensura/core/PhysicsObjects.hpp>
 #include <mensura/core/ROOTLock.hpp>
+
 #include <mensura/extensions/TFileService.hpp>
+#include <mensura/extensions/WeightCollector.hpp>
 
 
 BasicKinematicsPlugin::BasicKinematicsPlugin(std::string const name /*= "BasicKinematics"*/):
@@ -14,7 +16,8 @@ BasicKinematicsPlugin::BasicKinematicsPlugin(std::string const name /*= "BasicKi
     fileServiceName("TFileService"), fileService(nullptr),
     leptonPluginName("Leptons"), leptonPlugin(nullptr),
     jetmetPluginName("JetMET"), jetmetPlugin(nullptr),
-    puPluginName("PileUp"), puPlugin(nullptr)
+    puPluginName("PileUp"), puPlugin(nullptr),
+    weightCollectorName("EventWeights"), weightCollector(nullptr)
 {}
 
 
@@ -27,11 +30,12 @@ BasicKinematicsPlugin::BasicKinematicsPlugin(BasicKinematicsPlugin const &src):
     fileServiceName(src.fileServiceName), fileService(nullptr),
     leptonPluginName(src.leptonPluginName), leptonPlugin(nullptr),
     jetmetPluginName(src.jetmetPluginName), jetmetPlugin(nullptr),
-    puPluginName(src.puPluginName), puPlugin(nullptr)
+    puPluginName(src.puPluginName), puPlugin(nullptr),
+    weightCollectorName(src.weightCollectorName), weightCollector(nullptr)
 {}
 
 
-void BasicKinematicsPlugin::BeginRun(Dataset const &)
+void BasicKinematicsPlugin::BeginRun(Dataset const &dataset)
 {
     // Save pointer to the file service
     fileService = dynamic_cast<TFileService const *>(GetMaster().GetService(fileServiceName));
@@ -40,6 +44,11 @@ void BasicKinematicsPlugin::BeginRun(Dataset const &)
     leptonPlugin = dynamic_cast<LeptonReader const *>(GetDependencyPlugin(leptonPluginName));
     jetmetPlugin = dynamic_cast<JetMETReader const *>(GetDependencyPlugin(jetmetPluginName));
     puPlugin = dynamic_cast<PileUpReader const *>(GetDependencyPlugin(puPluginName));
+    
+    // Save pointer to a plugin that aggregates event weights
+    if (dataset.IsMC())
+        weightCollector =
+          dynamic_cast<WeightCollector const *>(GetDependencyPlugin(weightCollectorName));
     
     
     // Create the output tree in the root directory of the output file
@@ -60,6 +69,9 @@ void BasicKinematicsPlugin::BeginRun(Dataset const &)
     tree->Branch("MET", &MET);
     tree->Branch("MtW", &MtW);
     tree->Branch("nPV", &nPV);
+    
+    if (dataset.IsMC())
+        tree->Branch("weight", &weight);
     
     ROOTLock::Unlock();
 }
@@ -110,6 +122,10 @@ bool BasicKinematicsPlugin::ProcessEvent()
     
     MET = met.Pt();
     nPV = puPlugin->GetNumVertices();
+    
+    
+    if (weightCollector)  // defined only in simulation
+        weight = weightCollector->GetWeight();
     
     
     tree->Fill();

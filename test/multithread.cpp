@@ -9,7 +9,9 @@
 #include <mensura/extensions/JetFilter.hpp>
 #include <mensura/extensions/LeptonFilter.hpp>
 #include <mensura/extensions/MetFilter.hpp>
+#include <mensura/extensions/PileUpWeight.hpp>
 #include <mensura/extensions/TFileService.hpp>
+#include <mensura/extensions/WeightCollector.hpp>
 
 #include <mensura/PECReader/PECGeneratorReader.hpp>
 #include <mensura/PECReader/PECInputData.hpp>
@@ -88,7 +90,12 @@ int main()
     manager.RegisterPlugin(new MetFilter(MetFilter::Mode::MtW, 40.));
     manager.RegisterPlugin(new PECPileUpReader);
     manager.RegisterPlugin(new PECGeneratorReader);
+    
+    // Plugins to reweight events
+    manager.RegisterPlugin(new PileUpWeight("Run2015D_SingleMuon_v2_finebin.root",
+      "simPUProfiles_76X.root", 0.05));
     manager.RegisterPlugin(new BTagWeight(bTagger));
+    manager.RegisterPlugin(new WeightCollector({"PileUpWeight", "BTagWeight"}));
     
     
     // Finally, the plugin to calculate some observables

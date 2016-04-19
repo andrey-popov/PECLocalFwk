@@ -11,6 +11,7 @@ class LeptonReader;
 class JetMETReader;
 class PileUpReader;
 class TFileService;
+class WeightCollector;
 
 
 /**
@@ -18,8 +19,10 @@ class TFileService;
  * \brief A plugin that evaluates and stores basic kinematical variables
  * 
  * This plugin represents an example of producing custom trees with some representative
- * observables. It uses a TFileService with a default name "TFileService" to create the output tree.
- * Inputs are access with dedicated readers with default names "Leptons", "JetMET", and "PileUp".
+ * observables. It uses a TFileService with a default name "TFileService" to create the output
+ * tree. Inputs are access with dedicated readers with default names "Leptons", "JetMET", and
+ * "PileUp". In case of simulation, combined event weights are read from a WeightCollector with a
+ * default name "EventWeights".
  */
 class BasicKinematicsPlugin: public AnalysisPlugin
 {
@@ -94,6 +97,12 @@ private:
     /// Non-owning pointer to the plugin that reads information about pile-up
     PileUpReader const *puPlugin;
     
+    /// Name of the plugin that aggregates event weights
+    std::string weightCollectorName;
+    
+    /// Non-owning pointer to the plugin that aggregates event weights
+    WeightCollector const *weightCollector;
+    
     /// Non-owning pointer to the output tree
     TTree *tree;
     
@@ -103,4 +112,5 @@ private:
     Float_t M_J1J2, DR_J1J2;
     Float_t MET, MtW;
     Int_t nPV;
+    Float_t weight;
 };
