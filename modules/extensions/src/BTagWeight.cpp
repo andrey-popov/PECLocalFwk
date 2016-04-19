@@ -9,24 +9,26 @@
 
 BTagWeight::BTagWeight(std::string const &name, BTagger bTagger_,
   double minPt_ /*= 0.*/):
-    AnalysisPlugin(name),
+    EventWeightPlugin(name),
     jetPluginName("JetMET"), jetPlugin(nullptr),
     bTagWPServiceName("BTagWP"), bTagWPService(nullptr),
     bTagEffServiceName("BTagEff"), bTagEffService(nullptr),
     bTagSFServiceName("BTagSF"), bTagSFService(nullptr),
     bTagger(bTagger_),
-    minPt(minPt_)
+    minPt(minPt_),
+    evalSystematics(false)
 {}
 
 
 BTagWeight::BTagWeight(BTagger bTagger_, double minPt_ /*= 0.*/):
-    AnalysisPlugin("BTagWeight"),
+    EventWeightPlugin("BTagWeight"),
     jetPluginName("JetMET"), jetPlugin(nullptr),
     bTagWPServiceName("BTagWP"), bTagWPService(nullptr),
     bTagEffServiceName("BTagEff"), bTagEffService(nullptr),
     bTagSFServiceName("BTagSF"), bTagSFService(nullptr),
     bTagger(bTagger_),
-    minPt(minPt_)
+    minPt(minPt_),
+    evalSystematics(false)
 {}
 
 
@@ -44,12 +46,25 @@ void BTagWeight::BeginRun(Dataset const &)
     bTagEffService =
       dynamic_cast<BTagEffService const *>(GetMaster().GetService(bTagEffServiceName));
     bTagSFService = dynamic_cast<BTagSFService const *>(GetMaster().GetService(bTagSFServiceName));
+    
+    
+    // Initialize weights
+    if (evalSystematics)
+        weights.assign(5, 0.);
+    else
+        weights.assign(1, 0.);
 }
 
 
 Plugin *BTagWeight::Clone() const
 {
     return new BTagWeight(*this);
+}
+
+
+void BTagWeight::RequestSystematics(bool on /*= true*/)
+{
+    evalSystematics = on;
 }
 
 
@@ -101,6 +116,16 @@ double BTagWeight::CalcWeight(Variation var /*=Variation::Nominal*/) const
 
 bool BTagWeight::ProcessEvent()
 {
+    weights.at(0) = CalcWeight(Variation::Nominal);
+    
+    if (evalSystematics)
+    {
+        weights.at(1) = CalcWeight(Variation::TagRateUp);
+        weights.at(2) = CalcWeight(Variation::TagRateDown);
+        weights.at(3) = CalcWeight(Variation::MistagRateUp);
+        weights.at(3) = CalcWeight(Variation::MistagRateDown);
+    }
+    
     return true;
 }
 

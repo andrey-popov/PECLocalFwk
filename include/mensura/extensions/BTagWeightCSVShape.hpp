@@ -1,6 +1,6 @@
 #pragma once
 
-#include <mensura/core/AnalysisPlugin.hpp>
+#include <mensura/extensions/EventWeightPlugin.hpp>
 
 #include <map>
 #include <memory>
@@ -21,7 +21,7 @@ class TH3;
  * 
  * This plugin exploits a JetReader with a default name "JetMET".
  */
-class BTagWeightCSVShape: public AnalysisPlugin
+class BTagWeightCSVShape: public EventWeightPlugin
 {
 public:
     /// Creates a service with the given name
@@ -58,9 +58,6 @@ public:
      */
     virtual Plugin *Clone() const override;
     
-    /// Returns nominal weight of the current event
-    double GetWeight() const;
-    
 private:
     /// Reads histograms with scale factors from the given file
     void LoadScaleFactors(std::string const &csvWeightFileName);
@@ -89,7 +86,4 @@ private:
      * shared among all clones of this object.
      */
     std::map<unsigned, std::shared_ptr<TH3>> csvScaleFactors;
-    
-    /// (Nominal) weight of the current event
-    double weight;
 };

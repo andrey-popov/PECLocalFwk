@@ -14,7 +14,7 @@
 
 PileUpWeight::PileUpWeight(std::string const &name, std::string const &dataPUFileName,
   std::string const &mcPUFileName, double systError_):
-    AnalysisPlugin(name),
+    EventWeightPlugin(name),
     puPluginName("PileUp"), puPlugin(nullptr),
     systError(systError_)
 {
@@ -33,7 +33,7 @@ PileUpWeight::PileUpWeight(std::string const &name, std::string const &dataPUFil
 
 PileUpWeight::PileUpWeight(std::string const &dataPUFileName, std::string const &mcPUFileName,
   double systError_):
-    AnalysisPlugin("PileUpWeight"),
+    EventWeightPlugin("PileUpWeight"),
     puPluginName("PileUp"), puPlugin(nullptr),
     systError(systError_)
 {
@@ -99,18 +99,16 @@ void PileUpWeight::BeginRun(Dataset const &dataset)
         // Make sure the histogram is normalized
         mcPUHist->Scale(1. / mcPUHist->Integral(0, -1), "width");
     }
+    
+    
+    // Initialize weights
+    weights.assign(3, 0.);
 }
 
 
 Plugin *PileUpWeight::Clone() const
 {
     return new PileUpWeight(*this);
-}
-
-
-PileUpWeight::Weights const &PileUpWeight::GetWeights() const
-{
-    return weights;
 }
 
 
@@ -130,15 +128,15 @@ bool PileUpWeight::ProcessEvent()
     
     // Calculate the weights
     bin = dataPUHist->FindFixBin(nTruth);
-    weights.central = dataPUHist->GetBinContent(bin) / mcProb;
+    weights.at(0) = dataPUHist->GetBinContent(bin) / mcProb;
     
     bin = dataPUHist->FindFixBin(nTruth * (1. + systError));
-    weights.up = dataPUHist->GetBinContent(bin) / mcProb * (1. + systError);
+    weights.at(1) = dataPUHist->GetBinContent(bin) / mcProb * (1. + systError);
     //^ The last multiplier is needed to correct for the total normalisation due to rescale in
     //the variable of integration. Same applies to the down weight below
     
     bin = dataPUHist->FindFixBin(nTruth * (1. - systError));
-    weights.down = dataPUHist->GetBinContent(bin) / mcProb * (1. - systError);
+    weights.at(2) = dataPUHist->GetBinContent(bin) / mcProb * (1. - systError);
     
     
     // This plugin does not perform any filtering, so ProcessEvent always returns true

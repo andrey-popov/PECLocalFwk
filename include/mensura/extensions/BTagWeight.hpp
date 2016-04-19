@@ -1,6 +1,6 @@
 #pragma once
 
-#include <mensura/core/AnalysisPlugin.hpp>
+#include <mensura/extensions/EventWeightPlugin.hpp>
 
 #include <mensura/core/BTagger.hpp>
 #include <mensura/extensions/BTagSFService.hpp>
@@ -24,12 +24,15 @@ class JetMETReader;
  * procedure.
  * [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/BTagSFMethods?rev=27#1a_Event_reweighting_using_scale
  * 
+ * In the default configuration only the nominal event weight is calculated. Evaluation of the
+ * effect of systematic uncertainties can be requested with the help of method RequestSystematics.
+ * 
  * This plugin exploits a JetReader (default name is "JetMET") and a number of services to access
  * b-tagging working points ("BTagWP"), efficiencies ("BTagEff"), and scale factors ("BTagSF").
  */
-class BTagWeight: public AnalysisPlugin
+class BTagWeight: public EventWeightPlugin
 {
-public:
+private:
     /// Supported systematical variations
     enum class Variation
     {
@@ -74,6 +77,10 @@ public:
      */
     virtual Plugin *Clone() const override;
     
+    /// Switch on or off computations of systematic variations in weights
+    void RequestSystematics(bool on = true);
+    
+private:
     /**
      * \brief Calculates event weight
      * 
@@ -83,9 +90,8 @@ public:
      */
     double CalcWeight(Variation var = Variation::Nominal) const;
     
-private:
     /**
-     * \brief Does nothing because computation of event weights is delegated to CalcWeight
+     * \brief Calculates requested weights using method CalcWeight
      * 
      * Implemented from Plugin.
      */
@@ -129,4 +135,7 @@ private:
     
     /// Selection on jet transverse momentum
     double minPt;
+    
+    /// Flag indicating whether systematics should be evaluated
+    bool evalSystematics;
 };

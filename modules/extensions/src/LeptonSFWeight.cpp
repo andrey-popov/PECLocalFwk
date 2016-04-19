@@ -37,7 +37,6 @@ std::function<double (Lepton const &)> BuildParamExpression(std::string paramNam
 LeptonSFWeight::LeptonSFWeight(std::string const &name,
   Lepton::Flavour targetFlavour_, std::string const &srcFileName,
   std::list<std::string> const &histogramNames):
-    AnalysisPlugin(name),  // need to call constructor of a virtual base class explicitly
     EventWeightPlugin(name),
     leptonPluginName("Leptons"), leptonPlugin(nullptr),
     targetFlavour(targetFlavour_)
@@ -51,7 +50,6 @@ LeptonSFWeight::LeptonSFWeight(std::string const &name,
 
 LeptonSFWeight::LeptonSFWeight(Lepton::Flavour targetFlavour_, std::string const &srcFileName,
   std::list<std::string> const &histogramNames):
-    AnalysisPlugin("LeptonSFWeight"),
     EventWeightPlugin("LeptonSFWeight"),
     leptonPluginName("Leptons"), leptonPlugin(nullptr),
     targetFlavour(targetFlavour_)

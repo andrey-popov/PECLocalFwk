@@ -59,15 +59,15 @@ int main()
     
     manager.RegisterService(new BTagWPService);
     
-    BTagEffService *bTagEffService = new BTagEffService("BTagEff_74X_v1.0.root");
+    BTagEffService *bTagEffService = new BTagEffService("BTagEff_76X_v1.root");
     // bTagEffService->SetProcessLabel(Dataset::Process::ttSemilep, "ttbar-semilep");
     bTagEffService->SetDefaultProcessLabel("ttbar");
     manager.RegisterService(bTagEffService);
     
-    BTagSFService *bTagSFService = new BTagSFService(bTagger, "BTagSF_74X_CSVv2.csv");
+    BTagSFService *bTagSFService = new BTagSFService(bTagger, "BTagSF_76X_CSVv2.csv");
     bTagSFService->SetMeasurement(BTagSFService::Flavour::Bottom, "mujets");
     bTagSFService->SetMeasurement(BTagSFService::Flavour::Charm, "mujets");
-    bTagSFService->SetMeasurement(BTagSFService::Flavour::Light, "comb");
+    bTagSFService->SetMeasurement(BTagSFService::Flavour::Light, "incl");
     manager.RegisterService(bTagSFService);
     
     

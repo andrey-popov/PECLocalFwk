@@ -54,14 +54,14 @@ int main()
     // Register b-tagging services
     processor.RegisterService(new BTagWPService);
     
-    BTagEffService *bTagEffService = new BTagEffService("BTagEff_74X_v1.0.root");
+    BTagEffService *bTagEffService = new BTagEffService("BTagEff_76X_v1.root");
     bTagEffService->SetDefaultProcessLabel("ttbar");
     processor.RegisterService(bTagEffService);
     
-    BTagSFService *bTagSFService = new BTagSFService(bTagger, "BTagSF_74X_CSVv2.csv");
+    BTagSFService *bTagSFService = new BTagSFService(bTagger, "BTagSF_76X_CSVv2.csv");
     bTagSFService->SetMeasurement(BTagSFService::Flavour::Bottom, "mujets");
     bTagSFService->SetMeasurement(BTagSFService::Flavour::Charm, "mujets");
-    bTagSFService->SetMeasurement(BTagSFService::Flavour::Light, "comb");
+    bTagSFService->SetMeasurement(BTagSFService::Flavour::Light, "incl");
     processor.RegisterService(bTagSFService);
     
     
@@ -175,7 +175,7 @@ int main()
         }
         
         cout << "\nNominal GEN-level weight: " << generatorReader->GetNominalWeight() << '\n';
-        cout << "Weight for b-tagging scale factors: " << bTagReweighter->CalcWeight() << '\n';
+        cout << "Weight for b-tagging scale factors: " << bTagReweighter->GetWeight() << '\n';
         
         cout << "\n\n";
     }

@@ -19,7 +19,7 @@ using namespace std::literals::string_literals;
 
 BTagWeightCSVShape::BTagWeightCSVShape(std::string const &name,
   std::string const &csvWeightFileName, double minPt_ /*= 0.*/):
-    AnalysisPlugin(name),
+    EventWeightPlugin(name),
     jetPluginName("JetMET"), jetPlugin(nullptr),
     minPt(minPt_)
 {
@@ -29,7 +29,7 @@ BTagWeightCSVShape::BTagWeightCSVShape(std::string const &name,
 
 BTagWeightCSVShape::BTagWeightCSVShape(std::string const &csvWeightFileName,
   double minPt_ /*= 0.*/):
-    AnalysisPlugin("BTagWeightCSVShape"),
+    EventWeightPlugin("BTagWeightCSVShape"),
     jetPluginName("JetMET"), jetPlugin(nullptr),
     minPt(minPt_)
 {
@@ -45,18 +45,15 @@ void BTagWeightCSVShape::BeginRun(Dataset const &)
 {
     // Save pointer to plugin that produces jets
     jetPlugin = dynamic_cast<JetMETReader const *>(GetDependencyPlugin(jetPluginName));
+    
+    // Initialize weights
+    weights.assign(1, 0.);
 }
 
 
 Plugin *BTagWeightCSVShape::Clone() const
 {
     return new BTagWeightCSVShape(*this);
-}
-
-
-double BTagWeightCSVShape::GetWeight() const
-{
-    return weight;
 }
 
 
@@ -95,7 +92,7 @@ void BTagWeightCSVShape::LoadScaleFactors(std::string const &csvWeightFileName)
 
 bool BTagWeightCSVShape::ProcessEvent()
 {
-    weight = 1.;
+    weights.at(0) = 1.;
     
     
     // Loop over jets in the current event
@@ -125,7 +122,7 @@ bool BTagWeightCSVShape::ProcessEvent()
           jet.BTag(BTagger::Algorithm::CSV)));
         
         if (sf != 0.)
-            weight *= sf;
+            weights[0] *= sf;
     }
     
     

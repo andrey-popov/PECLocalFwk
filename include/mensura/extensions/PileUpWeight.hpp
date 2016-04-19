@@ -1,6 +1,6 @@
 #pragma once
 
-#include <mensura/core/AnalysisPlugin.hpp>
+#include <mensura/extensions/EventWeightPlugin.hpp>
 
 #include <TFile.h>
 #include <TH1.h>
@@ -30,22 +30,8 @@ class PileUpReader;
  * [2] https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJSONFileforData?rev=22
  * [3] https://twiki.cern.ch/twiki/bin/view/CMS/PileupSystematicErrors
  */
-class PileUpWeight: public AnalysisPlugin
+class PileUpWeight: public EventWeightPlugin
 {
-public:
-    /// An auxiliary structure to aggregate central weight and its systematical variations
-    struct Weights
-    {
-        /// Central weight
-        double central;
-        
-        /// Up variation
-        double up;
-        
-        /// Down variation
-        double down;
-    };
-    
 public:
     /**
      * \brief Creates a plugin with the given name
@@ -96,9 +82,6 @@ public:
      */
     virtual Plugin *Clone() const override;
     
-    /// Returns weights for the current event
-    PileUpWeight::Weights const &GetWeights() const;
-    
 private:
     /**
      * \brief Calculates weights for the current event
@@ -128,7 +111,4 @@ private:
     
     /// Rescaling of the target distribution to estimate systematical uncertainty
     double const systError;
-    
-    /// Nominal and systematic weights calculated for the current event
-    Weights weights;
 };

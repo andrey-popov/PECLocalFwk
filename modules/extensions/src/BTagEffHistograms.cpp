@@ -124,7 +124,7 @@ void BTagEffHistograms::Initialize()
 bool BTagEffHistograms::ProcessEvent()
 {
     // Calculate event weight
-    double const weight = puWeightPlugin->GetWeights().central;
+    double const weight = puWeightPlugin->GetWeight();
     
     
     // Loop over reconstructed jets
