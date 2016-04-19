@@ -1,9 +1,3 @@
-/**
- * \file Dataset.hpp
- * 
- * The module defines a class to descibe a dataset.
- */
-
 #pragma once
 
 #include <string>
@@ -43,8 +37,12 @@ public:
         /// Default constructor
         File() noexcept;
         
-        /// Constructor from file name only (to be used for real data)
-        File(std::string const &name) noexcept;
+        /**
+         * \brief Constructor from file name only (to be used for real data)
+         * 
+         * This constructor is made explicit in order to avoid ambiguity in Dataset::AddFile.
+         */
+        explicit File(std::string const &name) noexcept;
         
         /// Simple initializing constructor
         File(std::string const &name, double xSec, unsigned long nEvents) noexcept;
@@ -185,8 +183,14 @@ public:
 public:
     /**
      * \brief Adds a new file to the list
+     * 
+     * The file name part of the given path can contain wildcards '*' and '?'. Consult
+     * documentation for ExpandPathMask for details.
      */
-    void AddFile(std::string const &name, double xSec, unsigned long nEvents) noexcept;
+    void AddFile(std::string const &path, double xSec, unsigned long nEvents);
+    
+    /// A short-cut of the above method to be used with data
+    void AddFile(std::string const &path);
     
     /**
      * \brief Adds a new file to the list
@@ -263,6 +267,19 @@ public:
     bool TestFlag(std::string const &flagName) const;
     
 private:
+    /**
+     * \brief Returns paths to files whose names match the provided mask
+     * 
+     * If the given path mask contains symbols '*' or '?' in the file name, files in the enclosing
+     * directory are listed and paths to whose matching the mask are returned. No wildcards are
+     * allowed in the path to the directory (i.e. before that last slash in the given mask). If no
+     * files match the mask, an exception is thrown.
+     * 
+     * If the path mask does not contain wildcards, it is returned without modifications. In this
+     * case the method does not verify that the file exists.
+     */
+    static std::list<std::string> ExpandPathMask(std::string const &path);
+    
     /// Sets source dataset ID based on the name of the last added file
     void SetDefaultSourceDatasetID();
     

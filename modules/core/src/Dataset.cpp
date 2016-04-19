@@ -1,5 +1,9 @@
 #include <mensura/core/Dataset.hpp>
 
+#include <boost/filesystem.hpp>
+
+#include <regex>
+#include <sstream>
 #include <stdexcept>
 
 
@@ -88,12 +92,19 @@ Dataset::Dataset(Dataset::Process process,
 }
 
 
-void Dataset::AddFile(string const &name, double xSec, unsigned long nEvents) noexcept
+void Dataset::AddFile(string const &path, double xSec, unsigned long nEvents)
 {
-    files.emplace_back(name, xSec, nEvents);
+    for (auto const &p: ExpandPathMask(path))
+        files.emplace_back(p, xSec, nEvents);
     
     if (sourceDatasetID == "")
         SetDefaultSourceDatasetID();
+}
+
+
+void Dataset::AddFile(string const &path)
+{
+    AddFile(path, -1., 0);
 }
 
 
@@ -202,6 +213,91 @@ void Dataset::UnsetFlag(string const &flagName)
 bool Dataset::TestFlag(string const &flagName) const
 {
     return (flags.count(flagName) > 0);
+}
+
+
+std::list<std::string> Dataset::ExpandPathMask(std::string const &path)
+{
+    namespace fs = boost::filesystem;
+    
+    // Check if the path includes a wildcard
+    auto const wildcardPos = path.find_first_of("*?");
+    
+    if (wildcardPos == std::string::npos)
+    {
+        // Deliberately do not attempt to check if the file actually exists
+        return {path};
+    }
+    
+    
+    // Split the path into directory path and file mask and make sure that the directory path does
+    //not contain wildcards
+    auto const lastSlashPos = path.find_last_of('/');
+    
+    if (lastSlashPos != std::string::npos and wildcardPos < lastSlashPos)
+    {
+        std::ostringstream message;
+        message << "Dataset::ExpandPathMask: Directory name in path \"" << path <<
+          "\" contains a wildcard, which is not supported.";
+        throw std::runtime_error(message.str());
+    }
+    
+    std::string directoryPath, fileNameMask;
+    
+    if (lastSlashPos != std::string::npos)
+    {
+        directoryPath = path.substr(0, lastSlashPos);
+        fileNameMask = path.substr(lastSlashPos + 1);
+    }
+    else
+    {
+        directoryPath = ".";
+        fileNameMask = path;
+    }
+    
+    
+    // Make sure the directory exists
+    if (not fs::exists(directoryPath) or not fs::is_directory(directoryPath))
+    {
+        std::ostringstream message;
+        message << "Dataset::ExpandPathMask: Directory \"" << directoryPath <<
+          "\" does not exist or is not a valid directory.";
+        throw std::runtime_error(message.str());
+    }
+    
+    
+    // Convert the file name mask into a valid regular expression. In order to do it, escape all
+    //special characters except for '*' and '?' and prepend these two with dots
+    std::regex escapeRegex(R"(\.|\^|\$|\||\(|\)|\[|\]|\{|\}|\+|\\)");
+    fileNameMask = std::regex_replace(fileNameMask, escapeRegex, "\\$&");
+    std::regex prependRegex(R"(\?|\*)");
+    fileNameMask = std::regex_replace(fileNameMask, prependRegex, ".$&");
+    std::regex fileNameRegex(fileNameMask);
+    
+    
+    // Loop over the files in the directory and select ones matching the regular expression
+    std::list<std::string> concretePaths;
+    
+    for (fs::directory_iterator dirIt(directoryPath); dirIt != fs::directory_iterator(); ++dirIt)
+    {
+        if (not fs::is_regular_file(dirIt->status()))
+            continue;
+        
+        if (std::regex_match(dirIt->path().filename().native(), fileNameRegex))
+            concretePaths.emplace_back(dirIt->path().native());
+    }
+    
+    
+    // Make sure that the mask has matched at least one file
+    if (concretePaths.size() == 0)
+    {
+        std::ostringstream message;
+        message << "Dataset::ExpandPathMask: Path \"" << path << "\" does not match any file.";
+        throw std::runtime_error(message.str());
+    }
+    
+    
+    return concretePaths;
 }
 
 
