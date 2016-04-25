@@ -69,7 +69,8 @@ public:
 
 public:
     /**
-     * \brief Creates a new output file and sets up a tree
+     * \brief Saves pointers to required plugins and loads simulated pile-up profile for the
+     * current dataset
      * 
      * Reimplemented from Plugin.
      */
