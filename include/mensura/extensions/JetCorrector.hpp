@@ -86,7 +86,8 @@ public:
      * 
      * For further details refer to the documentation of the overriden method.
      */
-    virtual void Correct(Jet &jet, double rho, SystVariation syst = SystVariation()) const;
+    virtual void Correct(Jet &jet, double rho, SystType syst = SystType::None,
+      SystService::VarDirection direction = SystService::VarDirection::Undefined) const;
     
 private:
     /**

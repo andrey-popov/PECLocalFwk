@@ -7,7 +7,7 @@
 #pragma once
 
 #include <mensura/core/PhysicsObjects.hpp>
-#include <mensura/core/SystDefinition.hpp>
+#include <mensura/core/SystService.hpp>
 
 
 /**
@@ -22,6 +22,15 @@
  */
 class JetCorrectorInterface
 {
+public:
+    /// Supported systematical variations
+    enum class SystType
+    {
+        None,
+        JEC,
+        JER
+    };
+    
 public:
     /**
      * \brief Returns a newly-initialised copy of this
@@ -48,8 +57,10 @@ public:
      * In addition to the jet's properties, the method takes a value of the mean angular pt density,
      * rho, as it is needed to parametrise L1 JEC.
      */
-    virtual void Correct(Jet &jet, double rho, SystVariation syst = SystVariation()) const = 0;
+    virtual void Correct(Jet &jet, double rho, SystType syst = SystType::None,
+      SystService::VarDirection direction = SystService::VarDirection::Undefined) const = 0;
     
     /// A short-cut for the Correct method
-    void operator()(Jet &jet, double rho, SystVariation syst = SystVariation()) const;
+    void operator()(Jet &jet, double rho, SystType syst = SystType::None,
+      SystService::VarDirection direction = SystService::VarDirection::Undefined) const;
 };

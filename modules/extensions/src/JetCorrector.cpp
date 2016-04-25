@@ -77,7 +77,8 @@ void JetCorrector::Init()
 }
 
 
-void JetCorrector::Correct(Jet &jet, double rho, SystVariation syst /*= SystVariation()*/) const
+void JetCorrector::Correct(Jet &jet, double rho, SystType syst /*= SystType::None*/,
+  SystService::VarDirection direction /*= SystService::VarDirection::Undefined*/) const
 {
     TLorentzVector const &rawP4 = jet.RawP4();
     
@@ -92,7 +93,7 @@ void JetCorrector::Correct(Jet &jet, double rho, SystVariation syst /*= SystVari
     
     
     // Evaluate systematical variation for JEC
-    if (syst.type == SystTypeAlgo::JEC)
+    if (syst == SystType::JEC)
     {
         // First a sanity check
         if (not jecUncertaintyAccessor)
@@ -105,7 +106,10 @@ void JetCorrector::Correct(Jet &jet, double rho, SystVariation syst /*= SystVari
         
         double const jecUncertainty = jecUncertaintyAccessor->getUncertainty(true);
         
-        jecFactor *= (1. + syst.direction * jecUncertainty);
+        if (direction == SystService::VarDirection::Up)
+            jecFactor *= (1. + jecUncertainty);
+        else if (direction == SystService::VarDirection::Down)
+            jecFactor *= (1. - jecUncertainty);
     }
     
     
@@ -114,7 +118,8 @@ void JetCorrector::Correct(Jet &jet, double rho, SystVariation syst /*= SystVari
     
     
     // A sanity check before JER smearing
-    if (not jerAccessor and syst.type == SystTypeAlgo::JER and syst.direction != 0)
+    if (not jerAccessor and syst == SystType::JER and
+      direction != SystService::VarDirection::Undefined)
         throw logic_error("JetCorrector::Correct: Trying to evaluate JER systematics while "
          "data file with parameters for JER has not been provided.");
     
@@ -124,11 +129,11 @@ void JetCorrector::Correct(Jet &jet, double rho, SystVariation syst /*= SystVari
     {
         JetResolutionFactor::SystVariation jerSyst = JetResolutionFactor::SystVariation::Nominal;
         
-        if (syst.type == SystTypeAlgo::JER)
+        if (syst == SystType::JER)
         {
-            if (syst.direction > 0)
+            if (direction == SystService::VarDirection::Up)
                 jerSyst = JetResolutionFactor::SystVariation::Up;
-            else if (syst.direction < 0)
+            else if (direction == SystService::VarDirection::Down)
                 jerSyst = JetResolutionFactor::SystVariation::Down;
         }
         
