@@ -8,12 +8,6 @@ Service::Service(std::string const &name_):
 {}
 
 
-Service::~Service()
-{}
-
-
-
-
 void Service::BeginRun(Dataset const &)
 {}
 

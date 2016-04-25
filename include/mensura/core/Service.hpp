@@ -50,8 +50,8 @@ public:
     /// Default assignment operator
     Service &operator=(Service const &) = default;
     
-    /// Trivial destructor
-    virtual ~Service();
+    /// Default destructor
+    virtual ~Service() = default;
     
 public:
     /**
