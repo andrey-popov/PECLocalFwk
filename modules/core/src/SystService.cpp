@@ -78,7 +78,7 @@ void SystService::Set(std::initializer_list<std::pair<std::string, VarDirection>
         {
             std::ostringstream message;
             message << "SystService[\"" << GetName() << "\"]::Set: Systematic uncertainty of " <<
-              "type \"" << allowedDBIt->first << "\" is not known.";
+              "type \"" << var.first << "\" is not known.";
             throw std::runtime_error(message.str());
         }
         
