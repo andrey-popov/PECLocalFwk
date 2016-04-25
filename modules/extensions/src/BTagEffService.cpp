@@ -240,10 +240,9 @@ void BTagEffService::OpenInputFile(std::string const &path)
     // Guard creation of a ROOT file
     ROOTLock::Lock();
     
-    // Resolve path to the source file and open it. If the file is missing, pathBuilder will throw
+    // Resolve path to the input file and open it. If the file is missing, FileInPath will throw
     //an exception
-    FileInPath pathBuilder;
-    TFile *fp = TFile::Open(pathBuilder.Resolve("BTag", filePath).c_str());
+    TFile *fp = TFile::Open(FileInPath::Resolve("BTag", filePath).c_str());
     srcFile.reset(fp);
     
     ROOTLock::Unlock();

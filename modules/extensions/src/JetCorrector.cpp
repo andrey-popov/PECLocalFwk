@@ -49,10 +49,6 @@ void JetCorrector::SetJERFile(string const &dataFile) noexcept
 
 void JetCorrector::Init()
 {
-    // An object to resolve file paths
-    FileInPath pathResolver;
-    
-    
     // Create an object to perform jet energy corrections. Code follows an example in [1]. The block
     //is locked because the classes to deal with JEC construct some ROOT entities
     //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetEnCorFWLite
@@ -61,7 +57,7 @@ void JetCorrector::Init()
     vector<JetCorrectorParameters> jecParameters;
     
     for (string const &dataFile: dataFilesJEC)
-        jecParameters.emplace_back(pathResolver.Resolve(dataFile));
+        jecParameters.emplace_back(FileInPath::Resolve(dataFile));
     
     jetEnergyCorrector.reset(new FactorizedJetCorrector(jecParameters));
     
@@ -70,7 +66,7 @@ void JetCorrector::Init()
     //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections#JetCorUncertainties
     if (dataFileJECUncertainty.length() > 0)
         jecUncertaintyAccessor.reset(
-         new JetCorrectionUncertainty(pathResolver.Resolve(dataFileJECUncertainty)));
+         new JetCorrectionUncertainty(FileInPath::Resolve(dataFileJECUncertainty)));
     
     ROOTLock::Unlock();
     

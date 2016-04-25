@@ -23,10 +23,8 @@ PileUpWeight::PileUpWeight(std::string const &name, std::string const &dataPUFil
     
     
     // File with distributions as generated
-    FileInPath pathResolver;
-    
     ROOTLock::Lock();
-    mcPUFile.reset(new TFile((pathResolver.Resolve("PileUp/", mcPUFileName)).c_str()));
+    mcPUFile.reset(new TFile((FileInPath::Resolve("PileUp/", mcPUFileName)).c_str()));
     ROOTLock::Unlock();
 }
 
@@ -42,10 +40,8 @@ PileUpWeight::PileUpWeight(std::string const &dataPUFileName, std::string const 
     
     
     // File with distributions as generated
-    FileInPath pathResolver;
-    
     ROOTLock::Lock();
-    mcPUFile.reset(new TFile((pathResolver.Resolve("PileUp/", mcPUFileName)).c_str()));
+    mcPUFile.reset(new TFile((FileInPath::Resolve("PileUp/", mcPUFileName)).c_str()));
     ROOTLock::Unlock();
 }
 
@@ -146,14 +142,11 @@ bool PileUpWeight::ProcessEvent()
 
 void PileUpWeight::ReadTargetDistribution(std::string const &dataPUFileName)
 {
-    FileInPath pathResolver;
-    
-    
     // ROOT objects are created below. Mark it as a critical block
     ROOTLock::Lock();
     
     // Read the target (data) pile-up distribution
-    TFile dataPUFile((pathResolver.Resolve("PileUp/", dataPUFileName)).c_str());
+    TFile dataPUFile((FileInPath::Resolve("PileUp/", dataPUFileName)).c_str());
     dataPUHist.reset(dynamic_cast<TH1 *>(dataPUFile.Get("pileup")));
     
     // Make sure the histogram is not associated to a file

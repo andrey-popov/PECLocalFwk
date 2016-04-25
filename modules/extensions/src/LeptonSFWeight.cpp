@@ -84,8 +84,7 @@ void LeptonSFWeight::LoadScaleFactors(std::string const &srcFileName,
     // Open the source file and read the histograms with scale factors from it
     ROOTLock::Lock();
     
-    FileInPath pathBuilder;
-    std::string const srcFilePath(pathBuilder.Resolve("LeptonSF", srcFileName));
+    std::string const srcFilePath(FileInPath::Resolve("LeptonSF", srcFileName));
     std::unique_ptr<TFile> srcFile(TFile::Open(srcFilePath.c_str()));
     
     for (std::string const &histName: histogramNames)

@@ -13,11 +13,9 @@ JetResolutionFactor::JetResolutionFactor(string const &dataFileName_) noexcept:
     dataFileName(dataFileName_)
 {
     // Read the JER histogram from the data file
-    FileInPath pathResolver;
-    
     ROOTLock::Lock();
     
-    TFile dataFile(pathResolver.Resolve(dataFileName).c_str());
+    TFile dataFile(FileInPath::Resolve(dataFileName).c_str());
     jerHist.reset(dynamic_cast<TH2D *>(dataFile.Get("pfJetResolutionMCtoDataCorrLUT")));
     jerHist->SetDirectory(nullptr);
     dataFile.Close();

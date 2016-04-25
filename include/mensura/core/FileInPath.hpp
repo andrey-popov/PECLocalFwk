@@ -1,58 +1,77 @@
-/**
- * \file FileInPath.hpp
- * 
- * Module defines tools to resolve relative file paths w.r.t. standard locations of the package.
- */
-
 #pragma once
 
 #include <string>
+#include <vector>
 
 
 /**
  * \class FileInPath
  * \brief Allows to resolve a (possibly) relative file path w.r.t. to several possible locations
  * 
- * A relative path is first resolved w.r.t. to $MENSURA_INSTALL/data/, then w.r.t. the current
- * directory. Supports also an absolute path.
+ * One location, $MENSURA_INSTALL/data/, is included by default. User can add other locations if
+ * needed.
+ * 
+ * This class is a singleton, and thus user cannot constract an instance of it. Instead, all
+ * functionality is implemented in static methods.
  */
 class FileInPath
 {
 public:
+    /// Copy constructor is distabled because this is a singleton
+    FileInPath(FileInPath const &) = delete;
+    
+    /// Assignment operator is disabled because this is a singleton
+    FileInPath &operator=(FileInPath const &) = delete;
+    
+private:
     /**
      * \brief Constructor
      * 
-     * Reads the values of the MENSURA_INSTALL environmental variable and stores it in
-     * intallPath. If the variable is not set, an exception is thrown.
+     * The constructor is private because the class is a singletop. It reads value of environmental
+     * variable MENSURA_INSTALL and saves $MENSURA_INSTALL/data/ as the first location. If the
+     * variable is not set, an exception is thrown.
      */
     FileInPath();
 
 public:
     /**
-     * \brief Resolves the file path
+     * \brief Adds a new location in which files with be searched
      * 
-     * If an absolute path is given, the method returns it unchanged after verifying that such
-     * file exists. If the path is not absolute, the method tries to resolve it first w.r.t.
-     * $MENSURA_INSTALL/data/ then w.r.t. the current directory. If the path is resolved, which
-     * means it points to an existing file, an equivalent absolute path is returned. Otherwise
-     * an exception is thrown.
+     * The new location takes preference over all paths added previously. This method is not
+     * guaranteed to be thread-safe.
      */
-    std::string Resolve(std::string const &path) const;
+    static void AddLocation(std::string path);
     
     /**
-     * \brief Resolves the file path
+     * \brief Resolves a path, allowing for an optional subdirectory
      * 
-     * Does precisely the same as Resolve(string const &), but tries to resolve a relative path
-     * w.r.t. $MENSURA_INSTALL/data/$prefix/ instead of $MENSURA_INSTALL/data/.
+     * If the path starts with '/', it is treated as an absolute path and returned unchanched after
+     * verifying that such file exists. If the path is not absolute, method tries to resolve it
+     * with respect to all defined locations, in a reversed order of their definition. For each
+     * location, provided subdirectory is first added to it, and the resolution is attempted. If
+     * such file is not found, the subdirectory is omitted, and the resolution is attempted again.
+     * Finally, the file is searched for in the current working directory (the one in which the
+     * executable is being run), with and without the subdirectory. If all attempts to find the
+     * file fail, an exception is thrown.
      */
-    std::string Resolve(std::string const &prefix, std::string const &path) const;
+    static std::string Resolve(std::string subDir, std::string const &path);
+    
+    /**
+     * \brief Resolves a path
+     * 
+     * Works in the same way as the above version but does not include the additional subdirectory.
+     */
+    static std::string Resolve(std::string const &path);
+    
+private:
+    /// Returns the only instance of this singleton
+    static FileInPath &GetInstance();
 
 private:
     /**
-     * \brief Path in which the framework is intalled
+     * \brief Locations with respect to which paths are resolved
      * 
-     * Read from the environmental variable MENSURA_INSTALL. The path stored in this variable
-     * terminates with '/'.
+     * All paths stored in this collection terminate with '/'.
      */
-    std::string installPath;
+    std::vector<std::string> locations;
 };

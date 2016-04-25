@@ -62,8 +62,7 @@ void BTagWeightCSVShape::LoadScaleFactors(std::string const &csvWeightFileName)
     // Read histograms with scale factors
     ROOTLock::Lock();
     
-    FileInPath pathBuilder;
-    std::string const resolvedPath(pathBuilder.Resolve("BTag", csvWeightFileName));
+    std::string const resolvedPath(FileInPath::Resolve("BTag", csvWeightFileName));
     std::unique_ptr<TFile> inputFile(TFile::Open(resolvedPath.c_str()));
     
     csvScaleFactors[5].reset(dynamic_cast<TH3 *>(inputFile->Get("b")));

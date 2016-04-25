@@ -4,70 +4,126 @@
 #include <boost/filesystem.hpp>
 
 #include <cstdlib>
+#include <sstream>
 #include <stdexcept>
-
-
-using namespace std;
 
 
 FileInPath::FileInPath()
 {
     // Read the install path from the environment
-    char const *path = getenv("MENSURA_INSTALL");
+    char const *path = std::getenv("MENSURA_INSTALL");
     
     if (not path)
-        throw runtime_error("FileInPath::FileInPath: Mandatory environment variable "
+        throw std::runtime_error("FileInPath::FileInPath: Mandatory environment variable "
          "MENSURA_INSTALL is not defined.");
     
     
-    installPath = path;
+    // Save the data/ subdirectory as a default location. Cannot use method AddLocation here since
+    //it will indirectly call the constructor
+    std::string installPath(path);
     
-    if (installPath.length() > 0 and installPath[installPath.length() - 1] != '/')
+    if (not boost::ends_with(installPath, "/"))
         installPath += '/';
+    
+    locations.emplace_back(installPath + "data/");
 }
 
 
-string FileInPath::Resolve(string const &path) const
+void FileInPath::AddLocation(std::string path)
 {
-    return Resolve("", path);
+    if (not boost::ends_with(path, "/"))
+        path += '/';
+    
+    GetInstance().locations.emplace_back(path);
 }
 
 
-string FileInPath::Resolve(string const &prefix, string const &path) const
+std::string FileInPath::Resolve(std::string subDir, std::string const &path)
 {
-    // Check if it is an absolute path
-    if (path.length() > 0 and path[0] == '/')
+    namespace fs = boost::filesystem;
+    
+    // Check if an absolute path is provided. In this case the first argument is ignored and the
+    //path is returned as is
+    if (boost::starts_with(path, "/"))
     {
         // Make sure the requested file exists
-        if (not boost::filesystem::exists(path))
-            throw runtime_error(string("FileInPath::Resolve: ") + "File \"" + path +
-             "\" was not found.");
+        if (not fs::exists(path) or not fs::is_regular(path))
+        {
+            std::ostringstream message;
+            message << "FileInPath::Resolve: Requested file with absolute path \"" <<
+              path << "\" does not exist or is not a regular file.";
+            throw std::runtime_error(message.str());
+        }
         
         return path;
     }
     
     
-    // Make sure the prefix ends up with a '/'
-    string canonicalPrefix(prefix);
-    
-    if (canonicalPrefix.length() > 0 and canonicalPrefix[canonicalPrefix.length() - 1] != '/')
-        canonicalPrefix += '/';
+    // Make sure subDir ends with '/'
+    if (subDir != "" and not boost::ends_with(subDir, "/"))
+        subDir += '/';
     
     
-    // Try to resolve the path w.r.t. $MENSURA_INSTALL/data/
-    string tryPath = installPath + "/data/" + canonicalPrefix + path;
+    // Loop over all possible locations, giving preference to ones added later
+    auto const &locations = GetInstance().locations;
     
-    if (boost::filesystem::exists(tryPath))
-        return tryPath;
-    
-    
-    // Try to resolve it w.r.t. to the working directory
-    if (boost::filesystem::exists(path))
+    for (auto locationIt = locations.rbegin(); locationIt != locations.rend(); ++locationIt)
     {
-        return boost::filesystem::current_path().native() + path;
+        std::string tryPath;
+        
+        // Try to resolve the path using the provided subdirectory
+        if (subDir != "")
+        {
+            tryPath = *locationIt + subDir + path;
+            
+            if (fs::exists(tryPath) and fs::is_regular(tryPath))
+                return tryPath;
+        }
+        
+        // Try to resolve the path ignoring the subdir
+        tryPath = *locationIt + path;
+        
+        if (fs::exists(tryPath) and fs::is_regular(tryPath))
+            return tryPath;
     }
     
     
+    // If none of the above succeeds, try to resolve the path with respect to the currect working
+    //directory, with and without the subdirectory
+    if (subDir != "")
+    {
+        std::string tryPath = subDir + path;
+        
+        if (fs::exists(tryPath) and fs::is_regular(tryPath))
+            return fs::current_path().native() + tryPath;
+    }
+    
+    if (fs::exists(path) and fs::is_regular(path))
+        return fs::current_path().native() + path;
+    
+    
     // If the workflow has reached this point, the path has not been resolved
-    throw runtime_error(string("FileInPath: ") + "Cannot resolve path \"" + path + "\".");
+    std::ostringstream message;
+    message << "FileInPath::Resolve: Failed to resolve path \"" << path <<
+      "\" within (optional) subdirectory \"" << subDir <<
+      "\". Following locations have been tried (with and without the subdirectory):\n";
+    
+    for (auto locationIt = locations.rbegin(); locationIt != locations.rend(); ++locationIt)
+        message << "  " << *locationIt << '\n';
+    
+    message << "  " << fs::current_path().native() << '\n';
+    throw std::runtime_error(message.str());
+}
+
+
+std::string FileInPath::Resolve(std::string const &path)
+{
+    return Resolve("", path);
+}
+
+
+FileInPath &FileInPath::GetInstance()
+{
+    static FileInPath instance;
+    return instance;
 }

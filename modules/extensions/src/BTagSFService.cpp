@@ -225,8 +225,7 @@ void BTagSFService::Initialize(BTagger const &bTagger, std::string const &fileNa
     
     // Resolve path to the CSV file with b-tagging scale factors. If the file does not exist, an
     //exception will be thrown
-    FileInPath pathBuilder;
-    std::string const filePath(pathBuilder.Resolve("BTag", fileName));
+    std::string const filePath(FileInPath::Resolve("BTag", fileName));
     
     // Open the file
     bTagCalibration.reset(
