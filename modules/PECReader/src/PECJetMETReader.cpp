@@ -13,13 +13,14 @@
 
 PECJetMETReader::PECJetMETReader(std::string name /*= "JetMET"*/):
     JetMETReader(name),
-    inputDataPluginName("InputData"),
-    inputDataPlugin(nullptr),
+    inputDataPluginName("InputData"), inputDataPlugin(nullptr),
+    systServiceName("Systematics"),
     treeName("pecJetMET/JetMET"),
     bfJetPointer(&bfJets), bfMETPointer(&bfMETs),
     minPt(0.), maxAbsEta(std::numeric_limits<double>::infinity()),
     leptonPluginName("Leptons"), leptonPlugin(nullptr),
-    genJetPluginName(""), genJetPlugin(nullptr)
+    genJetPluginName(""), genJetPlugin(nullptr),
+    systType(SystType::None), systDirection(0)
 {
     leptonDR2 = std::pow(GetJetRadius(), 2);
 }
@@ -27,19 +28,90 @@ PECJetMETReader::PECJetMETReader(std::string name /*= "JetMET"*/):
 
 PECJetMETReader::PECJetMETReader(PECJetMETReader const &src) noexcept:
     JetMETReader(src),
-    inputDataPluginName(src.inputDataPluginName),
-    inputDataPlugin(src.inputDataPlugin),
+    inputDataPluginName(src.inputDataPluginName), inputDataPlugin(src.inputDataPlugin),
+    systServiceName(src.systServiceName),
     treeName(src.treeName),
     bfJetPointer(&bfJets), bfMETPointer(&bfMETs),
     minPt(src.minPt), maxAbsEta(src.maxAbsEta),
     leptonPluginName(src.leptonPluginName), leptonPlugin(src.leptonPlugin),
     leptonDR2(src.leptonDR2),
-    genJetPluginName(src.genJetPluginName), genJetPlugin(src.genJetPlugin)
+    genJetPluginName(src.genJetPluginName), genJetPlugin(src.genJetPlugin),
+    systType(src.systType), systDirection(src.systDirection)
 {}
 
 
-PECJetMETReader::~PECJetMETReader() noexcept
-{}
+void PECJetMETReader::BeginRun(Dataset const &)
+{
+    // Save pointer to the plugin providing access to input data
+    inputDataPlugin = dynamic_cast<PECInputData const *>(GetDependencyPlugin(inputDataPluginName));
+    
+    // Save pointers to plugins that produce leptons and generator-level jets
+    if (leptonPluginName != "")
+        leptonPlugin = dynamic_cast<LeptonReader const *>(GetDependencyPlugin(leptonPluginName));
+    
+    if (genJetPluginName != "")
+        genJetPlugin = dynamic_cast<GenJetMETReader const *>(GetDependencyPlugin(genJetPluginName));
+    
+    
+    // Read requested systematic variation
+    if (systServiceName != "")
+    {
+        SystService const *systService =
+          dynamic_cast<SystService const *>(GetMaster().GetServiceQuiet(systServiceName));
+        
+        if (systService)
+        {
+            std::pair<bool, SystService::VarDirection> s;
+            
+            if ((s = systService->Test("JEC")).first)
+            {
+                systType = SystType::JEC;
+                systDirection = (s.second == SystService::VarDirection::Up) ? +1 : -1;
+            }
+            else if ((s = systService->Test("JER")).first)
+            {
+                systType = SystType::JER;
+                systDirection = (s.second == SystService::VarDirection::Up) ? +1 : -1;
+            }
+            else if ((s = systService->Test("METUncl")).first)
+            {
+                systType = SystType::METUncl;
+                systDirection = (s.second == SystService::VarDirection::Up) ? +1 : -1;
+            }
+        }
+    }
+    
+    
+    // Set up the tree. Branches with properties that are not currently not used, are disabled
+    inputDataPlugin->LoadTree(treeName);
+    TTree *tree = inputDataPlugin->ExposeTree(treeName);
+    
+    ROOTLock::Lock();
+    
+    if (systType != SystType::JEC)
+        tree->SetBranchStatus("jets.jecUncertainty", false);
+    
+    if (systType != SystType::JER)
+        tree->SetBranchStatus("jets.jerUncertainty", false);
+    
+    tree->SetBranchStatus("jets.bTagCMVA", false);
+    tree->SetBranchStatus("jets.secVertexMass", false);
+    tree->SetBranchStatus("jets.pileUpMVA", false);
+    tree->SetBranchStatus("jets.area", false);
+    tree->SetBranchStatus("jets.charge", false);
+    tree->SetBranchStatus("jets.pullAngle", false);
+    
+    tree->SetBranchAddress("jets", &bfJetPointer);
+    tree->SetBranchAddress("METs", &bfMETPointer);
+    
+    ROOTLock::Unlock();
+}
+
+
+Plugin *PECJetMETReader::Clone() const
+{
+    return new PECJetMETReader(*this);
+}
 
 
 void PECJetMETReader::ConfigureLeptonCleaning(std::string const leptonPluginName_, double dR)
@@ -53,44 +125,6 @@ void PECJetMETReader::ConfigureLeptonCleaning(std::string const leptonPluginName
 {
     leptonPluginName = leptonPluginName_;
     leptonDR2 = std::pow(GetJetRadius(), 2);
-}
-
-
-void PECJetMETReader::BeginRun(Dataset const &)
-{
-    // Save pointer to the plugin providing access to input data
-    inputDataPlugin = dynamic_cast<PECInputData const *>(GetDependencyPlugin(inputDataPluginName));
-    
-    
-    // Save pointers to plugins that produce leptons and generator-level jets
-    if (leptonPluginName != "")
-        leptonPlugin = dynamic_cast<LeptonReader const *>(GetDependencyPlugin(leptonPluginName));
-    
-    if (genJetPluginName != "")
-        genJetPlugin = dynamic_cast<GenJetMETReader const *>(GetDependencyPlugin(genJetPluginName));
-    
-    
-    // Set up the tree. Branches with properties that are not currently not used, are disabled
-    inputDataPlugin->LoadTree(treeName);
-    TTree *tree = inputDataPlugin->ExposeTree(treeName);
-    ROOTLock::Lock();
-    tree->SetBranchStatus("jets.jecUncertainty", false);
-    tree->SetBranchStatus("jets.jerUncertainty", false);
-    tree->SetBranchStatus("jets.bTagCMVA", false);
-    tree->SetBranchStatus("jets.secVertexMass", false);
-    tree->SetBranchStatus("jets.pileUpMVA", false);
-    tree->SetBranchStatus("jets.area", false);
-    tree->SetBranchStatus("jets.charge", false);
-    tree->SetBranchStatus("jets.pullAngle", false);
-    tree->SetBranchAddress("jets", &bfJetPointer);
-    tree->SetBranchAddress("METs", &bfMETPointer);
-    ROOTLock::Unlock();
-}
-
-
-Plugin *PECJetMETReader::Clone() const
-{
-    return new PECJetMETReader(*this);
 }
 
 
@@ -129,10 +163,17 @@ bool PECJetMETReader::ProcessEvent()
     // Process jets in the current event
     for (pec::Jet const &j: bfJets)
     {
-        // Read jet momentum and apply corrections to it
+        // Read raw jet momentum and apply corrections to it
         TLorentzVector p4;
         p4.SetPtEtaPhiM(j.Pt(), j.Eta(), j.Phi(), j.M());
         p4 *= j.CorrFactor();
+        
+        
+        // Apply systematic variations if requested
+        if (systType == SystType::JEC)
+            p4 *= 1. + systDirection * j.JECUncertainty();
+        else if (systType == SystType::JER)
+            p4 *= 1. + systDirection * j.JERUncertainty();
         
         
         // Loose physics selection
@@ -189,7 +230,7 @@ bool PECJetMETReader::ProcessEvent()
             for (auto const &genJet: genJetPlugin->GetJets())
             {
                 double const dR2 = std::pow(p4.Eta() - genJet.Eta(), 2) +
-                 std::pow(TVector2::Phi_mpi_pi(p4.Phi() - genJet.Phi()), 2);
+                  std::pow(TVector2::Phi_mpi_pi(p4.Phi() - genJet.Phi()), 2);
                 //^ Do not use TLorentzVector::DeltaR to avoid calculating sqrt
                 
                 if (dR2 < minDR2)
@@ -211,8 +252,28 @@ bool PECJetMETReader::ProcessEvent()
     std::sort(jets.rbegin(), jets.rend());
     
     
-    // Copy corrected MET
-    pec::Candidate const &correctedMET = bfMETs.at(0);
+    // Copy corrected MET corresponding to the requested systematic variation
+    unsigned metIndex;
+    
+    switch (systType)
+    {
+        case SystType::JEC:
+            metIndex = (systDirection > 0) ? 2 : 3;
+            break;
+        
+        case SystType::JER:
+            metIndex = (systDirection > 0) ? 4 : 5;
+            break;
+        
+        case SystType::METUncl:
+            metIndex = (systDirection > 0) ? 6 : 7;
+            break;
+        
+        default:
+            metIndex = 0;
+    }
+    
+    pec::Candidate const &correctedMET = bfMETs.at(metIndex);
     met.SetPtEtaPhiM(correctedMET.Pt(), 0., correctedMET.Phi(), 0.);
     
     

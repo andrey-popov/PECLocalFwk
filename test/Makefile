@@ -25,7 +25,7 @@ LDFLAGS := $(shell root-config --libs) -lTreePlayer -lHistPainter \
 
 # Define example and test programs
 EXAMPLES := minimal multithread
-TESTS := btag-scale-factors btag-efficiencies lepton-scale-factors
+TESTS := btag-scale-factors btag-efficiencies lepton-scale-factors jet-met-systematics
 
 
 # Targets. By default only examples are cleaned

@@ -4,6 +4,8 @@
 
 #include <mensura/core/LeptonReader.hpp>
 #include <mensura/core/GenJetMETReader.hpp>
+#include <mensura/core/SystService.hpp>
+
 #include <mensura/PECReader/Candidate.hpp>
 #include <mensura/PECReader/Jet.hpp>
 
@@ -25,10 +27,22 @@ class PECInputData;
  * SetGenJetReader, angular matching to them is performed. The maximal allowed angular distance for
  * matching is set to half of the radius parameter of reconstructed jets.
  * 
- * Currently the plugin is not able to reapply JEC and neglects any systematic variations.
+ * Systematic variations in JEC, JER, or "unclustered MET" are applied as requested by a
+ * SystService with a default name "Systematics". The service is optional; if it is not defined,
+ * variations are not performed.
  */
 class PECJetMETReader: public JetMETReader
 {
+private:
+    /// Supported systematic variations
+    enum class SystType
+    {
+        None,
+        JEC,
+        JER,
+        METUncl
+    };
+    
 public:
     /**
      * \brief Creates plugin with the given name
@@ -46,10 +60,21 @@ public:
     /// Assignment operator is deleted
     PECJetMETReader &operator=(PECJetMETReader const &) = delete;
     
-    /// Trivial destructor
-    virtual ~PECJetMETReader() noexcept;
-    
 public:
+    /**
+     * \brief Sets up reading of a tree containing jets and MET
+     * 
+     * Reimplemented from Plugin.
+     */
+    virtual void BeginRun(Dataset const &) override;
+    
+    /**
+     * \brief Creates a newly configured clone
+     * 
+     * Implemented from Plugin.
+     */
+    virtual Plugin *Clone() const override;
+    
     /**
      * \brief Changes parameters of jet-lepton cleaning
      * 
@@ -65,20 +90,6 @@ public:
     
     /// A short-cut for the above method that uses jet radius as the minimal allowed separation
     void ConfigureLeptonCleaning(std::string const leptonPluginName = "Leptons");
-    
-    /**
-     * \brief Sets up reading of a tree containing jets and MET
-     * 
-     * Reimplemented from Plugin.
-     */
-    virtual void BeginRun(Dataset const &) override;
-    
-    /**
-     * \brief Creates a newly configured clone
-     * 
-     * Implemented from Plugin.
-     */
-    virtual Plugin *Clone() const override;
     
     /**
      * \brief Returns radius parameter used in the jet clustering algorithm
@@ -105,11 +116,14 @@ private:
     virtual bool ProcessEvent() override;
     
 private:
-    /// Name of the plugin that reads PEC files
+    /// Name of a plugin that reads PEC files
     std::string inputDataPluginName;
     
     /// Non-owning pointer to a plugin that reads PEC files
     PECInputData const *inputDataPlugin;
+    
+    /// Name of a service that reports requested systematics
+    std::string systServiceName;
     
     /// Name of the tree containing information about jets and MET
     std::string treeName;
@@ -166,4 +180,14 @@ private:
     
     /// Non-owning pointer to a plugin that produces generator-level jets
     GenJetMETReader const *genJetPlugin;
+    
+    /// Type of requested systematical variation
+    SystType systType;
+    
+    /**
+     * \brief Requested direction of a systematical variation
+     * 
+     * Allowed values are 0, -1, +1.
+     */
+    int systDirection;
 };
