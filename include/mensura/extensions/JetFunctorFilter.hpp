@@ -40,9 +40,6 @@ public:
     JetFunctorFilter(std::function<bool(Jet const &)> const &selector,
       unsigned minNumJets, unsigned maxNumJets = -1) noexcept;
     
-    /// Copy constructor
-    JetFunctorFilter(JetFunctorFilter const &src) noexcept;
-    
 public:
     /**
      * \brief Performs initialization for a new dataset

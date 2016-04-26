@@ -29,13 +29,6 @@ JetFunctorFilter::JetFunctorFilter(function<bool(Jet const &)> const &selector_,
 {}
 
 
-JetFunctorFilter::JetFunctorFilter(JetFunctorFilter const &src) noexcept:
-    AnalysisPlugin(src),
-    selector(src.selector),
-    minNumJets(src.minNumJets), maxNumJets(src.maxNumJets)
-{}
-
-
 void JetFunctorFilter::BeginRun(Dataset const &)
 {
     // Save pointer to plugin that produces jets
