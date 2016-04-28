@@ -123,7 +123,7 @@ bool BTagWeight::ProcessEvent()
         weights.at(1) = CalcWeight(Variation::TagRateUp);
         weights.at(2) = CalcWeight(Variation::TagRateDown);
         weights.at(3) = CalcWeight(Variation::MistagRateUp);
-        weights.at(3) = CalcWeight(Variation::MistagRateDown);
+        weights.at(4) = CalcWeight(Variation::MistagRateDown);
     }
     
     return true;
