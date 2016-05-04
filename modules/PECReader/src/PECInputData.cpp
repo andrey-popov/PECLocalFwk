@@ -4,6 +4,7 @@
 #include <mensura/core/ROOTLock.hpp>
 
 #include <algorithm>
+#include <iostream>
 #include <iterator>
 #include <sstream>
 #include <stdexcept>
@@ -207,6 +208,13 @@ bool PECInputData::ProcessEvent()
     
     // Translate the ID from the storage format to the standard format of the framework
     eventID.Set(bfEventID.RunNumber(), bfEventID.LumiSectionNumber(), bfEventID.EventNumber());
+    
+    
+    // Debug output
+    #ifdef DEBUG
+    std::cout << "PECInputData[\"" << GetName() << "\"]: Read event " << eventID.Run() << ":" <<
+      eventID.LumiBlock() << ":" << eventID.Event() << std::endl;
+    #endif
     
     
     return true;

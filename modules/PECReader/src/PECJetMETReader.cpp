@@ -8,6 +8,7 @@
 #include <TVector2.h>
 
 #include <cmath>
+#include <iostream>
 #include <limits>
 
 
@@ -160,6 +161,13 @@ bool PECJetMETReader::ProcessEvent()
     auto const *leptonsForCleaning = (leptonPlugin) ? &leptonPlugin->GetLeptons() : nullptr;
     
     
+    // Header for debug print out
+    #ifdef DEBUG
+    std::cout << "PECJetMETReader[\"" << GetName() << "\"]: Jets in the current event:\n";
+    unsigned curJetNumber = 0;
+    #endif
+    
+    
     // Process jets in the current event
     for (pec::Jet const &j: bfJets)
     {
@@ -167,6 +175,17 @@ bool PECJetMETReader::ProcessEvent()
         TLorentzVector p4;
         p4.SetPtEtaPhiM(j.Pt(), j.Eta(), j.Phi(), j.M());
         p4 *= j.CorrFactor();
+        
+        
+        #ifdef DEBUG
+        ++curJetNumber;
+        std::cout << " Jet #" << curJetNumber << "\n";
+        std::cout << "  Raw momentum (pt, eta, phi, m): " << j.Pt() << ", " << j.Eta() << ", " <<
+          j.Phi() << ", " << j.M() << '\n';
+        std::cout << "  Fully corrected pt: " << p4.Pt() << '\n';
+        std::cout << "  JEC uncertainty: " << j.JECUncertainty() << ", JER uncertainty: " <<
+          j.JERUncertainty() << '\n';
+        #endif
         
         
         // Apply systematic variations if requested
@@ -208,6 +227,12 @@ bool PECJetMETReader::ProcessEvent()
         }
         
         
+        #ifdef DEBUG
+        std::cout << "  Jet passes selection on kinematics and ID and does not overlap with " <<
+          "a lepton\n";
+        #endif
+        
+        
         // Build the jet object. At this point jet momentum must be fully corrected
         Jet jet(p4);
         
@@ -243,6 +268,23 @@ bool PECJetMETReader::ProcessEvent()
             jet.SetMatchedGenJet(matchedGenJet);
         }
         
+        #ifdef DEBUG
+        std::cout << "  Flavour: " << j.Flavour() << ", CSV value: " << j.BTagCSV() << '\n';
+        std::cout << "  Has a GEN-level match? ";
+        
+        if (genJetPlugin)
+        {
+            if (jet.MatchedGenJet())
+                std::cout << "yes";
+            else
+                std::cout << "no";
+        }
+        else
+            std::cout << "n/a";
+        
+        std::cout << '\n';
+        #endif
+        
         
         jets.push_back(jet);
     }
@@ -275,6 +317,14 @@ bool PECJetMETReader::ProcessEvent()
     
     pec::Candidate const &correctedMET = bfMETs.at(metIndex);
     met.SetPtEtaPhiM(correctedMET.Pt(), 0., correctedMET.Phi(), 0.);
+    
+    
+    #ifdef DEBUG
+    std::cout << "PECJetMETReader[\"" << GetName() << "\"]: MET in the current event:\n";
+    std::cout << " Raw MET (pt, phi): " << bfMETs.at(1).Pt() << ", " << bfMETs.at(1).Phi() << '\n';
+    std::cout << " Corrected MET (pt, phi): " << bfMETs.at(0).Pt() << ", "
+      << bfMETs.at(0).Phi() << std::endl;
+    #endif
     
     
     
