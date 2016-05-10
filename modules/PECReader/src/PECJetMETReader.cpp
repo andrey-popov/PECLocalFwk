@@ -97,7 +97,6 @@ void PECJetMETReader::BeginRun(Dataset const &)
     
     tree->SetBranchStatus("jets.bTagCMVA", false);
     tree->SetBranchStatus("jets.secVertexMass", false);
-    tree->SetBranchStatus("jets.pileUpMVA", false);
     tree->SetBranchStatus("jets.area", false);
     tree->SetBranchStatus("jets.charge", false);
     tree->SetBranchStatus("jets.pullAngle", false);
@@ -240,6 +239,7 @@ bool PECJetMETReader::ProcessEvent()
         // jet.SetArea(j.Area());
         // jet.SetCharge(j.Charge());
         // jet.SetPullAngle(j.PullAngle());
+        jet.SetPileUpID(j.PileUpID());
         
         jet.SetParentID(j.Flavour());
         

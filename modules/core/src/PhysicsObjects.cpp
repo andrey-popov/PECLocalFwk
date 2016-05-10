@@ -173,6 +173,7 @@ Jet::Jet() noexcept:
     rawMomentumSF(0.),
     parentPDGID(0),
     charge(-10.), pullAngle(-10.),
+    puDiscriminator(0.),
     matchedGenJet(nullptr)
 {}
 
@@ -182,6 +183,7 @@ Jet::Jet(TLorentzVector const &correctedP4) noexcept:
     rawMomentumSF(0.),
     parentPDGID(0),
     charge(-10.), pullAngle(-10.),
+    puDiscriminator(0.),
     matchedGenJet(nullptr)
 {}
 
@@ -191,6 +193,7 @@ Jet::Jet(TLorentzVector const &rawP4, double corrSF) noexcept:
     rawMomentumSF(1. / corrSF),
     parentPDGID(0),
     charge(-10.), pullAngle(-10.),
+    puDiscriminator(0.),
     matchedGenJet(nullptr)
 {}
 
@@ -235,6 +238,11 @@ void Jet::SetArea(double area_) noexcept
 void Jet::SetMatchedGenJet(GenJet const *matchedJet) noexcept
 {
     matchedGenJet = matchedJet;
+}
+
+void Jet::SetPileUpID(double puDiscriminator_)
+{
+    puDiscriminator = puDiscriminator_;
 }
 
 
@@ -295,6 +303,12 @@ double Jet::Area() const noexcept
 GenJet const *Jet::MatchedGenJet() const noexcept
 {
     return matchedGenJet;
+}
+
+
+double Jet::PileUpID() const
+{
+    return puDiscriminator;
 }
 
 

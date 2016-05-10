@@ -194,6 +194,9 @@ public:
     /// Sets matched generator-level jet
     void SetMatchedGenJet(GenJet const *matchedJet) noexcept;
     
+    /// Sets value of pile-up ID discriminator
+    void SetPileUpID(double puDiscriminator);
+    
     /// Returns raw momentum
     TLorentzVector RawP4() const noexcept;
     
@@ -226,6 +229,9 @@ public:
      * If no jet is matched or generator-level jets are not available, returns a null pointer.
      */
     GenJet const *MatchedGenJet() const noexcept;
+    
+    /// Returns value of pile-up ID discriminator
+    double PileUpID() const;
 
 private:
     /// A scale factor to build raw four-momentum
@@ -245,6 +251,9 @@ private:
     
     /// Jet area
     double area;
+    
+    /// Pile-up ID discriminator
+    double puDiscriminator;
     
     /// Pointer to matched generator-level jet
     GenJet const *matchedGenJet;
