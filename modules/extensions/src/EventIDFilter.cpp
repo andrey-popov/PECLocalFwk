@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <regex>
 #include <sstream>
 #include <stdexcept>
 
@@ -43,10 +44,6 @@ EventIDFilter::EventIDFilter(EventIDFilter const &src):
 {}
 
 
-EventIDFilter::~EventIDFilter()
-{}
-
-
 void EventIDFilter::BeginRun(Dataset const &dataset)
 {
     // Lists of event IDs are provided on per-file basis. Since the plugin is not notified when
@@ -61,10 +58,7 @@ void EventIDFilter::BeginRun(Dataset const &dataset)
     
     
     // Make a short-cut for list of event IDs for the new atomic dataset
-    std::string const fileName(dataset.GetFiles().front().name);
-    std::string const shortFileName = fileName.substr(fileName.find_last_of('/') + 1);
-    
-    auto const resIt = eventIDsAllFiles.find(shortFileName);
+    auto const resIt = eventIDsAllFiles.find(dataset.GetSourceDatasetID());
     eventIDsCurFile = (resIt == eventIDsAllFiles.end()) ? nullptr : &resIt->second;
 }
 
@@ -90,75 +84,63 @@ void EventIDFilter::LoadEventIDLists(std::string const &eventIDsFileName)
     std::ifstream eventIDsFile(eventIDsFileName);
     
     if (not eventIDsFile.good())
-        throw std::runtime_error("EventIDFilter::EventIDFilter: Cannot open file \""s +
-          eventIDsFileName + "\".");
+    {
+        std::ostringstream message;
+        message << "EventIDFilter[\"" << GetName() <<
+          "\"]::LoadEventIDLists: Cannot open file \"" << eventIDsFileName << "\".";
+        throw std::runtime_error(message.str());
+    }
+    
+    
+    // Regular expressions to parse the file
+    // std::regex datasetRegex("^[ \t]*Dataset:[ \t]*([^[ \t]]+)[ \t]*$", std::regex::extended);
+    std::regex datasetRegex("^[ \t]*Dataset:[ \t]*([^ \t]+)[ \t]*$", std::regex::extended);
+    std::regex eventIDRegex("^[ \t]*([0-9]+):([0-9]+):([0-9]+)[ \t]*$", std::regex::extended);
+    std::smatch match;
     
     
     // Read IDs from the file
     std::string line;
-    bool stop = false;
     
-    while (not stop)
+    // The first non-trivial line in the group. It must contain ID of the first dataset
+    ReadCleanLine(eventIDsFile, line);
+    
+    while (true)
     {
-        // Read until a file name is found
-        while (true)
+        // Stop the loop if there are no more lines to read
+        if (line == "")
+            break;
+        
+        
+        // Extract the dataset ID from the last read line
+        if (not std::regex_match(line, match, datasetRegex))
         {
-            getline(eventIDsFile, line);
-            
-            if (line.find("# Name of the file") != std::string::npos)
-                break;
-            
-            if (eventIDsFile.eof())  // no more files mentioned in eventIDsFile
-            {
-                stop = true;
-                break;
-            }
+            std::ostringstream message;
+            message << "EventIDFilter[\"" << GetName() <<
+              "\"]::LoadEventIDLists: Failed to parse file \"" << eventIDsFileName << "\".";
+            throw std::runtime_error(message.str());
         }
         
-        if (stop)
-            // Skip the rest of the loop
-            continue;
-        
-        // The next line is the file name
-        getline(eventIDsFile, line);
-        auto &eventIDsCurFile = eventIDsAllFiles[line];
+        std::string const datasetID(match[1]);
         
         
-        // Skip two lines and read the number of events
-        for (unsigned i = 0; i < 3; ++i)
-            getline(eventIDsFile, line);
+        // Read event IDs
+        auto &eventIDsCurFile = eventIDsAllFiles[datasetID];
         
-        std::istringstream ist(line);
-        unsigned long nEntries;
-        ist >> nEntries;
-        
-        eventIDsCurFile.reserve(nEntries);
-        
-        
-        // Skip two lines
-        getline(eventIDsFile, line);
-        getline(eventIDsFile, line);
-        
-        
-        // Read IDs
         while (true)
         {
-            getline(eventIDsFile, line);
+            ReadCleanLine(eventIDsFile, line);
             
-            if (eventIDsFile.eof() or line.length() == 0)
+            // Stop if the end of file has been reached
+            if (line == "")
                 break;
             
-            ist.clear();
-            ist.str(line);  // should contain three numbers separated by semicolon
             
-            unsigned long run, lumiSection, event;
-            ist >> run;
-            ist.ignore();
-            ist >> lumiSection;
-            ist.ignore();
-            ist >> event;
-            
-            eventIDsCurFile.emplace_back(run, lumiSection, event);
+            // Try to parse the line as an event ID. However, it might also be the name of the
+            //next dataset
+            if (std::regex_match(line, match, eventIDRegex))
+                eventIDsCurFile.emplace_back(std::stoul(match[1]), std::stoul(match[2]),
+                  std::stoul(match[3]));
         }
     }
     
@@ -179,4 +161,35 @@ bool EventIDFilter::ProcessEvent()
     
     
     return (rejectKnownEvent) ? not eventFound : eventFound;
+}
+
+
+void EventIDFilter::ReadCleanLine(std::istream &input, std::string &buffer)
+{
+    while (true)
+    {
+        // Read next raw line
+        std::getline(input, buffer);
+        
+        if (input.eof())
+        {
+            buffer = "";
+            return;
+        }
+        
+        
+        // Strip off comment if any
+        auto pos = buffer.find_first_of('#');
+        buffer = buffer.substr(0, pos);
+        
+        
+        // Check if the resulting line is not empty or trivial.
+        pos = buffer.find_first_not_of(" \t");
+        
+        if (pos != std::string::npos)
+        {
+            // The line is not empty. Terminate the loop
+            return;
+        }
+    }
 }

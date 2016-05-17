@@ -4,6 +4,7 @@
 
 #include <mensura/core/EventID.hpp>
 
+#include <istream>
 #include <map>
 #include <string>
 #include <vector>
@@ -19,6 +20,13 @@ class EventIDReader;
  * This plugin filters events based on their ID (run, lumi, event numbers). The user specifies a
  * list of event IDs in a text file, and the plugin either keeps or rejects events whose IDs are
  * found in the list.
+ * 
+ * The file should have the following format. First, it identifies the dataset to which provided
+ * event IDs correpond. This is done with line "Dataset: <ID>", where <ID> is the unique label of
+ * the source dataset, as given by Dataset::GetSourceDatasetID(). Then IDs are provided in the
+ * format <run>:<lumi>:<event>, one per line. An arbitrary number of similar groups can be
+ * provided for other datasets. Empty lines can be inserted anywhere. Comments starting with symbol
+ * '#' are ignored.
  * 
  * The filter relies on the presence of a EventIDReader with a default name "InputData".
  * 
@@ -40,13 +48,10 @@ public:
     /// Assignment operator is deleted
     EventIDFilter &operator=(EventIDFilter const &) = delete;
     
-    /// Trivial destructor
-    virtual ~EventIDFilter() noexcept;
-
 private:
     /// Copy constructor used in method Clone
     EventIDFilter(EventIDFilter const &src);
-
+    
 public:
     /**
      * \brief Performs initialization for a new dataset
@@ -66,7 +71,11 @@ public:
     void SetEventIDPluginName(std::string const &name);
     
 private:
-    /// Reads event ID lists from the given text file
+    /**
+     * \brief Reads event ID lists from the given text file
+     * 
+     * The format of the file is described in the documentation for the class.
+     */
     void LoadEventIDLists(std::string const &eventIDsFileName);
     
     /**
@@ -75,7 +84,17 @@ private:
      * Implemented from Plugin.
      */
     virtual bool ProcessEvent() override;
-
+    
+    /**
+     * \brief Reads next clean non-empty line from the input stream
+     * 
+     * Reads next line from the stream and strips off comment that starts with symbol '#'. If the
+     * resulting string has zero length or consists of spaces only, it is skipped, and the next
+     * line is read until a non-empty one is found. If there are no more line remaining in the
+     * stream, an empty line is copied into the buffer.
+     */
+    static void ReadCleanLine(std::istream &input, std::string &buffer);
+    
 private:
     /// Name of the plugin that provides access to event ID
     std::string eventIDPluginName;
