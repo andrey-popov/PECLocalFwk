@@ -15,7 +15,7 @@ using namespace std::literals::string_literals;
 EventIDFilter::EventIDFilter(std::string const &name, std::string const &eventIDsFileName,
   bool rejectKnownEvent_ /*= true*/):
     AnalysisPlugin(name),
-    eventIDPluginName("EventID"), eventIDPlugin(nullptr),
+    eventIDPluginName("InputData"), eventIDPlugin(nullptr),
     rejectKnownEvent(rejectKnownEvent_),
     eventIDsCurFile(nullptr)
 {
@@ -26,7 +26,7 @@ EventIDFilter::EventIDFilter(std::string const &name, std::string const &eventID
 EventIDFilter::EventIDFilter(std::string const &eventIDsFileName,
   bool rejectKnownEvent_ /*= true*/):
     AnalysisPlugin("EventIDFilter"),
-    eventIDPluginName("EventID"), eventIDPlugin(nullptr),
+    eventIDPluginName("InputData"), eventIDPlugin(nullptr),
     rejectKnownEvent(rejectKnownEvent_),
     eventIDsCurFile(nullptr)
 {

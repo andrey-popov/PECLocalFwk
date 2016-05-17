@@ -20,7 +20,7 @@ class EventIDReader;
  * list of event IDs in a text file, and the plugin either keeps or rejects events whose IDs are
  * found in the list.
  * 
- * The filter relies on the presence of a EventIDReader with a default name "EventID".
+ * The filter relies on the presence of a EventIDReader with a default name "InputData".
  * 
  * \warning The class can filter atomic datasets only (i.e. ones that contain a single file).
  */
