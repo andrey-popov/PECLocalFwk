@@ -1,0 +1,113 @@
+#include <mensura/core/Dataset.hpp>
+#include <mensura/core/Processor.hpp>
+
+#include <mensura/extensions/JetCorrector.hpp>
+
+#include <mensura/PECReader/PECInputData.hpp>
+#include <mensura/PECReader/PECJetMETReader.hpp>
+#include <mensura/PECReader/PECPileUpReader.hpp>
+
+#include <iostream>
+#include <memory>
+
+
+using namespace std;
+
+
+int main()
+{
+    // Input dataset
+    Dataset dataset({Dataset::Process::ttbar}, Dataset::Generator::POWHEG);
+    string const filePrefix("/gridgroup/cms/popov/PECData/2015Charlie/");
+    dataset.AddFile(filePrefix + "ttbar-pw_3.1.0_wdo_p1.root", 831.76, 97994442);
+    
+    
+    // Processor object
+    Processor processor;
+    
+    
+    // Register plugins
+    processor.RegisterPlugin(new PECInputData);
+    
+    PECJetMETReader *jetmetReader = new PECJetMETReader;
+    jetmetReader->ConfigureLeptonCleaning("");  // Disabled
+    processor.RegisterPlugin(jetmetReader);
+    
+    processor.RegisterPlugin(new PECPileUpReader);
+    
+    
+    // Save pointers to selected plugins to read information from them in the event loop
+    PECInputData const *inputData =
+      dynamic_cast<PECInputData const *>(processor.GetPlugin("InputData"));
+    
+    PileUpReader const *puReader =
+      dynamic_cast<PileUpReader const *>(processor.GetPlugin("PileUp"));
+    
+    
+    // Create jet corrector
+    JetCorrector jetCorrector;
+    jetCorrector.SetJEC({"Fall15_25nsV2_MC_L1FastJet_AK4PFchs.txt",
+      "Fall15_25nsV2_MC_L2Relative_AK4PFchs.txt", "Fall15_25nsV2_MC_L3Absolute_AK4PFchs.txt"});
+    jetCorrector.SetJECUncertainty("Fall15_25nsV2_MC_Uncertainty_AK4PFchs.txt");
+    
+    
+    // Open the input dataset
+    processor.OpenDataset(dataset);
+    
+    
+    // Loop over few events
+    unsigned const maxEventsToPrint = 5;
+    unsigned nEventsPrinted = 0;
+    
+    while (true)
+    {
+        // Process a new event from the dataset
+        Plugin::EventOutcome const status = processor.ProcessEvent();
+        
+        // Skip to the next event if the current one has been rejected by a filter
+        if (status == Plugin::EventOutcome::FilterFailed)
+            continue;
+        
+        // Terminate the loop if there are no events left in the dataset
+        if (status == Plugin::EventOutcome::NoEvents)
+            break;
+        
+        
+        // Print out some properties of jets and MET
+        auto const &eventID = inputData->GetEventID();
+        cout << "\033[0;34m***** Event " << eventID.Run() << ":" << eventID.LumiBlock() << ":" <<
+          eventID.Event() << " *****\033[0m\n";
+        
+        
+        double const rho = puReader->GetRho();
+        
+        
+        cout << "Jets\n";
+        unsigned curJetNumber = 0;
+        
+        for (auto const &j: jetmetReader->GetJets())
+        {
+            cout << " #" << ++curJetNumber << ":\n";
+            
+            double const rawPt = j.RawP4().Pt();
+            cout << "  Raw pt: " << rawPt << ", corrected pt out of the box: " << j.Pt() << '\n';
+            
+            double const corrFactor = jetCorrector(j, rho);
+            cout << "  Correction factor: " << corrFactor << '\n';
+            cout << "  JEC uncertainty: " <<
+              jetCorrector.EvalJECUnc(rawPt * corrFactor, j.Eta()) << '\n';
+            cout << "  Recorrected pt: " << rawPt * corrFactor << '\n';
+        }
+        
+        cout << "\n\n";
+        
+        
+        ++nEventsPrinted;
+        
+        if (nEventsPrinted == maxEventsToPrint)
+            break;
+    }
+    
+    
+    return EXIT_SUCCESS;
+}

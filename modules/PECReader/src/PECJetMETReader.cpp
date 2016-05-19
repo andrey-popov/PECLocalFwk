@@ -97,7 +97,7 @@ void PECJetMETReader::BeginRun(Dataset const &)
     
     tree->SetBranchStatus("jets.bTagCMVA", false);
     tree->SetBranchStatus("jets.secVertexMass", false);
-    tree->SetBranchStatus("jets.area", false);
+    // tree->SetBranchStatus("jets.area", false);
     tree->SetBranchStatus("jets.charge", false);
     tree->SetBranchStatus("jets.pullAngle", false);
     
