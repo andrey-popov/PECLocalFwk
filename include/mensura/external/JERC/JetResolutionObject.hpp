@@ -1,11 +1,7 @@
 #ifndef JetResolutionObject_h
 #define JetResolutionObject_h
 
-// If you want to use the JER code in standalone mode, you'll need to create a new define named 'STANDALONE'. If you use gcc for compiling, you'll need to add
-// -DSTANDALONE to the command line
-// In standalone mode, no reference to CMSSW exists, so the only way to retrieve resolutions and scale factors are from text files.
-
-#ifndef STANDALONE
+#if 0
 #include "CondFormats/Serialization/interface/Serializable.h"
 #else
 // Create no-op definitions of CMSSW macro

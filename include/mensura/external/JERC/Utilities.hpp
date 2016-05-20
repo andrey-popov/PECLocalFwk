@@ -1,7 +1,7 @@
 #ifndef CondFormats_JetMETObjects_Utilities_h
 #define CondFormats_JetMETObjects_Utilities_h
 
-#ifdef STANDALONE
+#if 1
 #include <stdexcept>
 #else
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
@@ -17,7 +17,7 @@ namespace
 {
   void handleError(const std::string& fClass, const std::string& fMessage)
   {
-#ifdef STANDALONE
+#if 1
     std::stringstream sserr;
     sserr<<fClass<<" ERROR: "<<fMessage;
     throw std::runtime_error(sserr.str());

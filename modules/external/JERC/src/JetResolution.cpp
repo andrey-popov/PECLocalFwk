@@ -1,3 +1,5 @@
+#define STANDALONE
+
 #ifndef STANDALONE
 #include <JetMETCorrections/Modules/interface/JetResolution.h>
 #include <FWCore/Framework/interface/EventSetup.h>
@@ -6,7 +8,7 @@
 #include <CondFormats/DataRecord/interface/JetResolutionRcd.h>
 #include <CondFormats/DataRecord/interface/JetResolutionScaleFactorRcd.h>
 #else
-#include "JetResolution.h"
+#include <mensura/external/JERC/JetResolution.hpp>
 #endif
 
 namespace JME {

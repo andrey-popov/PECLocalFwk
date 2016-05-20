@@ -1,11 +1,14 @@
+#define STANDALONE
+
+
 #ifndef STANDALONE
 #include <CondFormats/JetMETObjects/interface/JetResolutionObject.h>
 #include <CondFormats/JetMETObjects/interface/Utilities.h>
 #include <FWCore/Utilities/interface/EDMException.h>
 
 #else
-#include "JetResolutionObject.h"
-#include "Utilities.h"
+#include <mensura/external/JERC/JetResolutionObject.hpp>
+#include <mensura/external/JERC/Utilities.hpp>
 #include <exception>
 
 namespace edm {

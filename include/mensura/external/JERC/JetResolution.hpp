@@ -1,13 +1,9 @@
 #ifndef JetResolution_h
 #define JetResolution_h
 
-// If you want to use the JER code in standalone mode, you'll need to create a new define named 'STANDALONE'. If you use gcc for compiling, you'll need to add
-// -DSTANDALONE to the command line
-// In standalone mode, no reference to CMSSW exists, so the only way to retrieve resolutions and scale factors are from text files.
+#include <mensura/external/JERC/JetResolutionObject.hpp>
 
-#include <CondFormats/JetMETObjects/interface/JetResolutionObject.h>
-
-#ifndef STANDALONE
+#if 0
 namespace edm {
     class EventSetup;
 }
@@ -23,7 +19,7 @@ namespace JME {
                 // Empty
             }
 
-#ifndef STANDALONE
+#if 0
             static const JetResolution get(const edm::EventSetup&, const std::string&);
 #endif
 
@@ -50,7 +46,7 @@ namespace JME {
                 // Empty
             }
 
-#ifndef STANDALONE
+#if 0
             static const JetResolutionScaleFactor get(const edm::EventSetup&, const std::string&);
 #endif
 
