@@ -1,3 +1,5 @@
+#define STANDALONE
+
 //
 // Original Author:  Fedor Ratnikov Nov 9, 2007
 // $Id: JetCorrectorParameters.cc,v 1.19 2011/01/27 12:14:13 kkousour Exp $
@@ -5,7 +7,7 @@
 // Generic parameters for Jet corrections
 //
 #include <mensura/external/JERC/JetCorrectorParameters.hpp>
-#include "Utilities.cpp"
+#include <mensura/external/JERC/Utilities.hpp>
 #include <iostream>
 #include <iomanip>
 #include <fstream>

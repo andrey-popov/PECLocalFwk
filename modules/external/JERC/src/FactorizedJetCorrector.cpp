@@ -6,7 +6,7 @@
 #include <mensura/external/JERC/FactorizedJetCorrector.hpp>
 #include <mensura/external/JERC/SimpleJetCorrector.hpp>
 #include <mensura/external/JERC/JetCorrectorParameters.hpp>
-#include "Utilities.cpp"
+#include <mensura/external/JERC/Utilities.hpp>
 #include "Math/PtEtaPhiE4D.h"
 #include "Math/Vector3D.h"
 #include "Math/LorentzVector.h"
