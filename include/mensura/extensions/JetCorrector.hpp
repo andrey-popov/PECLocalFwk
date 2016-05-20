@@ -1,11 +1,13 @@
 #pragma once
 
+#include <mensura/core/PhysicsObjects.hpp>
 #include <mensura/core/SystService.hpp>
-
-#include <mensura/extensions/JetResolutionFactor.hpp>
 
 #include <mensura/external/JERC/FactorizedJetCorrector.hpp>
 #include <mensura/external/JERC/JetCorrectionUncertainty.hpp>
+#include <mensura/external/JERC/JetResolution.hpp>
+
+#include <TRandom3.h>
 
 #include <initializer_list>
 #include <memory>
@@ -74,7 +76,7 @@ public:
      * 
      * The file path is expanded through the FileInPath service.
      */
-    void SetJERFile(std::string const &dataFile);
+    void SetJER(std::string const &jerSFFile, std::string const &jerMCFile);
     
     double EvalJECUnc(double const corrPt, double const eta) const;
     
@@ -127,10 +129,14 @@ private:
      */
     std::vector<std::unique_ptr<JetCorrectionUncertainty>> jecUncAccessors;
     
+    std::unique_ptr<JME::JetResolution> jerProvider;
+    std::unique_ptr<JME::JetResolutionScaleFactor> jerSFProvider;
+    
     /**
-     * \brief An object to perform JER smearing
+     * \brief Random-number generator
      * 
-     * The smart pointer is empty if user has not provided a data file for JER smearing.
+     * Declared as mutable because, ridiculously enough, methods to generate random numbers are not
+     * constant.
      */
-    std::unique_ptr<JetResolutionFactor> jerAccessor;
+    mutable TRandom3 rGen;
 };

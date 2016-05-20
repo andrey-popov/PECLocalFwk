@@ -5,13 +5,15 @@
 
 #include <mensura/external/JERC/JetCorrectorParameters.hpp>
 
+#include <cmath>
 #include <stdexcept>
 
 
 using namespace std;
 
 
-JetCorrector::JetCorrector() noexcept
+JetCorrector::JetCorrector() noexcept:
+    rGen(0)
 {}
 
 
@@ -60,9 +62,14 @@ void JetCorrector::SetJECUncertainty(std::string const &jecUncFile,
 }
 
 
-void JetCorrector::SetJERFile(string const &jerFile)
+void JetCorrector::SetJER(std::string const &jerSFFile, std::string const &jerMCFile)
 {
-    jerAccessor.reset(new JetResolutionFactor(jerFile));
+    if (jerSFFile != "")
+        jerSFProvider.reset(
+          new JME::JetResolutionScaleFactor(FileInPath::Resolve("JERC", jerSFFile)));
+    
+    if (jerMCFile != "")
+        jerProvider.reset(new JME::JetResolution(FileInPath::Resolve("JERC", jerMCFile)));
 }
 
 
@@ -109,6 +116,7 @@ double JetCorrector::Eval(Jet const &jet, double rho, SystType syst /*= SystType
     jetEnergyCorrector->setRho(rho);
     
     double jecFactor = jetEnergyCorrector->getCorrection();
+    double const corrPt = rawP4.Pt() * jecFactor;
     
     
     // Evaluate systematical variation for JEC
@@ -116,11 +124,11 @@ double JetCorrector::Eval(Jet const &jet, double rho, SystType syst /*= SystType
     {
         // First a sanity check
         if (jecUncAccessors.size() == 0)
-            throw logic_error("JetCorrector::Eval: Trying to evaluate JEC systematics while "
-             "JEC uncertainties have not been set up.");
+            throw std::logic_error("JetCorrector::Eval: Trying to evaluate JEC systematics while "
+              "JEC uncertainties have not been set up.");
         
         
-        double const jecUncertainty = EvalJECUnc(rawP4.Pt() * jecFactor, rawP4.Eta());
+        double const jecUncertainty = EvalJECUnc(corrPt, rawP4.Eta());
         
         if (direction == SystService::VarDirection::Up)
             jecFactor *= (1. + jecUncertainty);
@@ -133,27 +141,57 @@ double JetCorrector::Eval(Jet const &jet, double rho, SystType syst /*= SystType
     
     
     // A sanity check before JER smearing
-    if (not jerAccessor and syst == SystType::JER and
-      direction != SystService::VarDirection::Undefined)
-        throw logic_error("JetCorrector::Correct: Trying to evaluate JER systematics while "
-         "data file with parameters for JER has not been provided.");
+    if (syst == SystType::JER and direction != SystService::VarDirection::Undefined and
+      not jerSFProvider)
+        throw std::logic_error("JetCorrector::Eval: Trying to evaluate JER systematics while "
+          "JER scale factors have not been set up.");
     
     
-    // Evaluate JER smearing
-    if (jerAccessor)
+    // Apply JER smearing
+    if (jerSFProvider)
     {
-        JetResolutionFactor::SystVariation jerSyst = JetResolutionFactor::SystVariation::Nominal;
+        // Find data/MC scale factor for pt resolution for the current jet
+        double jerSF = 0.;
         
-        if (syst == SystType::JER)
+        switch (direction)
         {
-            if (direction == SystService::VarDirection::Up)
-                jerSyst = JetResolutionFactor::SystVariation::Up;
-            else if (direction == SystService::VarDirection::Down)
-                jerSyst = JetResolutionFactor::SystVariation::Down;
+            case SystService::VarDirection::Up:
+                jerSF = jerSFProvider->getScaleFactor({{JME::Binning::JetEta, jet.Eta()}},
+                  Variation::UP);
+                break;
+            
+            case SystService::VarDirection::Down:
+                jerSF = jerSFProvider->getScaleFactor({{JME::Binning::JetEta, jet.Eta()}},
+                  Variation::DOWN);
+                break;
+            
+            default:
+                jerSF = jerSFProvider->getScaleFactor({{JME::Binning::JetEta, jet.Eta()}},
+                  Variation::NOMINAL);
         }
         
         
-        fullFactor *= jerAccessor->GetFactor(jet, jerSyst);
+        // Depending on the presence of a matched GEN-level jet, perform deterministic or
+        //stochastic smearing
+        GenJet const *genJet = jet.MatchedGenJet();
+        
+        if (genJet)
+        {
+            // double const jerFactor = 1. + (jerSF - 1.) * (corrPt - genJet->Pt()) / corrPt;
+            double const jerFactor = 1. +
+              (jerSF - 1.) * (rawP4.E() * jecFactor - genJet->P4().E()) / (rawP4.E() * jecFactor);
+            
+            fullFactor *= jerFactor;
+        }
+        else if (jerProvider)
+        {
+            double const ptResolution = jerProvider->getResolution({{JME::Binning::JetPt, corrPt},
+              {JME::Binning::JetEta, jet.Eta()}, {JME::Binning::Rho, rho}});
+            double const jerFactor = 1. + rGen.Gaus(0., ptResolution) *
+              std::sqrt(std::max(std::pow(jerSF, 2) - 1., 0.)) / corrPt;
+            
+            fullFactor *= jerFactor;
+        }
     }
     
     

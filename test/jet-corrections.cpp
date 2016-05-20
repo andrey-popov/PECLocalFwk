@@ -3,6 +3,7 @@
 
 #include <mensura/extensions/JetCorrector.hpp>
 
+#include <mensura/PECReader/PECGenJetMETReader.hpp>
 #include <mensura/PECReader/PECInputData.hpp>
 #include <mensura/PECReader/PECJetMETReader.hpp>
 #include <mensura/PECReader/PECPileUpReader.hpp>
@@ -28,9 +29,11 @@ int main()
     
     // Register plugins
     processor.RegisterPlugin(new PECInputData);
+    processor.RegisterPlugin(new PECGenJetMETReader);
     
     PECJetMETReader *jetmetReader = new PECJetMETReader;
     jetmetReader->ConfigureLeptonCleaning("");  // Disabled
+    jetmetReader->SetGenJetReader();  // Default one
     processor.RegisterPlugin(jetmetReader);
     
     processor.RegisterPlugin(new PECPileUpReader);
@@ -49,6 +52,8 @@ int main()
     jetCorrector.SetJEC({"Fall15_25nsV2_MC_L1FastJet_AK4PFchs.txt",
       "Fall15_25nsV2_MC_L2Relative_AK4PFchs.txt", "Fall15_25nsV2_MC_L3Absolute_AK4PFchs.txt"});
     jetCorrector.SetJECUncertainty("Fall15_25nsV2_MC_Uncertainty_AK4PFchs.txt");
+    jetCorrector.SetJER("Fall15_25nsV2_MC_JERSF_AK4PFchs.txt",
+      "Fall15_25nsV2_MC_PtResolution_AK4PFchs.txt");
     
     
     // Open the input dataset
@@ -96,6 +101,7 @@ int main()
             cout << "  Correction factor: " << corrFactor << '\n';
             cout << "  JEC uncertainty: " <<
               jetCorrector.EvalJECUnc(rawPt * corrFactor, j.Eta()) << '\n';
+            cout << "  Has GEN-level match: " << bool(j.MatchedGenJet()) << '\n';
             cout << "  Recorrected pt: " << rawPt * corrFactor << '\n';
         }
         
