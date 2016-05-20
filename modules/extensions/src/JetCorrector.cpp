@@ -177,10 +177,7 @@ double JetCorrector::Eval(Jet const &jet, double rho, SystType syst /*= SystType
         
         if (genJet)
         {
-            // double const jerFactor = 1. + (jerSF - 1.) * (corrPt - genJet->Pt()) / corrPt;
-            double const jerFactor = 1. +
-              (jerSF - 1.) * (rawP4.E() * jecFactor - genJet->P4().E()) / (rawP4.E() * jecFactor);
-            
+            double const jerFactor = 1. + (jerSF - 1.) * (corrPt - genJet->Pt()) / corrPt;
             fullFactor *= jerFactor;
         }
         else if (jerProvider)
