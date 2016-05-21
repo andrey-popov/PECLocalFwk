@@ -1,6 +1,5 @@
 #pragma once
 
-#include <mensura/core/PhysicsObjects.hpp>
 #include <mensura/core/SystService.hpp>
 
 #include <mensura/external/JERC/FactorizedJetCorrector.hpp>
@@ -15,17 +14,25 @@
 #include <vector>
 
 
+class Jet;
+
+
 /**
  * \class JetCorrector
- * \brief Applies JEC and performs JER smearing
+ * \brief Computes jet energy and resolution corrections
  * 
- * \warining This class is undergoing a heavy modification. Most of its documentation has not been
- * updated.
+ * This class computes jet corrections to adjust energy scale and resolution. Inputs for the
+ * computation are provided in form of standard text files used by JetMET POG. The computed
+ * correction is returned as a factor to rescale jet four-momentum.
  * 
- * The only mandator action is an application of JEC. If required data files are provided, performs
- * JER smearing and, if requested explicitly, evaluates JEC or JER systematical variations. Note
- * that JER smearing is applied for the nominal state as well while the JER systematics controls the
- * amount of smearing.
+ * Any levels of the full correction can be omitted. If JEC text files are not provided, jet
+ * momentum is assumed to be corrected for the energy scale. Otherwise the corresponding correction
+ * is evaluated starting from raw jet momentum (which thus must have been set up properly). If one
+ * or more JEC uncertainties are specified by user and a JEC systematic variation is requested,
+ * the correction factor is adjusted accordingly. If JER data/MC scale factors have been specified,
+ * deterministic JER smearing is applied for jets that have matched generator-level jets. If pt
+ * resolution in simulation is specified in addition, jets that do not have generator-level matches
+ * are smeared stochastically using this resolution and the scale factors.
  */
 class JetCorrector
 {
@@ -39,104 +46,94 @@ public:
     };
     
 public:
-    /// Contructor without parameters
-    JetCorrector() noexcept;
-    
-    /**
-     * \brief A constructor from files with corrections
-     * 
-     * Equivalent to a call of the default constructor and execution of AddJECLevel,
-     * SetJECUncertainty, and SetJERFile methods.
-     */
-    // JetCorrector(std::initializer_list<std::string> const &dataFilesJEC,
-    //   std::string const &dataFileJECUncertainty = "", std::string const &dataFileJER = "");
+    /// Trivial contructor
+    JetCorrector() = default;
     
 public:
-    /// Returns a newly-initialised copy of this
-    // JetCorrector *Clone() const;
-    
     /**
-     * \brief Adds a data text file with a single level of JEC
+     * \brief Computes full correction factor for requested effects
      * 
-     * JECs are evaluated precisely in the same order as were given to constructor and this method.
-     * The file paths are expanded through the FileInPath service.
-     */
-    void SetJEC(std::initializer_list<std::string> const &jecFiles);
-    
-    /**
-     * \brief (Re)sets data text file with JEC uncertainties
-     * 
-     * The file path is expanded through the FileInPath service.
-     */
-    void SetJECUncertainty(std::string const &jecUncFile,
-      std::initializer_list<std::string> uncSources = {});
-    
-    /**
-     * \brief (Re)sets data file for JER smearing
-     * 
-     * The file path is expanded through the FileInPath service.
-     */
-    void SetJER(std::string const &jerSFFile, std::string const &jerMCFile);
-    
-    double EvalJECUnc(double const corrPt, double const eta) const;
-    
-    /**
-     * \brief Corrects jet four-momentum
-     * 
-     * The second argument is the value of the mean angular pt density, rho, which is used in
-     * parameterization of L1 JEC.
-     * 
-     * Throws an exception if the user requests JEC or JER systematical variation while required
-     * data files have not been provided. If the jet is already corrected, only raw momentum is
-     * used, and the corrected momentum is reset by this method.
+     * Returned factor can include correction of the energy scale and resolution. As explained in
+     * documentation for the class, any part of the correction is optional.
      */
     double Eval(Jet const &jet, double rho, SystType syst = SystType::None,
       SystService::VarDirection direction = SystService::VarDirection::Undefined) const;
+    
+    /**
+     * \brief Computes JEC uncertainty
+     * 
+     * The arguments are the JES-corrected pt and pseudorapidity. The uncertainty is calculated as
+     * a sum in quadrature of uncertainties from all sources specified in a call to
+     * SetJECUncertainty.
+     */
+    double EvalJECUnc(double const corrPt, double const eta) const;
     
     /// A short-cut for method Eval
     double operator()(Jet const &jet, double rho, SystType syst = SystType::None,
       SystService::VarDirection direction = SystService::VarDirection::Undefined) const;
     
+    /**
+     * \brief Specifies text files for JEC
+     * 
+     * Different levels of corrections are applied in the same order as specified here. Paths to
+     * the files are resolved using FileInPath, with a subdirectory "JERC".
+     */
+    void SetJEC(std::initializer_list<std::string> const &jecFiles);
+    
+    /**
+     * \brief Specifies text file for JEC uncertainties and desired uncertainty sources
+     * 
+     * There is no need to provide the name of an uncertainty source if the file defines only a
+     * single one. Path to the file is resolved using FileInPath, with a subdirectory "JERC".
+     */
+    void SetJECUncertainty(std::string const &jecUncFile,
+      std::initializer_list<std::string> uncSources = {});
+    
+    /**
+     * Specifies text files for data/MC JER scale factors and pt resolution in MC
+     * 
+     * Paths to the files are resolved using FileInPath, with a subdirectory "JERC". The file with
+     * pt resolution in simulation is optional. Only when it is specified, a random-number
+     * generator is created to perform stochastic JER smearing. The last argument defines the seed
+     * for the generator; 0 means that the seed will be chosen randomly.
+     */
+    void SetJER(std::string const &jerSFFile, std::string const &jerMCFile,
+      unsigned long seed = 0);
+    
 private:
     /**
-     * \brief Text files with jet energy corrections
+     * \brief An object that evaluates jet energy corrections
      * 
-     * The JEC will be applied precisely in the same order as specified in this collection.
+     * Can be uninitialized if no JEC have been provided.
      */
-    std::vector<std::string> dataFilesJEC;
-    
-    /**
-     * \brief Text file with JEC uncertainties
-     * 
-     * The string is empty if the user has not provided the file.
-     */
-    std::string dataFileJECUncertainty;
-    
-    /**
-     * \brief Data file for JER smearing
-     * 
-     * The string is empty if the user has not provided the file.
-     */
-    std::string dataFileJER;
-    
-    /// An object to evaluate jet energy corrections
     std::unique_ptr<FactorizedJetCorrector> jetEnergyCorrector;
     
     /**
-     * \brief An object to evaluate JEC uncertainty
+     * \brief Objects that compute JEC uncertainties
      * 
-     * The smart pointer is empty if user has not provided a text file with uncertainties.
+     * The vector can be empty if no uncertainties have been specified.
      */
-    std::vector<std::unique_ptr<JetCorrectionUncertainty>> jecUncAccessors;
+    std::vector<std::unique_ptr<JetCorrectionUncertainty>> jecUncProviders;
     
+    /**
+     * \brief An object that provides pt resolution in simulation
+     * 
+     * Can be uninitialized if resolutions have not been specified.
+     */
     std::unique_ptr<JME::JetResolution> jerProvider;
+    
+    /**
+     * \brief An object that provides data/MC scale factors for JER
+     * 
+     * Can be uninitialized if the scale factors have not been specified.
+     */
     std::unique_ptr<JME::JetResolutionScaleFactor> jerSFProvider;
     
     /**
      * \brief Random-number generator
      * 
-     * Declared as mutable because, ridiculously enough, methods to generate random numbers are not
-     * constant.
+     * Used for stochastic JER smearing. Only created when pt resolution in simulation is
+     * specified.
      */
-    mutable TRandom3 rGen;
+    std::unique_ptr<TRandom3> rGen;
 };

@@ -1,7 +1,7 @@
 #include <mensura/extensions/JetCorrector.hpp>
 
 #include <mensura/core/FileInPath.hpp>
-#include <mensura/core/ROOTLock.hpp>
+#include <mensura/core/PhysicsObjects.hpp>
 
 #include <mensura/external/JERC/JetCorrectorParameters.hpp>
 
@@ -9,145 +9,68 @@
 #include <stdexcept>
 
 
-using namespace std;
-
-
-JetCorrector::JetCorrector() noexcept:
-    rGen(0)
-{}
-
-
-// JetCorrector::JetCorrector(std::initializer_list<std::string> const &dataFilesJEC_,
-//   std::string const &dataFileJECUncertainty_ /*= ""*/, std::string const &dataFileJER_ /*= ""*/):
-//     dataFilesJEC(dataFilesJEC_),
-//     dataFileJECUncertainty(dataFileJECUncertainty_),
-//     dataFileJER(dataFileJER_)
-// {}
-
-
-// JetCorrector *JetCorrector::Clone() const
-// {
-//     return new JetCorrector(dataFilesJEC, dataFileJECUncertainty, dataFileJER);
-// }
-
-
-void JetCorrector::SetJEC(std::initializer_list<std::string> const &jecFiles)
-{
-    // Create an object that computes jet energy corrections. Code follows an example in [1].
-    //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=136#JetEnCorFWLite
-    std::vector<JetCorrectorParameters> jecParameters;
-    
-    for (auto const &jecFile: jecFiles)
-        jecParameters.emplace_back(FileInPath::Resolve("JERC", jecFile));
-    
-    jetEnergyCorrector.reset(new FactorizedJetCorrector(jecParameters));
-}
-
-
-void JetCorrector::SetJECUncertainty(std::string const &jecUncFile,
-  std::initializer_list<std::string> uncSources /*= {}*/)
-{
-    // Create objects to compute JEC uncertainties. Code follows an example in [1].
-    //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=136#JetCorUncertainties
-    std::string const &resolvedPath = FileInPath::Resolve("JERC", jecUncFile);
-    
-    if (uncSources.size() == 0)
-        jecUncAccessors.emplace_back(new JetCorrectionUncertainty(resolvedPath));
-    else
-    {
-        for (auto const &uncSource: uncSources)
-            jecUncAccessors.emplace_back(
-              new JetCorrectionUncertainty(JetCorrectorParameters(resolvedPath, uncSource)));
-    }
-}
-
-
-void JetCorrector::SetJER(std::string const &jerSFFile, std::string const &jerMCFile)
-{
-    if (jerSFFile != "")
-        jerSFProvider.reset(
-          new JME::JetResolutionScaleFactor(FileInPath::Resolve("JERC", jerSFFile)));
-    
-    if (jerMCFile != "")
-        jerProvider.reset(new JME::JetResolution(FileInPath::Resolve("JERC", jerMCFile)));
-}
-
-
-double JetCorrector::EvalJECUnc(double const corrPt, double const eta) const
-{
-    if (jecUncAccessors.size() == 1)
-    {
-        // Consider the case of a single uncertainty specially in order to avoid unnecessary
-        //computation of sqrt(unc^2)
-        auto &acc = jecUncAccessors.front();
-        acc->setJetEta(eta);
-        acc->setJetPt(corrPt);
-        
-        return acc->getUncertainty(true);
-    }
-    else
-    {
-        double unc2 = 0.;
-        
-        for (auto &acc: jecUncAccessors)
-        {
-            acc->setJetEta(eta);
-            acc->setJetPt(corrPt);
-            
-            unc2 += std::pow(acc->getUncertainty(true), 2);
-        }
-        
-        return std::sqrt(unc2);
-    }
-}
-
-
 double JetCorrector::Eval(Jet const &jet, double rho, SystType syst /*= SystType::None*/,
   SystService::VarDirection direction /*= SystService::VarDirection::Undefined*/) const
 {
-    double fullFactor = 1.;
-    TLorentzVector const &rawP4 = jet.RawP4();
+    // Variable that will accumulate the total correction factor
+    double corrFactor = 1.;
+    
+    // Running jet pt with all corrections considered up to the current moment applied
+    double curCorrPt = jet.Pt();    
     
     
-    // Evaluate the total jet energy correction
-    jetEnergyCorrector->setJetEta(rawP4.Eta());
-    jetEnergyCorrector->setJetPt(rawP4.Pt());
-    jetEnergyCorrector->setJetA(jet.Area());
-    jetEnergyCorrector->setRho(rho);
+    // Evaluate nominal jet energy correction
+    if (jetEnergyCorrector)
+    {
+        curCorrPt = jet.RawP4().Pt();
+        
+        jetEnergyCorrector->setJetEta(jet.Eta());
+        jetEnergyCorrector->setJetPt(curCorrPt);
+        jetEnergyCorrector->setJetA(jet.Area());
+        jetEnergyCorrector->setRho(rho);
+        
+        double const jecFactor = jetEnergyCorrector->getCorrection();
+        
+        corrFactor *= jecFactor;
+        curCorrPt *= jecFactor;
+    }
     
-    double jecFactor = jetEnergyCorrector->getCorrection();
-    double const corrPt = rawP4.Pt() * jecFactor;
+    // At this point curCorrPt is assumed to include full nominal JEC, either applied in this
+    //method or set up when the jet was created
     
     
     // Evaluate systematical variation for JEC
     if (syst == SystType::JEC)
     {
-        // First a sanity check
-        if (jecUncAccessors.size() == 0)
-            throw std::logic_error("JetCorrector::Eval: Trying to evaluate JEC systematics while "
-              "JEC uncertainties have not been set up.");
+        // Sanity check
+        if (jecUncProviders.size() == 0)
+            throw std::logic_error("JetCorrector::Eval: Cannot evaluate JEC systematics because "
+              "no uncertainties have been specified.");
         
         
-        double const jecUncertainty = EvalJECUnc(corrPt, rawP4.Eta());
+        double const jecUncertainty = EvalJECUnc(curCorrPt, jet.Eta());
         
         if (direction == SystService::VarDirection::Up)
-            jecFactor *= (1. + jecUncertainty);
+        {
+            corrFactor *= (1. + jecUncertainty);
+            curCorrPt *= (1. + jecUncertainty);
+        }
         else if (direction == SystService::VarDirection::Down)
-            jecFactor *= (1. - jecUncertainty);
+        {
+            corrFactor *= (1. - jecUncertainty);
+            curCorrPt *= (1. - jecUncertainty);
+        }
     }
     
     
-    fullFactor *= jecFactor;
-    
-    
-    // A sanity check before JER smearing
+    // Sanity check before JER smearing
     if (syst == SystType::JER and direction != SystService::VarDirection::Undefined and
       not jerSFProvider)
-        throw std::logic_error("JetCorrector::Eval: Trying to evaluate JER systematics while "
-          "JER scale factors have not been set up.");
+        throw std::logic_error("JetCorrector::Eval: Cannot evaluate JER systematics because "
+          "JER scale factors have not been specified.");
     
     
-    // Apply JER smearing
+    // Evaluate JER smearing
     if (jerSFProvider)
     {
         // Find data/MC scale factor for pt resolution for the current jet
@@ -177,22 +100,59 @@ double JetCorrector::Eval(Jet const &jet, double rho, SystType syst /*= SystType
         
         if (genJet)
         {
-            double const jerFactor = 1. + (jerSF - 1.) * (corrPt - genJet->Pt()) / corrPt;
-            fullFactor *= jerFactor;
+            // Smearing is done as here [1]
+            //[1] https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_8/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h#L236-L237
+            double const jerFactor = 1. + (jerSF - 1.) * (curCorrPt - genJet->Pt()) / curCorrPt;
+            
+            corrFactor *= jerFactor;
+            // No need to update curCorrPt since it will not be used anymore
         }
         else if (jerProvider)
         {
-            double const ptResolution = jerProvider->getResolution({{JME::Binning::JetPt, corrPt},
+            // Follow the same approach as here [1]
+            //[1] https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_8/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h#L244_L250
+            double const ptResolution =
+              jerProvider->getResolution({{JME::Binning::JetPt, curCorrPt},
               {JME::Binning::JetEta, jet.Eta()}, {JME::Binning::Rho, rho}});
-            double const jerFactor = 1. + rGen.Gaus(0., ptResolution) *
-              std::sqrt(std::max(std::pow(jerSF, 2) - 1., 0.)) / corrPt;
+            double const jerFactor = 1. + rGen->Gaus(0., ptResolution) *
+              std::sqrt(std::max(std::pow(jerSF, 2) - 1., 0.)) / curCorrPt;
             
-            fullFactor *= jerFactor;
+            corrFactor *= jerFactor;
+            // No need to update curCorrPt since it will not be used anymore
         }
     }
     
     
-    return fullFactor;
+    return corrFactor;
+}
+
+
+double JetCorrector::EvalJECUnc(double const corrPt, double const eta) const
+{
+    if (jecUncProviders.size() == 1)
+    {
+        // Consider the case of a single uncertainty specially in order to avoid unnecessary
+        //computation of sqrt(unc^2)
+        auto &acc = jecUncProviders.front();
+        acc->setJetEta(eta);
+        acc->setJetPt(corrPt);
+        
+        return acc->getUncertainty(true);
+    }
+    else
+    {
+        double unc2 = 0.;
+        
+        for (auto &acc: jecUncProviders)
+        {
+            acc->setJetEta(eta);
+            acc->setJetPt(corrPt);
+            
+            unc2 += std::pow(acc->getUncertainty(true), 2);
+        }
+        
+        return std::sqrt(unc2);
+    }
 }
 
 
@@ -202,3 +162,48 @@ double JetCorrector::operator()(Jet const &jet, double rho, SystType syst /*= Sy
     return Eval(jet, rho, syst, direction);
 }
 
+
+void JetCorrector::SetJEC(std::initializer_list<std::string> const &jecFiles)
+{
+    // Create an object that computes jet energy corrections. Code follows an example in [1].
+    //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=136#JetEnCorFWLite
+    std::vector<JetCorrectorParameters> jecParameters;
+    
+    for (auto const &jecFile: jecFiles)
+        jecParameters.emplace_back(FileInPath::Resolve("JERC", jecFile));
+    
+    jetEnergyCorrector.reset(new FactorizedJetCorrector(jecParameters));
+}
+
+
+void JetCorrector::SetJECUncertainty(std::string const &jecUncFile,
+  std::initializer_list<std::string> uncSources /*= {}*/)
+{
+    // Create objects to compute JEC uncertainties. Code follows an example in [1].
+    //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=136#JetCorUncertainties
+    std::string const &resolvedPath = FileInPath::Resolve("JERC", jecUncFile);
+    
+    if (uncSources.size() == 0)
+        jecUncProviders.emplace_back(new JetCorrectionUncertainty(resolvedPath));
+    else
+    {
+        for (auto const &uncSource: uncSources)
+            jecUncProviders.emplace_back(
+              new JetCorrectionUncertainty(JetCorrectorParameters(resolvedPath, uncSource)));
+    }
+}
+
+
+void JetCorrector::SetJER(std::string const &jerSFFile, std::string const &jerMCFile,
+  unsigned long seed /*= 0*/)
+{
+    if (jerSFFile != "")
+        jerSFProvider.reset(
+          new JME::JetResolutionScaleFactor(FileInPath::Resolve("JERC", jerSFFile)));
+    
+    if (jerMCFile != "")
+    {
+        jerProvider.reset(new JME::JetResolution(FileInPath::Resolve("JERC", jerMCFile)));
+        rGen.reset(new TRandom3(seed));
+    }
+}
