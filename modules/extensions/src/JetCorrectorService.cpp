@@ -1,4 +1,4 @@
-#include <mensura/extensions/JetCorrector.hpp>
+#include <mensura/extensions/JetCorrectorService.hpp>
 
 #include <mensura/core/FileInPath.hpp>
 #include <mensura/core/PhysicsObjects.hpp>
@@ -9,7 +9,12 @@
 #include <stdexcept>
 
 
-double JetCorrector::Eval(Jet const &jet, double rho, SystType syst /*= SystType::None*/,
+JetCorrectorService::JetCorrectorService(std::string const name /*= "JetCorrector"*/):
+    Service(name)
+{}
+
+
+double JetCorrectorService::Eval(Jet const &jet, double rho, SystType syst /*= SystType::None*/,
   SystService::VarDirection direction /*= SystService::VarDirection::Undefined*/) const
 {
     // Variable that will accumulate the total correction factor
@@ -44,7 +49,7 @@ double JetCorrector::Eval(Jet const &jet, double rho, SystType syst /*= SystType
     {
         // Sanity check
         if (jecUncProviders.size() == 0)
-            throw std::logic_error("JetCorrector::Eval: Cannot evaluate JEC systematics because "
+            throw std::logic_error("JetCorrectorService::Eval: Cannot evaluate JEC systematics because "
               "no uncertainties have been specified.");
         
         
@@ -66,7 +71,7 @@ double JetCorrector::Eval(Jet const &jet, double rho, SystType syst /*= SystType
     // Sanity check before JER smearing
     if (syst == SystType::JER and direction != SystService::VarDirection::Undefined and
       not jerSFProvider)
-        throw std::logic_error("JetCorrector::Eval: Cannot evaluate JER systematics because "
+        throw std::logic_error("JetCorrectorService::Eval: Cannot evaluate JER systematics because "
           "JER scale factors have not been specified.");
     
     
@@ -127,7 +132,7 @@ double JetCorrector::Eval(Jet const &jet, double rho, SystType syst /*= SystType
 }
 
 
-double JetCorrector::EvalJECUnc(double const corrPt, double const eta) const
+double JetCorrectorService::EvalJECUnc(double const corrPt, double const eta) const
 {
     if (jecUncProviders.size() == 1)
     {
@@ -156,14 +161,14 @@ double JetCorrector::EvalJECUnc(double const corrPt, double const eta) const
 }
 
 
-double JetCorrector::operator()(Jet const &jet, double rho, SystType syst /*= SystType::None*/,
+double JetCorrectorService::operator()(Jet const &jet, double rho, SystType syst /*= SystType::None*/,
   SystService::VarDirection direction /*= SystService::VarDirection::Undefined*/) const
 {
     return Eval(jet, rho, syst, direction);
 }
 
 
-void JetCorrector::SetJEC(std::initializer_list<std::string> const &jecFiles)
+void JetCorrectorService::SetJEC(std::initializer_list<std::string> const &jecFiles)
 {
     // Create an object that computes jet energy corrections. Code follows an example in [1].
     //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=136#JetEnCorFWLite
@@ -176,7 +181,7 @@ void JetCorrector::SetJEC(std::initializer_list<std::string> const &jecFiles)
 }
 
 
-void JetCorrector::SetJECUncertainty(std::string const &jecUncFile,
+void JetCorrectorService::SetJECUncertainty(std::string const &jecUncFile,
   std::initializer_list<std::string> uncSources /*= {}*/)
 {
     // Create objects to compute JEC uncertainties. Code follows an example in [1].
@@ -194,7 +199,7 @@ void JetCorrector::SetJECUncertainty(std::string const &jecUncFile,
 }
 
 
-void JetCorrector::SetJER(std::string const &jerSFFile, std::string const &jerMCFile,
+void JetCorrectorService::SetJER(std::string const &jerSFFile, std::string const &jerMCFile,
   unsigned long seed /*= 0*/)
 {
     if (jerSFFile != "")

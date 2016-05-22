@@ -1,5 +1,7 @@
 #pragma once
 
+#include <mensura/core/Service.hpp>
+
 #include <mensura/core/SystService.hpp>
 
 #include <mensura/external/JERC/FactorizedJetCorrector.hpp>
@@ -18,8 +20,8 @@ class Jet;
 
 
 /**
- * \class JetCorrector
- * \brief Computes jet energy and resolution corrections
+ * \class JetCorrectorService
+ * \brief A service that computes jet energy and resolution corrections
  * 
  * This class computes jet corrections to adjust energy scale and resolution. Inputs for the
  * computation are provided in form of standard text files used by JetMET POG. The computed
@@ -34,7 +36,7 @@ class Jet;
  * resolution in simulation is specified in addition, jets that do not have generator-level matches
  * are smeared stochastically using this resolution and the scale factors.
  */
-class JetCorrector
+class JetCorrectorService: public Service
 {
 public:
     /// Supported types of systematic variations
@@ -46,10 +48,24 @@ public:
     };
     
 public:
-    /// Trivial contructor
-    JetCorrector() = default;
+    /// Creates a service with the given name
+    JetCorrectorService(std::string const name = "JetCorrector");
     
 public:
+    /**
+     * \brief Performs initialization needed when processing of a new dataset starts
+     * 
+     * Reimplemented from Service.
+     */
+    virtual void BeginRun(Dataset const &) override;
+    
+    /**
+     * \brief Creates a newly-initialized clone
+     * 
+     * Implemented from Service.
+     */
+    virtual Service *Clone() const override;
+    
     /**
      * \brief Computes full correction factor for requested effects
      * 
