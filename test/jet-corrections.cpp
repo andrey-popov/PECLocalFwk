@@ -1,7 +1,7 @@
 #include <mensura/core/Dataset.hpp>
 #include <mensura/core/Processor.hpp>
 
-#include <mensura/extensions/JetCorrector.hpp>
+#include <mensura/extensions/JetCorrectorService.hpp>
 
 #include <mensura/PECReader/PECGenJetMETReader.hpp>
 #include <mensura/PECReader/PECInputData.hpp>
@@ -27,6 +27,16 @@ int main()
     Processor processor;
     
     
+    // Register jet corrector service
+    JetCorrectorService *jetCorrector = new JetCorrectorService;
+    jetCorrector->SetJEC({"Fall15_25nsV2_MC_L1FastJet_AK4PFchs.txt",
+      "Fall15_25nsV2_MC_L2Relative_AK4PFchs.txt", "Fall15_25nsV2_MC_L3Absolute_AK4PFchs.txt"});
+    jetCorrector->SetJECUncertainty("Fall15_25nsV2_MC_Uncertainty_AK4PFchs.txt");
+    jetCorrector->SetJER("Fall15_25nsV2_MC_JERSF_AK4PFchs.txt",
+      "Fall15_25nsV2_MC_PtResolution_AK4PFchs.txt");
+    processor.RegisterService(jetCorrector);
+    
+    
     // Register plugins
     processor.RegisterPlugin(new PECInputData);
     processor.RegisterPlugin(new PECGenJetMETReader);
@@ -45,15 +55,6 @@ int main()
     
     PileUpReader const *puReader =
       dynamic_cast<PileUpReader const *>(processor.GetPlugin("PileUp"));
-    
-    
-    // Create jet corrector
-    JetCorrector jetCorrector;
-    jetCorrector.SetJEC({"Fall15_25nsV2_MC_L1FastJet_AK4PFchs.txt",
-      "Fall15_25nsV2_MC_L2Relative_AK4PFchs.txt", "Fall15_25nsV2_MC_L3Absolute_AK4PFchs.txt"});
-    jetCorrector.SetJECUncertainty("Fall15_25nsV2_MC_Uncertainty_AK4PFchs.txt");
-    jetCorrector.SetJER("Fall15_25nsV2_MC_JERSF_AK4PFchs.txt",
-      "Fall15_25nsV2_MC_PtResolution_AK4PFchs.txt");
     
     
     // Open the input dataset
@@ -97,10 +98,10 @@ int main()
             double const rawPt = j.RawP4().Pt();
             cout << "  Raw pt: " << rawPt << ", corrected pt out of the box: " << j.Pt() << '\n';
             
-            double const corrFactor = jetCorrector(j, rho);
+            double const corrFactor = jetCorrector->Eval(j, rho);
             cout << "  Correction factor: " << corrFactor << '\n';
             cout << "  JEC uncertainty: " <<
-              jetCorrector.EvalJECUnc(rawPt * corrFactor, j.Eta()) << '\n';
+              jetCorrector->EvalJECUnc(rawPt * corrFactor, j.Eta()) << '\n';
             cout << "  Has GEN-level match: " << bool(j.MatchedGenJet()) << '\n';
             cout << "  Recorrected pt: " << rawPt * corrFactor << '\n';
         }

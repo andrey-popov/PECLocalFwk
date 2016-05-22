@@ -51,14 +51,13 @@ public:
     /// Creates a service with the given name
     JetCorrectorService(std::string const name = "JetCorrector");
     
-public:
-    /**
-     * \brief Performs initialization needed when processing of a new dataset starts
-     * 
-     * Reimplemented from Service.
-     */
-    virtual void BeginRun(Dataset const &) override;
+    /// Copy constructor
+    JetCorrectorService(JetCorrectorService const &src);
     
+    /// Default move constructor
+    JetCorrectorService(JetCorrectorService &&) = default;
+    
+public:
     /**
      * \brief Creates a newly-initialized clone
      * 
@@ -117,6 +116,23 @@ public:
       unsigned long seed = 0);
     
 private:
+    /// Constructs an object to evaluate JEC
+    void CreateJECEvaluator();
+    
+    /// Constructs an object to evaluate JEC uncertainty
+    void CreateJECUncEvaluator();
+    
+    /// Constructs objects to evaluate effect of JER smearing
+    void CreateJEREvaluator();
+    
+private:
+    /**
+     * \brief Files with requested jet energy corrections
+     * 
+     * Needed to create a clone of FactorizedJetCorrector. Paths to files are fully qualified.
+     */
+    std::vector<std::string> jecFiles;
+    
     /**
      * \brief An object that evaluates jet energy corrections
      * 
@@ -125,11 +141,33 @@ private:
     std::unique_ptr<FactorizedJetCorrector> jetEnergyCorrector;
     
     /**
+     * \brief Path to file with requested JEC uncertainties
+     * 
+     * Needed to create a clone of JetCorrectionUncertainty. The path is fully qualified.
+     */
+    std::string jecUncFile;
+    
+    /**
+     * \brief Requested sources of JEC uncertainty
+     * 
+     * Needed to create a clone of JetCorrectionUncertainty.
+     */
+    std::vector<std::string> jecUncSources;
+    
+    /**
      * \brief Objects that compute JEC uncertainties
      * 
      * The vector can be empty if no uncertainties have been specified.
      */
     std::vector<std::unique_ptr<JetCorrectionUncertainty>> jecUncProviders;
+    
+    /**
+     * \brief Paths to files with JER scale factors and MC resolutions
+     * 
+     * Needed to create clones of JetResolution and JetResolutionScaleFactor. The paths are fully
+     * qualified.
+     */
+    std::string jerSFFile, jerMCFile;
     
     /**
      * \brief An object that provides pt resolution in simulation

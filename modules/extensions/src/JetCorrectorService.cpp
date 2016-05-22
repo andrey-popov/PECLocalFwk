@@ -2,6 +2,7 @@
 
 #include <mensura/core/FileInPath.hpp>
 #include <mensura/core/PhysicsObjects.hpp>
+#include <mensura/core/ROOTLock.hpp>
 
 #include <mensura/external/JERC/JetCorrectorParameters.hpp>
 
@@ -12,6 +13,35 @@
 JetCorrectorService::JetCorrectorService(std::string const name /*= "JetCorrector"*/):
     Service(name)
 {}
+
+
+JetCorrectorService::JetCorrectorService(JetCorrectorService const &src):
+    Service(src),
+    jecFiles(src.jecFiles),
+    jecUncFile(src.jecUncFile), jecUncSources(src.jecUncSources),
+    jerSFFile(src.jerSFFile), jerMCFile(src.jerMCFile)
+{
+    // Construct all objects to evaluate JEC and impact of JER
+    CreateJECEvaluator();
+    CreateJECUncEvaluator();
+    CreateJEREvaluator();
+    
+    
+    // Create a random-number generator if needed. Cannot share the same generator between copies
+    //because generation of random numbers is not thread-safe
+    if (jerMCFile != "")
+    {
+        ROOTLock::Lock();
+        rGen.reset(new TRandom3(src.rGen->GetSeed()));
+        ROOTLock::Unlock();
+    }
+}
+
+
+Service *JetCorrectorService::Clone() const
+{
+    return new JetCorrectorService(*this);
+}
 
 
 double JetCorrectorService::Eval(Jet const &jet, double rho, SystType syst /*= SystType::None*/,
@@ -49,8 +79,8 @@ double JetCorrectorService::Eval(Jet const &jet, double rho, SystType syst /*= S
     {
         // Sanity check
         if (jecUncProviders.size() == 0)
-            throw std::logic_error("JetCorrectorService::Eval: Cannot evaluate JEC systematics because "
-              "no uncertainties have been specified.");
+            throw std::logic_error("JetCorrectorService::Eval: Cannot evaluate JEC systematics "
+              "because no uncertainties have been specified.");
         
         
         double const jecUncertainty = EvalJECUnc(curCorrPt, jet.Eta());
@@ -168,47 +198,106 @@ double JetCorrectorService::operator()(Jet const &jet, double rho, SystType syst
 }
 
 
-void JetCorrectorService::SetJEC(std::initializer_list<std::string> const &jecFiles)
+void JetCorrectorService::SetJEC(std::initializer_list<std::string> const &jecFiles_)
 {
-    // Create an object that computes jet energy corrections. Code follows an example in [1].
-    //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=136#JetEnCorFWLite
-    std::vector<JetCorrectorParameters> jecParameters;
+    jecFiles.clear();
     
-    for (auto const &jecFile: jecFiles)
-        jecParameters.emplace_back(FileInPath::Resolve("JERC", jecFile));
+    for (auto const &jecFile: jecFiles_)
+        jecFiles.emplace_back(FileInPath::Resolve("JERC", jecFile));
     
-    jetEnergyCorrector.reset(new FactorizedJetCorrector(jecParameters));
+    CreateJECEvaluator();
 }
 
 
-void JetCorrectorService::SetJECUncertainty(std::string const &jecUncFile,
+void JetCorrectorService::SetJECUncertainty(std::string const &jecUncFile_,
   std::initializer_list<std::string> uncSources /*= {}*/)
 {
-    // Create objects to compute JEC uncertainties. Code follows an example in [1].
-    //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=136#JetCorUncertainties
-    std::string const &resolvedPath = FileInPath::Resolve("JERC", jecUncFile);
-    
-    if (uncSources.size() == 0)
-        jecUncProviders.emplace_back(new JetCorrectionUncertainty(resolvedPath));
+    if (jecUncFile_ != "")
+    {
+        jecUncFile = FileInPath::Resolve("JERC", jecUncFile_);
+        jecUncSources = std::vector<std::string>(uncSources);
+    }
     else
     {
-        for (auto const &uncSource: uncSources)
-            jecUncProviders.emplace_back(
-              new JetCorrectionUncertainty(JetCorrectorParameters(resolvedPath, uncSource)));
+        jecUncFile = "";
+        jecUncSources.clear();
     }
+    
+    CreateJECUncEvaluator();
 }
 
 
-void JetCorrectorService::SetJER(std::string const &jerSFFile, std::string const &jerMCFile,
+void JetCorrectorService::SetJER(std::string const &jerSFFile_, std::string const &jerMCFile_,
   unsigned long seed /*= 0*/)
+{
+    if (jerSFFile_ != "")
+        jerSFFile = FileInPath::Resolve("JERC", jerSFFile_);
+    else
+        jerSFFile = "";
+    
+    if (jerMCFile_ != "")
+    {
+        jerMCFile = FileInPath::Resolve("JERC", jerMCFile_);
+        
+        ROOTLock::Lock();
+        rGen.reset(new TRandom3(seed));
+        ROOTLock::Unlock();
+    }
+    else
+        jerMCFile = "";
+    
+    CreateJEREvaluator();
+}
+
+
+void JetCorrectorService::CreateJECEvaluator()
+{
+    if (jecFiles.size() > 0)
+    {
+        // Create an object that computes jet energy corrections. Code follows an example in [1].
+        //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=136#JetEnCorFWLite
+        std::vector<JetCorrectorParameters> jecParameters;
+        
+        for (auto const &jecFile: jecFiles)
+            jecParameters.emplace_back(jecFile);
+        
+        jetEnergyCorrector.reset(new FactorizedJetCorrector(jecParameters));
+    }
+    else
+        jetEnergyCorrector.reset();
+}
+
+
+void JetCorrectorService::CreateJECUncEvaluator()
+{
+    if (jecUncFile != "")
+    {
+        // Create objects to compute JEC uncertainties. Code follows an example in [1].
+        //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=136#JetCorUncertainties
+        if (jecUncSources.size() == 0)
+            jecUncProviders.emplace_back(new JetCorrectionUncertainty(jecUncFile));
+        else
+        {
+            for (auto const &uncSource: jecUncSources)
+                jecUncProviders.emplace_back(
+                  new JetCorrectionUncertainty(JetCorrectorParameters(jecUncFile, uncSource)));
+        }
+    }
+    else
+        jecUncProviders.clear();
+}
+
+
+void JetCorrectorService::CreateJEREvaluator()
 {
     if (jerSFFile != "")
         jerSFProvider.reset(
-          new JME::JetResolutionScaleFactor(FileInPath::Resolve("JERC", jerSFFile)));
+          new JME::JetResolutionScaleFactor(jerSFFile));
+    else
+        jerSFProvider.reset();
     
     if (jerMCFile != "")
-    {
-        jerProvider.reset(new JME::JetResolution(FileInPath::Resolve("JERC", jerMCFile)));
-        rGen.reset(new TRandom3(seed));
-    }
+        jerProvider.reset(new JME::JetResolution(jerMCFile));
+    else
+        jerProvider.reset();
 }
