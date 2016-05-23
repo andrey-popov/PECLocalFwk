@@ -29,6 +29,9 @@ void JetMETUpdate::BeginRun(Dataset const &)
     
     
     // Read requested systematic variation
+    systType = JetCorrectorService::SystType::None;
+    systDirection = SystService::VarDirection::Undefined;
+    
     if (systServiceName != "")
     {
         SystService const *systService =

@@ -10,9 +10,10 @@
 #include <mensura/extensions/JetCorrectorService.hpp>
 #include <mensura/extensions/JetMETUpdate.hpp>
 
+#include <mensura/PECReader/PECGenJetMETReader.hpp>
 #include <mensura/PECReader/PECInputData.hpp>
 #include <mensura/PECReader/PECJetMETReader.hpp>
- #include <mensura/PECReader/PECPileUpReader.hpp>
+#include <mensura/PECReader/PECPileUpReader.hpp>
 
 #include <iostream>
 #include <memory>
@@ -89,9 +90,11 @@ int main(int argc, char **argv)
     // Register plugins
     processor.RegisterPlugin(new PECInputData);
     processor.RegisterPlugin(new PECPileUpReader);
+    processor.RegisterPlugin(new PECGenJetMETReader);
     
     PECJetMETReader *jetmetReader = new PECJetMETReader("OrigJetMET");
     jetmetReader->ConfigureLeptonCleaning("");  // Disabled
+    jetmetReader->SetGenJetReader();  // Default one
     processor.RegisterPlugin(jetmetReader);
     
     JetMETUpdate *jetmetUpdater = new JetMETUpdate;
