@@ -50,28 +50,29 @@ double JetCorrectorService::Eval(Jet const &jet, double rho, SystType syst /*= S
     // Variable that will accumulate the total correction factor
     double corrFactor = 1.;
     
-    // Running jet pt with all corrections considered up to the current moment applied
-    double curCorrPt = jet.Pt();    
     
+    // Evaluate nominal jet energy correction. Save corresponding jet pt.
+    double jecCorrPt;
     
-    // Evaluate nominal jet energy correction
     if (jetEnergyCorrector)
     {
-        curCorrPt = jet.RawP4().Pt();
+        double const rawPt = jet.RawP4().Pt();
         
         jetEnergyCorrector->setJetEta(jet.Eta());
-        jetEnergyCorrector->setJetPt(curCorrPt);
+        jetEnergyCorrector->setJetPt(rawPt);
         jetEnergyCorrector->setJetA(jet.Area());
         jetEnergyCorrector->setRho(rho);
         
         double const jecFactor = jetEnergyCorrector->getCorrection();
         
         corrFactor *= jecFactor;
-        curCorrPt *= jecFactor;
+        jecCorrPt = rawPt * jecFactor;
     }
-    
-    // At this point curCorrPt is assumed to include full nominal JEC, either applied in this
-    //method or set up when the jet was created
+    else
+    {
+        // Assume the jet has been created with momentum fully corrected for nominal JEC
+        jecCorrPt = jet.Pt();
+    }
     
     
     // Evaluate systematical variation for JEC
@@ -83,18 +84,12 @@ double JetCorrectorService::Eval(Jet const &jet, double rho, SystType syst /*= S
               "because no uncertainties have been specified.");
         
         
-        double const jecUncertainty = EvalJECUnc(curCorrPt, jet.Eta());
+        double const jecUncertainty = EvalJECUnc(jecCorrPt, jet.Eta());
         
         if (direction == SystService::VarDirection::Up)
-        {
             corrFactor *= (1. + jecUncertainty);
-            curCorrPt *= (1. + jecUncertainty);
-        }
         else if (direction == SystService::VarDirection::Down)
-        {
             corrFactor *= (1. - jecUncertainty);
-            curCorrPt *= (1. - jecUncertainty);
-        }
     }
     
     
@@ -105,28 +100,24 @@ double JetCorrectorService::Eval(Jet const &jet, double rho, SystType syst /*= S
           "JER scale factors have not been specified.");
     
     
-    // Evaluate JER smearing
+    // Evaluate JER smearing. Corresponding correction factor is always evaluated after nominal
+    //JEC are applied, even when a systematic variaion in JEC is requested. This done to be aligned
+    //with the way JER smearing is usually applied in CMSSW.
     if (jerSFProvider)
     {
         // Find data/MC scale factor for pt resolution for the current jet
-        double jerSF = 0.;
+        Variation jerVar = Variation::NOMINAL;
         
-        switch (direction)
+        if (syst == SystType::JER)
         {
-            case SystService::VarDirection::Up:
-                jerSF = jerSFProvider->getScaleFactor({{JME::Binning::JetEta, jet.Eta()}},
-                  Variation::UP);
-                break;
-            
-            case SystService::VarDirection::Down:
-                jerSF = jerSFProvider->getScaleFactor({{JME::Binning::JetEta, jet.Eta()}},
-                  Variation::DOWN);
-                break;
-            
-            default:
-                jerSF = jerSFProvider->getScaleFactor({{JME::Binning::JetEta, jet.Eta()}},
-                  Variation::NOMINAL);
+            if (direction == SystService::VarDirection::Up)
+                jerVar = Variation::UP;
+            else if (direction == SystService::VarDirection::Down)
+                jerVar = Variation::DOWN;
         }
+        
+        double const jerSF =
+          jerSFProvider->getScaleFactor({{JME::Binning::JetEta, jet.Eta()}}, jerVar);
         
         
         // Depending on the presence of a matched GEN-level jet, perform deterministic or
@@ -137,23 +128,25 @@ double JetCorrectorService::Eval(Jet const &jet, double rho, SystType syst /*= S
         {
             // Smearing is done as here [1]
             //[1] https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_8/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h#L236-L237
-            double const jerFactor = 1. + (jerSF - 1.) * (curCorrPt - genJet->Pt()) / curCorrPt;
+            double const jerFactor = 1. + (jerSF - 1.) * (jecCorrPt - genJet->Pt()) / jecCorrPt;
+            
+            // Different definition for debugging with PEC tuples 3.1.0
+            // double const jecCorrE = jet.RawP4().E() * jecCorrPt / jet.RawP4().Pt();
+            // double const jerFactor = 1. + (jerSF - 1.) * (jecCorrE - genJet->E()) / jecCorrE;
             
             corrFactor *= jerFactor;
-            // No need to update curCorrPt since it will not be used anymore
         }
         else if (jerProvider)
         {
             // Follow the same approach as here [1]
             //[1] https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_8/PhysicsTools/PatUtils/interface/SmearedJetProducerT.h#L244_L250
             double const ptResolution =
-              jerProvider->getResolution({{JME::Binning::JetPt, curCorrPt},
+              jerProvider->getResolution({{JME::Binning::JetPt, jecCorrPt},
               {JME::Binning::JetEta, jet.Eta()}, {JME::Binning::Rho, rho}});
             double const jerFactor = 1. + rGen->Gaus(0., ptResolution) *
-              std::sqrt(std::max(std::pow(jerSF, 2) - 1., 0.)) / curCorrPt;
+              std::sqrt(std::max(std::pow(jerSF, 2) - 1., 0.)) / jecCorrPt;
             
             corrFactor *= jerFactor;
-            // No need to update curCorrPt since it will not be used anymore
         }
     }
     

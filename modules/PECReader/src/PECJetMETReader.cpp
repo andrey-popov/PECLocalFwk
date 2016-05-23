@@ -176,7 +176,7 @@ bool PECJetMETReader::ProcessEvent()
         TLorentzVector p4;
         p4.SetPtEtaPhiM(j.Pt(), j.Eta(), j.Phi(), j.M());
         
-        double const corrFactor = j.CorrFactor();
+        double corrFactor = j.CorrFactor();
         
         if (corrFactor != 0.)
             p4 *= corrFactor;
@@ -194,10 +194,15 @@ bool PECJetMETReader::ProcessEvent()
         
         
         // Apply systematic variations if requested
+        double systCorrFactor = 1.;
+        
         if (systType == SystType::JEC)
-            p4 *= 1. + systDirection * j.JECUncertainty();
+            systCorrFactor = 1. + systDirection * j.JECUncertainty();
         else if (systType == SystType::JER)
-            p4 *= 1. + systDirection * j.JERUncertainty();
+            systCorrFactor = 1. + systDirection * j.JERUncertainty();
+        
+        p4 *= systCorrFactor;
+        corrFactor *= systCorrFactor;
         
         
         // Loose physics selection
