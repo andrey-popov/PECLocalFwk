@@ -11,15 +11,28 @@ class PileUpReader;
 
 /**
  * \class JetMETUpdate
- * \brief A plugin that applies energy corrections to jets and propagate them into MET
+ * \brief A plugin that applies energy corrections to jets and propagates them into MET
  * 
+ * This plugin reads jets and MET provided by a JetMETReader with a default name "OrigJetMET" and
+ * reapplies jet corrections, propagating them also into MET.
  * 
+ * T1 MET corrections are evaluated approximately. The plugin starts from the provided MET (with
+ * outdated corrections applied), undoes T1 corrections using only jets available from the source
+ * JetMETReader (thus, they are usually cleaned against leptons and have physics ID applied) that
+ * are additionally required to pass a selection on recorrected transverse momentum (by default,
+ * pt > 15 GeV), and applies new T1 corrections computed with the same jets. If soft jets are not
+ * saved in input files and thus are not available through the source JetMETReader, they will
+ * contrubute to T1 MET corrections as they were at the time of computation of the original MET,
+ * i.e. with outdated corrections. If stochastic JER corrections have been used in computation of
+ * MET, they can only be undone on the average due to their random nature.
+ * 
+ * The source MET can have any additive corrections applied. They will be preserved by this plugin.
  */
 class JetMETUpdate: public JetMETReader
 {
 public:
     /**
-     * \brief Creates plugin with the given name
+     * \brief Creates a plugin with the given name
      * 
      * User is encouraged to keep the default name.
      */
@@ -27,7 +40,7 @@ public:
     
 public:
     /**
-     * \brief Sets up reading of a tree containing jets and MET
+     * \brief Saves pointeres to all dependencies
      * 
      * Reimplemented from Plugin.
      */
@@ -41,20 +54,32 @@ public:
     virtual Plugin *Clone() const override;
     
     /**
-     * \brief Returns radius parameter used in the jet clustering algorithm
-     * 
-     * The radius is hard-coded in the current implementation, but it will be made configurable in
-     * future if jets with larger radii are added.
+     * \brief Returns jet radius from the source JetMETReader
      * 
      * Implemented from JetMETReader.
      */
     virtual double GetJetRadius() const override;
     
     /**
+     * \brief Sets corrector for jets
+     * 
+     * Jets read from the source JetMETReader will be corrected using provided JetCorrectorService.
+     * If an empty string is given, jet momenta will be copied without modifications.
      */
     void SetJetCorrection(std::string const &jetCorrServiceName);
     
     /**
+     * \brief Sets jets correctors to be used to evaluate T1 MET corrections
+     * 
+     * Arguments are names of instances of JetCorrectorService that evaluate full and L1-only
+     * corrections to be applied to compute T1 MET corrections. In addition, corrections used in
+     * the original MET need to be provided to undo outdated T1 corrections. The "full" corrections
+     * to be applied are not necessarily the same as given to method SetJetCorrection.
+     * 
+     * For any correction level, empty strings can be given as names of the two corresponding
+     * correctors. In this case the corresponding corrections are not applied. This is useful, for
+     * instance, when L1-only corrections have not changed, and thus there is no need to evaluate
+     * them explicitly since their contributions to MET would cancel out.
      */
     void SetJetCorrectionForMET(std::string const &fullNew, std::string const &l1New,
       std::string const &fullOrig, std::string const &l1Orig);
@@ -64,7 +89,7 @@ public:
     
 private:
     /**
-     * \brief Reads jets and MET from the input tree
+     * \brief Reads jets and MET from the source JetMETReader and recorrects them
      * 
      * Reimplemented from Plugin.
      */
