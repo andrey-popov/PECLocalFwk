@@ -77,14 +77,26 @@ int main(int argc, char **argv)
     // Register a service to declare systematic variation
     processor.RegisterService(new SystService(systType, systDirection));
     
-    // Register jet corrector service
-    JetCorrectorService *jetCorrector = new JetCorrectorService("JetCorrFull");
-    jetCorrector->SetJEC({"Fall15_25nsV2_MC_L1FastJet_AK4PFchs.txt",
+    // Register jet corrector services
+    JetCorrectorService *jetCorrFull = new JetCorrectorService("JetCorrFull");
+    jetCorrFull->SetJEC({"Fall15_25nsV2_MC_L1FastJet_AK4PFchs.txt",
       "Fall15_25nsV2_MC_L2Relative_AK4PFchs.txt", "Fall15_25nsV2_MC_L3Absolute_AK4PFchs.txt"});
-    jetCorrector->SetJECUncertainty("Fall15_25nsV2_MC_Uncertainty_AK4PFchs.txt");
-    jetCorrector->SetJER("Fall15_25nsV2_MC_JERSF_AK4PFchs.txt",
+    jetCorrFull->SetJECUncertainty("Fall15_25nsV2_MC_Uncertainty_AK4PFchs.txt");
+    jetCorrFull->SetJER("Fall15_25nsV2_MC_JERSF_AK4PFchs.txt",
       "Fall15_25nsV2_MC_PtResolution_AK4PFchs.txt");
-    processor.RegisterService(jetCorrector);
+    processor.RegisterService(jetCorrFull);
+    
+    JetCorrectorService *jetCorrL123 = new JetCorrectorService("jetCorrL123");
+    jetCorrL123->SetJEC({"Fall15_25nsV2_MC_L1FastJet_AK4PFchs.txt",
+      "Fall15_25nsV2_MC_L2Relative_AK4PFchs.txt", "Fall15_25nsV2_MC_L3Absolute_AK4PFchs.txt"});
+    jetCorrL123->SetJECUncertainty("Fall15_25nsV2_MC_Uncertainty_AK4PFchs.txt");
+    processor.RegisterService(jetCorrL123);
+    
+    JetCorrectorService *jetCorrL123Undo = new JetCorrectorService("jetCorrL123Undo");
+    jetCorrL123Undo->SetJEC({"Fall15_25nsV2_MC_L1FastJet_AK4PFchs.txt",
+      "Fall15_25nsV2_MC_L2Relative_AK4PFchs.txt", "Fall15_25nsV2_MC_L3Absolute_AK4PFchs.txt"});
+    jetCorrL123Undo->SetJECUncertainty("Fall15_25nsV2_MC_Uncertainty_AK4PFchs.txt");
+    processor.RegisterService(jetCorrL123Undo);
     
     
     // Register plugins
@@ -99,6 +111,7 @@ int main(int argc, char **argv)
     
     JetMETUpdate *jetmetUpdater = new JetMETUpdate;
     jetmetUpdater->SetJetCorrection("JetCorrFull");
+    jetmetUpdater->SetJetCorrectionForMET("jetCorrL123", "", "jetCorrL123Undo", "");
     processor.RegisterPlugin(jetmetUpdater);
     
     

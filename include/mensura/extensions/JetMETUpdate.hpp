@@ -52,7 +52,12 @@ public:
     
     /**
      */
-    void SetJetCorrection(std::string jetCorrServiceName);
+    void SetJetCorrection(std::string const &jetCorrServiceName);
+    
+    /**
+     */
+    void SetJetCorrectionForMET(std::string const &fullNew, std::string const &l1New,
+      std::string const &fullOrig, std::string const &l1Orig);
     
     /// Specifies desired selection on jets
     void SetSelection(double minPt, double maxAbsEta);
@@ -107,6 +112,9 @@ private:
     
     /// Maximal allowed absolute value of pseudorapidity
     double maxAbsEta;
+    
+    /// Minimal transverse momentum for jets to be considered in T1 MET corrections
+    double minPtForT1;
     
     /// Type of requested systematical variation
     JetCorrectorService::SystType systType;

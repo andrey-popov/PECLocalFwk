@@ -17,7 +17,7 @@ JetMETUpdate::JetMETUpdate(std::string const name /*= "JetMET"*/):
     jetCorrForJets(nullptr),
     jetCorrForMETFull(nullptr), jetCorrForMETL1(nullptr),
     jetCorrForMETOrigFull(nullptr), jetCorrForMETOrigL1(nullptr),
-    minPt(0.), maxAbsEta(std::numeric_limits<double>::infinity())
+    minPt(0.), maxAbsEta(std::numeric_limits<double>::infinity()), minPtForT1(15.)
 {}
 
 
@@ -89,9 +89,42 @@ double JetMETUpdate::GetJetRadius() const
 }
 
 
-void JetMETUpdate::SetJetCorrection(std::string jetCorrServiceName)
+void JetMETUpdate::SetJetCorrection(std::string const &jetCorrServiceName)
 {
     jetCorrForJetsName = jetCorrServiceName;
+}
+
+
+void JetMETUpdate::SetJetCorrectionForMET(std::string const &fullNew, std::string const &l1New,
+  std::string const &fullOrig, std::string const &l1Orig)
+{
+    // Make sure that for each level the two correctors are either both given or both missing
+    if ((fullNew == "") != (fullOrig == "") or (l1New == "") != (l1Orig == ""))
+    {
+        std::ostringstream message;
+        message << "JetMETUpdate[\"" << GetName() << "\"]::SetJetCorrectionForMET: " <<
+          "For each correction level the two correctors must be either provided both or " <<
+          "missing both.";
+        throw std::logic_error(message.str());
+    }
+    
+    
+    // If new and original correctors are the same, drop them since their effect would cancel out
+    if (fullNew != fullOrig)
+    {
+        jetCorrForMETFullName = fullNew;
+        jetCorrForMETOrigFullName = fullOrig;
+    }
+    else
+        jetCorrForMETFullName = jetCorrForMETOrigFullName = "";
+    
+    if (l1New != l1Orig)
+    {
+        jetCorrForMETL1Name = l1New;
+        jetCorrForMETOrigL1Name = l1Orig;
+    }
+    else
+        jetCorrForMETL1Name = jetCorrForMETOrigL1Name = "";
 }
 
 
@@ -111,6 +144,10 @@ bool JetMETUpdate::ProcessEvent()
     double const rho = puPlugin->GetRho();
     
     
+    // A shift to be applied to MET to account for differences in T1 corrections
+    TLorentzVector metShift;
+    
+    
     // Loop over original collection of jets
     for (auto const &srcJet: jetmetPlugin->GetJets())
     {
@@ -124,6 +161,23 @@ bool JetMETUpdate::ProcessEvent()
         }
         
         
+        // Compute the shift in MET due to T1 corrections
+        if (jet.Pt() > minPtForT1)
+        {
+            // The shift due to different L1 corrections
+            if (jetCorrForMETL1 and jetCorrForMETOrigL1)
+                metShift += srcJet.RawP4() *
+                  (jetCorrForMETL1->Eval(srcJet, rho, systType, systDirection) -
+                  jetCorrForMETOrigL1->Eval(srcJet, rho, systType, systDirection));
+            
+            // The shift due to different full corrections
+            if (jetCorrForMETFull and jetCorrForMETOrigFull)
+                metShift -= srcJet.RawP4() *
+                  (jetCorrForMETFull->Eval(srcJet, rho, systType, systDirection) -
+                  jetCorrForMETOrigFull->Eval(srcJet, rho, systType, systDirection));
+        }
+        
+        
         // Store the new jet if it passes the kinematical selection
         if (jet.Pt() > minPt and std::abs(jet.Eta()) < maxAbsEta)
             jets.emplace_back(jet);
@@ -132,6 +186,11 @@ bool JetMETUpdate::ProcessEvent()
     
     // Make sure the new collection of jets is ordered in transverse momentum
     std::sort(jets.rbegin(), jets.rend());
+    
+    
+    // Update MET
+    TLorentzVector updatedMET(jetmetPlugin->GetMET().P4() + metShift);
+    met.SetPtEtaPhiM(updatedMET.Pt(), 0., updatedMET.Phi(), 0.);
     
     
     return true;
