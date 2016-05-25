@@ -25,6 +25,8 @@ This directory contains data files organized into several categories:
    Profiles of pile-up in data collected in Run2015D. They are constructed as described [here](https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupJSONFileforData?rev=22#2015_Pileup_JSON_Files), using an effective minimum-bias cross section of 69 mb. The "golden" certification file was used. In case of electrons, runs with wrongly reconstructed online beam spot (listed [here](https://hypernews.cern.ch/HyperNews/CMS/get/physics-validation/2556.html)) are excluded.
  * `simPUProfiles_76X.root` <br />
    File with simulated pile-up profiles for the `RunIIFall15DR76` campaign. Only includes the nominal profile taken from [this configuration](https://github.com/cms-sw/cmssw/blob/CMSSW_7_6_4/SimGeneral/MixingModule/python/mix_2015_25ns_FallMC_matchData_PoissonOOTPU_cfi.py).
+ * `simPUProfiles_80X.root` <br />
+   File with simulated pile-up profiles for the `RunIISpring16DR80` campaign. Only includes the nominal profile taken from [this configuration](https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_8/SimGeneral/MixingModule/python/mix_2016_25ns_SpringMC_PUScenarioV1_PoissonOOTPU_cfi.py).
 
 
 ## JERC
