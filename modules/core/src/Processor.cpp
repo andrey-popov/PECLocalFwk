@@ -14,11 +14,6 @@ using namespace std;
 using namespace logging;
 
 
-Processor::Processor(RunManager *manager_ /*= nullptr*/) noexcept:
-    manager(manager_)
-{}
-
-
 Processor::Processor(Processor &&src) noexcept:
     manager(src.manager),
     services(move(src.services)),
@@ -266,6 +261,12 @@ Plugin const *Processor::GetPluginBeforeQuiet(string const &name, string const &
     {
         return nullptr;
     }
+}
+
+
+void Processor::SetManager(RunManager *manager_)
+{
+    manager = manager_;
 }
 
 

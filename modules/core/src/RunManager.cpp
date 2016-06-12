@@ -1,6 +1,5 @@
 #include <mensura/core/RunManager.hpp>
 
-#include <mensura/core/Processor.hpp>
 #include <mensura/core/Logger.hpp>
 
 #include <thread>
@@ -38,13 +37,13 @@ void RunManager::Process(double loadFraction)
 
 void RunManager::RegisterService(Service *service)
 {
-    services.emplace_back(unique_ptr<Service>(service));
+    templateProcessor.RegisterService(service);
 }
 
 
 void RunManager::RegisterPlugin(Plugin *plugin)
 {
-    plugins.emplace_back(unique_ptr<Plugin>(plugin));
+    templateProcessor.RegisterPlugin(plugin);
 }
 
 
@@ -59,19 +58,11 @@ void RunManager::ProcessImp(int nThreads)
         nThreads = datasets.size();
     
     
-    // Create processing objects. The first one is constructed from this, others are copy-
-    //constructed from the first one
+    // Create processing objects. The template processor is used as the first one, others are copy-
+    //constructed from it
     vector<Processor> processors;
     processors.reserve(nThreads);
-    processors.emplace_back(this);
-    
-    
-    // The first processor is used as a template
-    for (auto &s: services)
-        processors.front().RegisterService(s.release());
-    
-    for (auto &p: plugins)
-        processors.front().RegisterPlugin(p.release());
+    processors.emplace_back(std::move(templateProcessor));
     
     
     // Other processors are copied from the first one

@@ -2,6 +2,7 @@
 
 #include <mensura/core/Dataset.hpp>
 #include <mensura/core/Plugin.hpp>
+#include <mensura/core/Processor.hpp>
 #include <mensura/core/Service.hpp>
 
 #include <queue>
@@ -9,16 +10,13 @@
 #include <memory>
 
 
-class Processor;
-
-
 /**
  * \class RunManager
  * \brief Performs parallel processing of datasets
  * 
- * The class hosts a list of atomic (containing a single file each) datasets and a set of user-
- * defined plugins and manages a thread pool that processes the datasets. It only forwards
- * parameters, and the actual processing is delegated to instances of dedicated class Processor.
+ * The class hosts a list of atomic (containing a single file each) datasets and manages a thread
+ * pool that processes them. It only forwards parameters, and the actual processing is delegated to
+ * instances of dedicated class Processor.
  * 
  * Some of data members are accessed directly by the friend class Processor.
  */
@@ -34,7 +32,7 @@ public:
     
     /// Assignment operator is deleted
     RunManager &operator=(RunManager const &) = delete;
-
+    
 public:
     /// Processes datasets with a pool of nThreads threads
     void Process(int nThreads);
@@ -50,24 +48,23 @@ public:
     /**
      * \brief Adds a new service
      * 
-     * The service is owned by RunManager. Names of all registered services must be unique;
-     * otherwise an exception will be thrown in consequitive initialization.
+     * Directly calls Processor::RegisterService for the underlying template processor. Consult
+     * documentation for that method.
      */
     void RegisterService(Service *service);
     
     /**
-     * \brief Adds a new plugin to be executed
+     * \brief Adds a new plugin to the execution path
      * 
-     * The new plugin is inserted at the end of execution path. The plugin object is owned by
-     * RunManager. Note that a plugin wrapper for class PECReader is included automatically and
-     * executed first; it must not be registered explicitly.
+     * Directly calls Processor::RegisterPlugin for the underlying template processor. Consult
+     * documentation for that method.
      */
     void RegisterPlugin(Plugin *plugin);
-
+    
 private:
     /// Implementation for famility public methods Process
     void ProcessImp(int nThreads);
-
+    
 private:
     /// Atomic (containing a single file each) datasets
     std::queue<Dataset> datasets;
@@ -75,16 +72,9 @@ private:
     /// A mutex to lock container with atomic datasets
     std::mutex mutexDatasets;
     
-    /**
-     * \brief Vector of registered services
-     * 
-     * The order of services is not important to the framework.
-     */
-    std::vector<std::unique_ptr<Service>> services;
+    /// A template processor to which services and plugins are registered
+    Processor templateProcessor;
     
-    /// Vector of registered plugins
-    std::vector<std::unique_ptr<Plugin>> plugins;
-
 friend class Processor;
 };
 
@@ -92,6 +82,9 @@ friend class Processor;
 template<typename InputIt>
 RunManager::RunManager(InputIt const &datasetsBegin, InputIt const &datasetsEnd)
 {
+    templateProcessor.SetManager(this);
+    
+    
     // Fill container with atomic datasets
     for (InputIt d = datasetsBegin; d != datasetsEnd; ++d)
     {

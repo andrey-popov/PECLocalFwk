@@ -33,8 +33,8 @@ class RunManager;
 class Processor
 {
 public:
-    /// Constructor
-    Processor(RunManager *manager = nullptr) noexcept;
+    /// Default constructor
+    Processor() = default;
     
     /// Move constructor
     Processor(Processor &&src) noexcept;
@@ -158,11 +158,14 @@ public:
      */
     Plugin const *GetPluginBeforeQuiet(std::string const &name,
      std::string const &dependentName) const noexcept;
-
+    
+    /// Sets owning RunManager
+    void SetManager(RunManager *manager);
+    
 private:
     /// Retuns index in the path of a plugin with given name. Throws an exception if not found
     unsigned GetPluginIndex(std::string const &name) const;
-
+    
 private:
     /**
      * \brief Parent RunManager instance
