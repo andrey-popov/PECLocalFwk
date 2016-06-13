@@ -23,6 +23,20 @@
  */
 class RunManager
 {
+private:
+    /// An auxiliary structure to combine statistics for a plugin
+    struct PluginStat
+    {
+        /// Constructor
+        PluginStat(std::string const &pluginName);
+        
+        /// Name of the plugin
+        std::string pluginName;
+        
+        /// Number of processed and accepted events
+        unsigned long numVisited, numPassed;
+    };
+    
 public:
     /// Constructor from a container of instances of Dataset
     template<typename InputIt>
@@ -35,6 +49,13 @@ public:
     RunManager &operator=(RunManager const &) = delete;
     
 public:
+    /**
+     * \brief Prints a summary with numbers of events processed and accepted by each plugin
+     * 
+     * The summary is available only after datasets have been processed.
+     */
+    void PrintSummary() const;
+    
     /// Processes datasets with a pool of nThreads threads
     void Process(int nThreads);
     
@@ -83,6 +104,9 @@ private:
     
     /// A template processor to which services and plugins are registered
     Processor templateProcessor;
+    
+    /// Statistics about plugins in all processors
+    std::vector<PluginStat> pathStat;
     
 friend class Processor;
 };

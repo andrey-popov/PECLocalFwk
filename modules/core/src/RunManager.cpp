@@ -2,20 +2,38 @@
 
 #include <mensura/core/Logger.hpp>
 
-#include <thread>
-#include <vector>
+#include <iomanip>
+#include <iostream>
 #include <functional>
 #include <stdexcept>
-
-#include <iostream>
+#include <thread>
+#include <vector>
 
 
 using namespace std;
 using namespace logging;
 
 
+RunManager::PluginStat::PluginStat(std::string const &pluginName_):
+    pluginName(pluginName_),
+    numVisited(0), numPassed(0)
+{}
+
+
 //RunManager::RunManager(InputIt const &begin, const &InputIt end);
 //^ Described in the header file
+
+
+void RunManager::PrintSummary() const
+{
+    std::cout << std::setw(20) << std::left << "Plugin" << "    " <<
+      std::setw(9) << std::right << "Visited" << "    " << std::setw(9) << "Passed\n";
+    
+    for (auto const &stat: pathStat)
+        std::cout << std::setw(20) << std::left << stat.pluginName << "    " <<
+          std::setw(9) << std::right << stat.numVisited << "   " << std::setw(9) << stat.numPassed <<
+          std::endl;
+}
 
 
 void RunManager::Process(int nThreads)
@@ -81,7 +99,7 @@ void RunManager::ProcessImp(int nThreads)
     vector<thread> threads;
     
     for (auto &p: processors)
-        threads.emplace_back(move(p));
+        threads.emplace_back(std::ref(p));
     
     
     // Wait for them to finish
@@ -89,4 +107,23 @@ void RunManager::ProcessImp(int nThreads)
         t.join();
     
     logger << timestamp << "All files have been processed." << eom;
+    
+    
+    // Save plugin statistics
+    std::vector<std::string> const pluginNames = processors.front().GetPath();
+    pathStat.reserve(pluginNames.size());
+    
+    for (auto const &pluginName: pluginNames)
+    {
+        PluginStat stat(pluginName);
+        
+        for (auto const &p: processors)
+        {
+            auto const counts = p.GetStat(pluginName);
+            stat.numVisited += counts.first;
+            stat.numPassed += counts.second;
+        }
+        
+        pathStat.emplace_back(std::move(stat));
+    }
 }

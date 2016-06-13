@@ -17,7 +17,8 @@ using namespace logging;
 
 Processor::PluginInPath::PluginInPath(Plugin *plugin_):
     plugin(plugin_),
-    lastResult(true)
+    lastResult(true),
+    numVisited(0), numPassed(0)
 {}
 
 
@@ -238,6 +239,10 @@ Plugin::EventOutcome Processor::ProcessEvent()
         {
             result = p->ProcessEventToOutcome();
             p.lastResult = (result == Plugin::EventOutcome::Ok);
+            ++p.numVisited;
+            
+            if (p.lastResult)
+                ++p.numPassed;
         }
         else
             p.lastResult = false;
@@ -302,6 +307,17 @@ Service const *Processor::GetServiceQuiet(string const &name) const
 }
 
 
+std::vector<std::string> Processor::GetPath() const
+{
+    std::vector<std::string> pluginNames;
+    
+    for (auto const &p: path)
+        pluginNames.emplace_back(p->GetName());
+    
+    return pluginNames;
+}
+
+
 Plugin const *Processor::GetPlugin(string const &name) const
 {
     return path.at(GetPluginIndex(name)).plugin.get();
@@ -345,6 +361,13 @@ Plugin const *Processor::GetPluginBeforeQuiet(string const &name, string const &
     {
         return nullptr;
     }
+}
+
+
+std::pair<unsigned long, unsigned long> Processor::GetStat(std::string const &pluginName) const
+{
+    auto const &p = path[GetPluginIndex(pluginName)];
+    return {p.numVisited, p.numPassed};
 }
 
 

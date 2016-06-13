@@ -20,6 +20,7 @@
 #include <mensura/PECReader/PECPileUpReader.hpp>
 #include <mensura/PECReader/PECTriggerFilter.hpp>
 
+#include <iostream>
 #include <list>
 
 
@@ -104,6 +105,11 @@ int main()
     
     // Process the datasets
     manager.Process(4);
+    
+    
+    // Print numbers of processed and accepted events
+    std::cout << '\n';
+    manager.PrintSummary();
     
     
     return EXIT_SUCCESS;

@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 
@@ -64,6 +65,9 @@ private:
         
         /// Indicates whether last time this plugin was executed it returned status Ok
         bool lastResult;
+        
+        /// Numbers of events visited this plugin and accepted by it
+        unsigned long numVisited, numPassed;
     };
     
 public:
@@ -162,6 +166,9 @@ public:
      */
     Service const *GetServiceQuiet(std::string const &name) const;
     
+    /// Returns vector of names of registered plugins as ordered in the path
+    std::vector<std::string> GetPath() const;
+    
     /**
      * \brief Returns pointer to plugin with given name
      * 
@@ -203,6 +210,9 @@ public:
      */
     Plugin const *GetPluginBeforeQuiet(std::string const &name,
      std::string const &dependentName) const noexcept;
+    
+    /// Returns number of visited and accepted events
+    std::pair<unsigned long, unsigned long> GetStat(std::string const &pluginName) const;
     
     /// Sets owning RunManager
     void SetManager(RunManager *manager);
