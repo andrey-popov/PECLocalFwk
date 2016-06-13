@@ -41,6 +41,13 @@ void RunManager::RegisterService(Service *service)
 }
 
 
+void RunManager::RegisterPlugin(Plugin *plugin,
+  std::initializer_list<std::string> const &dependencies)
+{
+    templateProcessor.RegisterPlugin(plugin, dependencies);
+}
+
+
 void RunManager::RegisterPlugin(Plugin *plugin)
 {
     templateProcessor.RegisterPlugin(plugin);

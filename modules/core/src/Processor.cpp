@@ -6,12 +6,25 @@
 
 #include <iostream>
 #include <mutex>
+#include <sstream>
 #include <stdexcept>
 #include <thread>
 
 
 using namespace std;
 using namespace logging;
+
+
+Processor::PluginInPath::PluginInPath(Plugin *plugin_):
+    plugin(plugin_),
+    lastResult(true)
+{}
+
+
+Plugin *Processor::PluginInPath::operator->() const
+{
+    return plugin.get();
+}
 
 
 Processor::Processor(Processor &&src) noexcept:
@@ -43,7 +56,10 @@ Processor::Processor(Processor const &src):
          forward_as_tuple(s.first), forward_as_tuple(s.second->Clone()));
     
     for (auto const &p: src.path)
-        path.emplace_back(p->Clone());
+    {
+        path.emplace_back(p.plugin->Clone());
+        path.back().dependencies = p.dependencies;
+    }
     
     
     // Update the master in services and plugins
@@ -59,7 +75,7 @@ Processor::~Processor() noexcept
 {
     // Destroy plugins in a reversed order
     for (auto pIt = path.rbegin(); pIt != path.rend(); ++pIt)
-        pIt->reset();
+        pIt->plugin.reset();
     
     // Do not care in which order services will be destroyed, so let it be done automatically
 }
@@ -82,19 +98,67 @@ void Processor::RegisterService(Service *service)
 }
 
 
+void Processor::RegisterPlugin(Plugin *plugin,
+  std::initializer_list<std::string> const &dependencies)
+{
+    // Make sure there is no plugin with the same name
+    if (pluginNameMap.find(plugin->GetName()) != pluginNameMap.end())
+        throw std::runtime_error("Processor::RegisterPlugin: Attempting to register a second "s +
+         "plugin named \"" + plugin->GetName() + "\".");
+    
+    
+    // Make sure all dependencies have been registered and save their indices
+    std::vector<unsigned> depIndices;
+    
+    for (auto const &depName: dependencies)
+    {
+        auto const pIt = pluginNameMap.find(depName);
+        
+        if (pIt == pluginNameMap.end())
+        {
+            std::ostringstream message;
+            message << "Processor::RegisterPlugin: Dependency \"" << depName <<
+              "\" of plugin \"" << plugin->GetName() << "\" is not registered.";
+            throw std::runtime_error(message.str());
+        }
+        else
+            depIndices.emplace_back(pIt->second);
+    }
+    
+    
+    // Update the map for plugin names
+    pluginNameMap[plugin->GetName()] = path.size();  // This will be the index of the new plugin
+    
+    
+    // Insert the plugin into the path
+    path.emplace_back(plugin);
+    path.back().dependencies = depIndices;
+    
+    
+    // Set this as its master
+    plugin->SetMaster(this);
+}
+
+
 void Processor::RegisterPlugin(Plugin *plugin)
 {
-    // Make sure there is no plugin named the same
+    // Make sure there is no plugin with the same name
     if (pluginNameMap.find(plugin->GetName()) != pluginNameMap.end())
-        throw runtime_error(string("Processor::RegisterPlugin: Attempting to register a second ") +
+        throw std::runtime_error("Processor::RegisterPlugin: Attempting to register a second "s +
          "plugin named \"" + plugin->GetName() + "\".");
     
     
     // Update the map for plugin names
-    pluginNameMap[plugin->GetName()] = path.size();  // this will be the index of this plugin
+    unsigned const curIndex = path.size();  // This will be the index of the new plugin
+    pluginNameMap[plugin->GetName()] = curIndex;
     
     // Insert the plugin into the path
     path.emplace_back(plugin);
+    
+    // Declare that the new plugin depends on the previous one, unless this is the first plugin in
+    //the path
+    if (curIndex > 0)
+        path.back().dependencies.push_back(curIndex - 1);
     
     
     // Introduce this to the plugin
@@ -153,15 +217,35 @@ Plugin::EventOutcome Processor::ProcessEvent()
     
     
     // Process event with all plugins
-    for (auto &plugin: path)
+    for (auto &p: path)
     {
-        result = plugin->ProcessEventToOutcome();
+        // Determine whether the current plugin should be executed for the current event
+        bool runPlugin = true;
         
-        if (result != Plugin::EventOutcome::Ok)
+        for (auto const &depIndex: p.dependencies)
         {
-            // Whatever happened, do not execute remaining plugins for the current event
-            break;
+            if (not path[depIndex].lastResult)
+            {
+                runPlugin = false;
+                break;
+            }
         }
+        
+        
+        // Execute the plugin and save its result. If it is not executed, the result is set to
+        //false to prevent execution of other plugins that depend on it
+        if (runPlugin)
+        {
+            result = p->ProcessEventToOutcome();
+            p.lastResult = (result == Plugin::EventOutcome::Ok);
+        }
+        else
+            p.lastResult = false;
+        
+        
+        // Stop executing the path if a reader has returned false
+        if (result == Plugin::EventOutcome::NoEvents)
+            break;
     }
     
     
@@ -220,7 +304,7 @@ Service const *Processor::GetServiceQuiet(string const &name) const
 
 Plugin const *Processor::GetPlugin(string const &name) const
 {
-    return path.at(GetPluginIndex(name)).get();
+    return path.at(GetPluginIndex(name)).plugin.get();
 }
 
 
@@ -246,12 +330,12 @@ Plugin const *Processor::GetPluginBefore(string const &name, string const &depen
         throw logic_error("Processor::GetPluginBefore: Requested plugin is executed after the "
          "dependent plugin.");
     
-    return path.at(indexInterest).get();
+    return path.at(indexInterest).plugin.get();
 }
 
 
-Plugin const *Processor::GetPluginBeforeQuiet(string const &name, string const &dependentName) const
- noexcept
+Plugin const *Processor::GetPluginBeforeQuiet(string const &name, string const &dependentName)
+  const noexcept
 {
     try
     {

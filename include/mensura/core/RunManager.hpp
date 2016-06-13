@@ -5,6 +5,7 @@
 #include <mensura/core/Processor.hpp>
 #include <mensura/core/Service.hpp>
 
+#include <initializer_list>
 #include <queue>
 #include <mutex>
 #include <memory>
@@ -52,6 +53,14 @@ public:
      * documentation for that method.
      */
     void RegisterService(Service *service);
+    
+    /**
+     * \brief Adds a new plugin with explicit dependencies to the execution path
+     * 
+     * Directly calls Processor::RegisterPlugin for the underlying template processor. Consult
+     * documentation for that method.
+     */
+    void RegisterPlugin(Plugin *plugin, std::initializer_list<std::string> const &dependencies);
     
     /**
      * \brief Adds a new plugin to the execution path

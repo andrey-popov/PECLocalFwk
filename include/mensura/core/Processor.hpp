@@ -4,6 +4,7 @@
 #include <mensura/core/Plugin.hpp>
 #include <mensura/core/Service.hpp>
 
+#include <initializer_list>
 #include <map>
 #include <memory>
 #include <string>
@@ -22,6 +23,11 @@ class RunManager;
  * ordered path. It allows each plugin to access other plugins in the path and services. Plugins
  * and services are owned by Processor, which also registers itself as their master.
  * 
+ * Each plugin can depend on an arbitrary number (including zero) of plugins preceding it in the
+ * path. For each event it is executed if only method ProcessEvent() of none of its dependencies
+ * has returned false. If a reader plugin declares that there are no events left, processing of the
+ * current dataset is stopped immediately.
+ * 
  * Instances of this class are spanned by RunManager to process a queue of datasets. Each processor
  * is run in a separate thread. The entry point for execution is operator(). This class is a friend
  * of RunManager and profits from this to pop up datasets from the queue RunManager::datasets.
@@ -32,6 +38,34 @@ class RunManager;
  */
 class Processor
 {
+private:
+    /// An auxiliary structure to decorate a plugin with information about its behaviour in a path
+    struct PluginInPath
+    {
+        /**
+         * \brief Constructor
+         * 
+         * This takes ownership of the given plugin.
+         */
+        PluginInPath(Plugin *plugin);
+        
+        /// Simplifies calling methods for the underlying plugin
+        Plugin *operator->() const;
+        
+        /// Plugin
+        std::unique_ptr<Plugin> plugin;
+        
+        /**
+         * \brief Indices of other plugins in the path on which this one depends
+         * 
+         * Indices refer to vector path. Dependencies must precede with plugin.
+         */
+        std::vector<unsigned> dependencies;
+        
+        /// Indicates whether last time this plugin was executed it returned status Ok
+        bool lastResult;
+    };
+    
 public:
     /// Default constructor
     Processor() = default;
@@ -53,7 +87,7 @@ public:
     
     /// Destructor
     ~Processor() noexcept;
-
+    
 public:
     /**
      * \brief Adds a new service
@@ -64,10 +98,21 @@ public:
     void RegisterService(Service *service);
     
     /**
-     * \brief Adds a new plugin to be executed
+     * \brief Adds a new plugin with explicit dependencies to the execution path
      * 
-     * The new plugin is inserted at the end of the execution path. The plugin object is owned by
-     * Processor.
+     * The plugin is added at the end of the path, and its dependencies are set up according to the
+     * given collection of plugin names. If one of the dependencies is not found or if a plugin
+     * with the same name has already been registered, an exception is thrown. Processor takes the
+     * ownership of the plugin object.
+     */
+    void RegisterPlugin(Plugin *plugin, std::initializer_list<std::string> const &dependencies);
+    
+    /**
+     * \brief Adds a new plugin to the execution path
+     * 
+     * The new plugin is added at the end of the path. The previous plugin in the path (if any) is
+     * set as its only dependency. If a plugin with the same name has already been registered, an
+     * exception is thrown. Processor takes the ownership of the plugin object.
      */
     void RegisterPlugin(Plugin *plugin);
     
@@ -183,11 +228,11 @@ private:
     std::map<std::string, std::unique_ptr<Service>> services;
     
     /**
-     * \brief Pointers to registered plugins
+     * \brief Execution path, which contains registered plugins
      * 
      * Random access is mandatory for this container.
      */
-    std::vector<std::unique_ptr<Plugin>> path;
+    std::vector<PluginInPath> path;
     
     /// Mapping from plugin names to their indices in vector path
     std::unordered_map<std::string, unsigned> pluginNameMap;
