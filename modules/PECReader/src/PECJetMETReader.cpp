@@ -17,8 +17,9 @@ PECJetMETReader::PECJetMETReader(std::string name /*= "JetMET"*/):
     inputDataPluginName("InputData"), inputDataPlugin(nullptr),
     systServiceName("Systematics"),
     treeName("pecJetMET/JetMET"),
-    bfJetPointer(&bfJets), bfMETPointer(&bfMETs),
+    bfJetPointer(&bfJets), bfMETPointer(&bfMETs), bfUncorrMETPointer(&bfUncorrMETs),
     minPt(0.), maxAbsEta(std::numeric_limits<double>::infinity()),
+    readRawMET(false),
     leptonPluginName("Leptons"), leptonPlugin(nullptr),
     genJetPluginName(""), genJetPlugin(nullptr),
     systType(SystType::None), systDirection(0)
@@ -32,8 +33,9 @@ PECJetMETReader::PECJetMETReader(PECJetMETReader const &src) noexcept:
     inputDataPluginName(src.inputDataPluginName), inputDataPlugin(src.inputDataPlugin),
     systServiceName(src.systServiceName),
     treeName(src.treeName),
-    bfJetPointer(&bfJets), bfMETPointer(&bfMETs),
+    bfJetPointer(&bfJets), bfMETPointer(&bfMETs), bfUncorrMETPointer(&bfUncorrMETs),
     minPt(src.minPt), maxAbsEta(src.maxAbsEta),
+    readRawMET(src.readRawMET),
     leptonPluginName(src.leptonPluginName), leptonPlugin(src.leptonPlugin),
     leptonDR2(src.leptonDR2),
     genJetPluginName(src.genJetPluginName), genJetPlugin(src.genJetPlugin),
@@ -97,12 +99,14 @@ void PECJetMETReader::BeginRun(Dataset const &)
     
     tree->SetBranchStatus("jets.bTagCMVA", false);
     tree->SetBranchStatus("jets.secVertexMass", false);
-    // tree->SetBranchStatus("jets.area", false);
     tree->SetBranchStatus("jets.charge", false);
     tree->SetBranchStatus("jets.pullAngle", false);
     
     tree->SetBranchAddress("jets", &bfJetPointer);
     tree->SetBranchAddress("METs", &bfMETPointer);
+    
+    if (readRawMET)
+        tree->SetBranchAddress("uncorrMETs", &bfUncorrMETPointer);
     
     ROOTLock::Unlock();
 }
@@ -131,6 +135,12 @@ void PECJetMETReader::ConfigureLeptonCleaning(std::string const leptonPluginName
 double PECJetMETReader::GetJetRadius() const
 {
     return 0.4;
+}
+
+
+void PECJetMETReader::ReadRawMET(bool enable /*= true*/)
+{
+    readRawMET = enable;
 }
 
 
@@ -335,9 +345,17 @@ bool PECJetMETReader::ProcessEvent()
     met.SetPtEtaPhiM(correctedMET.Pt(), 0., correctedMET.Phi(), 0.);
     
     
+    // Copy raw MET if requested
+    if (readRawMET)
+    {
+        pec::Candidate const &pecRawMET = bfUncorrMETs.at(0);
+        rawMET.SetPtEtaPhiM(pecRawMET.Pt(), 0., pecRawMET.Phi(), 0.);
+    }
+    
+    
     #ifdef DEBUG
     std::cout << "PECJetMETReader[\"" << GetName() << "\"]: MET in the current event:\n";
-    std::cout << " Raw MET (pt, phi): " << bfMETs.at(1).Pt() << ", " << bfMETs.at(1).Phi() << '\n';
+    std::cout << " Raw MET (pt, phi): " << rawMET.Pt() << ", " << rawMET.Phi() << '\n';
     std::cout << " Corrected MET (pt, phi): " << bfMETs.at(0).Pt() << ", "
       << bfMETs.at(0).Phi() << std::endl;
     #endif

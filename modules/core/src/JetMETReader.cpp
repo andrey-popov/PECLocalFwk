@@ -20,3 +20,9 @@ MET const &JetMETReader::GetMET() const
 {
     return met;
 }
+
+
+MET const &JetMETReader::GetRawMET() const
+{
+    return rawMET;
+}

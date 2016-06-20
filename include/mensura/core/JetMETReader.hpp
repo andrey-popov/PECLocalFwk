@@ -45,10 +45,16 @@ public:
     /// Returns corrected MET in the current event
     MET const &GetMET() const;
     
+    /// Returns raw MET in the current event
+    MET const &GetRawMET() const;
+    
 protected:
     /// Collection of (corrected) jets in the current event
     std::vector<Jet> jets;
     
     /// Corrected MET in the current event
     MET met;
+    
+    /// Raw MET in the current event
+    MET rawMET;
 };

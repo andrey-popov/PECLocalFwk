@@ -101,6 +101,9 @@ public:
      */
     virtual double GetJetRadius() const override;
     
+    /// Requests reading of raw MET
+    void ReadRawMET(bool enable = true);
+    
     /// Specifies name of the plugin that provides generator-level jets
     void SetGenJetReader(std::string const name = "GenJetMET");
     
@@ -134,25 +137,28 @@ private:
     /**
      * \brief An auxiliary pointer to jet buffer
      * 
-     * Need by ROOT to read the object from a tree.
+     * Needed by ROOT to read the object from a tree.
      */
     decltype(bfJets) *bfJetPointer;
     
-    /// Buffer to read the branch with METs
-    std::vector<pec::Candidate> bfMETs;
+    /// Buffers to read the branches with METs
+    std::vector<pec::Candidate> bfMETs, bfUncorrMETs;
     
     /**
-     * \brief An auxiliary pointer to MET buffer
+     * \brief Auxiliary pointers to MET buffers
      * 
-     * Need by ROOT to read the object from a tree.
+     * Needed by ROOT to read the object from a tree.
      */
-    decltype(bfMETs) *bfMETPointer;
+    decltype(bfMETs) *bfMETPointer, *bfUncorrMETPointer;
     
     /// Minimal allowed transverse momentum
     double minPt;
     
     /// Maximal allowed absolute value of pseudorapidity
     double maxAbsEta;
+    
+    /// Specifies whether raw MET should be read
+    bool readRawMET;
     
     /**
      * \brief Name of the plugin that produces leptons
