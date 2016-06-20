@@ -26,6 +26,9 @@ class PileUpReader;
  * i.e. with outdated corrections. If stochastic JER corrections have been used in computation of
  * MET, they can only be undone on the average due to their random nature.
  * 
+ * It is also possible to start computation from the raw MET rather than default one. In this case
+ * T1 corrections can be applied directly.
+ * 
  * The source MET can have any additive corrections applied. They will be preserved by this plugin.
  */
 class JetMETUpdate: public JetMETReader
@@ -73,19 +76,26 @@ public:
      * 
      * Arguments are names of instances of JetCorrectorService that evaluate full and L1-only
      * corrections to be applied to compute T1 MET corrections. In addition, corrections used in
-     * the original MET need to be provided to undo outdated T1 corrections. The "full" corrections
+     * the original MET can be provided to undo outdated T1 corrections. The "full" corrections
      * to be applied are not necessarily the same as given to method SetJetCorrection.
      * 
      * For any correction level, empty strings can be given as names of the two corresponding
      * correctors. In this case the corresponding corrections are not applied. This is useful, for
      * instance, when L1-only corrections have not changed, and thus there is no need to evaluate
      * them explicitly since their contributions to MET would cancel out.
+     * 
+     * When computation starts from raw MET (as requested with UseRawMET), it is technically
+     * possible to "undo" MET corrections corresponding to provided original corrections, but this
+     * does not make sense.
      */
     void SetJetCorrectionForMET(std::string const &fullNew, std::string const &l1New,
       std::string const &fullOrig, std::string const &l1Orig);
     
     /// Specifies desired selection on jets
     void SetSelection(double minPt, double maxAbsEta);
+    
+    /// Instructs to use raw MET for computation instead of the default one
+    void UseRawMET(bool set = true);
     
 private:
     /**
@@ -140,6 +150,9 @@ private:
     
     /// Minimal transverse momentum for jets to be considered in T1 MET corrections
     double minPtForT1;
+    
+    /// Specifies whether computation should start from raw or default MET
+    bool useRawMET;
     
     /// Type of requested systematical variation
     JetCorrectorService::SystType systType;

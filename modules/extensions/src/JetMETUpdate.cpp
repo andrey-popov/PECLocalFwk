@@ -17,7 +17,8 @@ JetMETUpdate::JetMETUpdate(std::string const name /*= "JetMET"*/):
     jetCorrForJets(nullptr),
     jetCorrForMETFull(nullptr), jetCorrForMETL1(nullptr),
     jetCorrForMETOrigFull(nullptr), jetCorrForMETOrigL1(nullptr),
-    minPt(0.), maxAbsEta(std::numeric_limits<double>::infinity()), minPtForT1(15.)
+    minPt(0.), maxAbsEta(std::numeric_limits<double>::infinity()), minPtForT1(15.),
+    useRawMET(false)
 {}
 
 
@@ -98,17 +99,6 @@ void JetMETUpdate::SetJetCorrection(std::string const &jetCorrServiceName)
 void JetMETUpdate::SetJetCorrectionForMET(std::string const &fullNew, std::string const &l1New,
   std::string const &fullOrig, std::string const &l1Orig)
 {
-    // Make sure that for each level the two correctors are either both given or both missing
-    if ((fullNew == "") != (fullOrig == "") or (l1New == "") != (l1Orig == ""))
-    {
-        std::ostringstream message;
-        message << "JetMETUpdate[\"" << GetName() << "\"]::SetJetCorrectionForMET: " <<
-          "For each correction level the two correctors must be either provided both or " <<
-          "missing both.";
-        throw std::logic_error(message.str());
-    }
-    
-    
     // If new and original correctors are the same, drop them since their effect would cancel out
     if (fullNew != fullOrig)
     {
@@ -132,6 +122,12 @@ void JetMETUpdate::SetSelection(double minPt_, double maxAbsEta_)
 {
     minPt = minPt_;
     maxAbsEta = maxAbsEta_;
+}
+
+
+void JetMETUpdate::UseRawMET(bool set /*= true*/)
+{
+    useRawMET = set;
 }
 
 
@@ -164,17 +160,24 @@ bool JetMETUpdate::ProcessEvent()
         // Compute the shift in MET due to T1 corrections
         if (jet.Pt() > minPtForT1)
         {
-            // The shift due to different L1 corrections
-            if (jetCorrForMETL1 and jetCorrForMETOrigL1)
-                metShift += srcJet.RawP4() *
-                  (jetCorrForMETL1->Eval(srcJet, rho, systType, systDirection) -
-                  jetCorrForMETOrigL1->Eval(srcJet, rho, systType, systDirection));
+            // Undo applied T1 corrections
+            if (jetCorrForMETOrigL1)
+                metShift -=
+                  srcJet.RawP4() * jetCorrForMETOrigL1->Eval(srcJet, rho, systType, systDirection);
             
-            // The shift due to different full corrections
-            if (jetCorrForMETFull and jetCorrForMETOrigFull)
-                metShift -= srcJet.RawP4() *
-                  (jetCorrForMETFull->Eval(srcJet, rho, systType, systDirection) -
-                  jetCorrForMETOrigFull->Eval(srcJet, rho, systType, systDirection));
+            if (jetCorrForMETOrigFull)
+                metShift +=
+                  srcJet.RawP4() * jetCorrForMETOrigFull->Eval(srcJet, rho, systType, systDirection);
+            
+            
+            // Apply new T1 corrections
+            if (jetCorrForMETL1)
+                metShift +=
+                  srcJet.RawP4() * jetCorrForMETL1->Eval(srcJet, rho, systType, systDirection);
+            
+            if (jetCorrForMETFull)
+                metShift -=
+                  srcJet.RawP4() * jetCorrForMETFull->Eval(srcJet, rho, systType, systDirection);
         }
         
         
@@ -189,7 +192,9 @@ bool JetMETUpdate::ProcessEvent()
     
     
     // Update MET
-    TLorentzVector updatedMET(jetmetPlugin->GetMET().P4() + metShift);
+    TLorentzVector const &startingMET = (useRawMET) ?
+      jetmetPlugin->GetRawMET().P4() : jetmetPlugin->GetMET().P4();
+    TLorentzVector updatedMET(startingMET + metShift);
     met.SetPtEtaPhiM(updatedMET.Pt(), 0., updatedMET.Phi(), 0.);
     
     
