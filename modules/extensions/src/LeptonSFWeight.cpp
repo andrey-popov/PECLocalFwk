@@ -56,8 +56,8 @@ LeptonSFWeight::LeptonSFWeight(Lepton::Flavour targetFlavour_, std::string const
 {
     LoadScaleFactors(srcFileName, histogramNames);
     
-    // The plugin will calculate one weight per event
-    EventWeightPlugin::weights.push_back(0.);
+    // The plugin will calculate one weight per event with one systematic variation
+    EventWeightPlugin::weights = {0., 0., 0.};
 }
 
 
@@ -168,8 +168,11 @@ bool LeptonSFWeight::ProcessEvent()
     auto const &leptons = leptonPlugin->GetLeptons();
     
     
-    // Loop over the leptons and calculate the total scale factor
+    // Loop over the leptons and calculate the total scale factor and its relative uncertainty.
+    //Relative uncertainty of a product of multiple scale factors for, potentially, multiple
+    //leptons is simply a sum of all individual relative uncertainties in quadrature.
     double scaleFactor = 1.;
+    double relUnc2 = 0.;
     
     for (auto const &lepton: leptons)
     {
@@ -177,17 +180,24 @@ bool LeptonSFWeight::ProcessEvent()
         if (lepton.GetFlavour() != targetFlavour)
             continue;
         
+        
         // Loop over components of the scale factor
         for (auto const &sfObject: sfComponents)
         {
             int const bin = sfObject.hist->FindFixBin(sfObject.x(lepton), sfObject.y(lepton));
-            scaleFactor *= sfObject.hist->GetBinContent(bin);
+            double const sf = sfObject.hist->GetBinContent(bin);
+            scaleFactor *= sf;
+            relUnc2 += std::pow(sfObject.hist->GetBinError(bin) / sf, 2);
         }
     }
     
     
     // Update the nominal weight
     weights.at(0) = scaleFactor;
+    
+    double const unc = scaleFactor * std::sqrt(relUnc2);
+    weights.at(1) = scaleFactor + unc;
+    weights.at(2) = scaleFactor - unc;
     
     
     return true;

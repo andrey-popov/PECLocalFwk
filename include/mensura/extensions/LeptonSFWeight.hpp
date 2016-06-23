@@ -29,7 +29,8 @@ class LeptonReader;
  * "absEta", "absEtaSC". It no parameter string is found, transverse momentum and (signed)
  * pseudorapidity of the lepton are taken parameters of the histogram.
  * 
- * Currently systematic uncertainty is not evaluated.
+ * Errors of provided scale factors are summed up in quadrature, producing a single systematic
+ * variation.
  */
 class LeptonSFWeight: public EventWeightPlugin
 {
