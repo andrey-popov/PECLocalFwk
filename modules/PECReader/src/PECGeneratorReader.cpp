@@ -4,6 +4,7 @@
 #include <mensura/core/ROOTLock.hpp>
 #include <mensura/PECReader/PECInputData.hpp>
 
+#include <sstream>
 #include <stdexcept>
 
 
@@ -14,6 +15,7 @@ PECGeneratorReader::PECGeneratorReader(std::string const name /*= "Generator"*/)
     ReaderPlugin(name),
     inputDataPluginName("InputData"),
     inputDataPlugin(nullptr),
+    readAltWeights(false),
     treeName("pecGenerator/Generator"), bfGeneratorPointer(&bfGenerator)
 {}
 
@@ -22,12 +24,9 @@ PECGeneratorReader::PECGeneratorReader(PECGeneratorReader const &src) noexcept:
     ReaderPlugin(src),
     inputDataPluginName(src.inputDataPluginName),
     inputDataPlugin(src.inputDataPlugin),
+    readAltWeights(src.readAltWeights),
     treeName(src.treeName),
     bfGeneratorPointer(&bfGenerator)
-{}
-
-
-PECGeneratorReader::~PECGeneratorReader() noexcept
 {}
 
 
@@ -35,8 +34,12 @@ void PECGeneratorReader::BeginRun(Dataset const &dataset)
 {
     // Throw an exception if the plugin is run on data
     if (not dataset.IsMC())
-        throw std::logic_error("PECGeneratorReader::BeginRun: Plugin \""s + GetName() +
-          "\" is requested to process data while it can only run on simulation.");
+    {
+        std::ostringstream message;
+        message << "PECGeneratorReader[\"" << GetName() << "\"]::BeginRun: " <<
+          "Attempt to run over data while this plugin can only run on simulated events.";
+        throw std::logic_error(message.str());
+    }
     
     
     // Save pointer to the plugin providing access to input data
@@ -52,6 +55,9 @@ void PECGeneratorReader::BeginRun(Dataset const &dataset)
     tree->SetBranchStatus("processId", true);
     tree->SetBranchStatus("nominalWeight", true);
     
+    if (readAltWeights)
+        tree->SetBranchStatus("altWeights", true);
+    
     tree->SetBranchAddress("generator", &bfGeneratorPointer);
     ROOTLock::Unlock();
 }
@@ -60,6 +66,20 @@ void PECGeneratorReader::BeginRun(Dataset const &dataset)
 Plugin *PECGeneratorReader::Clone() const
 {
     return new PECGeneratorReader(*this);
+}
+
+
+std::vector<float> PECGeneratorReader::GetAltWeights() const
+{
+    if (not readAltWeights)
+    {
+        std::ostringstream message;
+        message << "PECGeneratorReader[\"" << GetName() <<
+          "\"]::GetAltWeights: Reading of alternative weights has not been requested.";
+        throw std::logic_error(message.str());
+    }
+    
+    return bfGenerator.AltWeights();
 }
 
 
@@ -72,6 +92,12 @@ double PECGeneratorReader::GetNominalWeight() const
 int PECGeneratorReader::GetProcessID() const
 {
     return bfGenerator.ProcessId();
+}
+
+
+void PECGeneratorReader::RequestAltWeights(bool on /*= true*/)
+{
+    readAltWeights = on;
 }
 
 

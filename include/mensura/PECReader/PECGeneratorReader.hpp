@@ -4,6 +4,8 @@
 
 #include <mensura/PECReader/GeneratorInfo.hpp>
 
+#include <vector>
+
 
 class PECInputData;
 
@@ -17,9 +19,6 @@ class PECInputData;
  * 
  * This reader relies on PECInputData to get access to the input file. It should only be used with
  * simulated datasets.
- * 
- * Although more information is available in PEC files, for the moment plugin reads only nominal
- * LHE-level event weight and process ID.
  */
 class PECGeneratorReader: public ReaderPlugin
 {
@@ -40,9 +39,6 @@ public:
     /// Assignment operator is deleted
     PECGeneratorReader &operator=(PECGeneratorReader const &) = delete;
     
-    /// Trivial destructor
-    virtual ~PECGeneratorReader() noexcept;
-    
 public:
     /**
      * \brief Sets up reading of the tree with pile-up information
@@ -58,11 +54,22 @@ public:
      */
     virtual Plugin *Clone() const override;
     
+    /**
+     * \brief Returns vector of alternative LHE-level weigts in the current event
+     * 
+     * These weights are only available if they have been requested using method RequestAltWeights.
+     * Otherwise an exception is thrown.
+     */
+    std::vector<float> GetAltWeights() const;
+    
     /// Returns nominal LHE-level weight of the current event
     double GetNominalWeight() const;
     
     /// Returns process ID (as written in LHE file) of the current event
     int GetProcessID() const;
+    
+    /// Specifies whether alternative LHE-level weights should be read
+    void RequestAltWeights(bool on = true);
     
 private:
     /**
@@ -78,6 +85,9 @@ private:
     
     /// Non-owning pointer to a plugin that reads PEC files
     PECInputData const *inputDataPlugin;
+    
+    /// Flag showing whether alternative weights should be read
+    bool readAltWeights;
     
     /// Name of the tree with generator information
     std::string treeName;
