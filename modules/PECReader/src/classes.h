@@ -1,16 +1,16 @@
-#include <PECFwk/PECReader/Candidate.hpp>
-#include <PECFwk/PECReader/CandidateWithID.hpp>
-#include <PECFwk/PECReader/Lepton.hpp>
-#include <PECFwk/PECReader/Muon.hpp>
-#include <PECFwk/PECReader/Electron.hpp>
-#include <PECFwk/PECReader/Jet.hpp>
-#include <PECFwk/PECReader/GenParticle.hpp>
-#include <PECFwk/PECReader/GenJet.hpp>
-#include <PECFwk/PECReader/ShowerParton.hpp>
+#include <mensura/PECReader/Candidate.hpp>
+#include <mensura/PECReader/CandidateWithID.hpp>
+#include <mensura/PECReader/Lepton.hpp>
+#include <mensura/PECReader/Muon.hpp>
+#include <mensura/PECReader/Electron.hpp>
+#include <mensura/PECReader/Jet.hpp>
+#include <mensura/PECReader/GenParticle.hpp>
+#include <mensura/PECReader/GenJet.hpp>
+#include <mensura/PECReader/ShowerParton.hpp>
 
-#include <PECFwk/PECReader/EventID.hpp>
-#include <PECFwk/PECReader/PileUpInfo.hpp>
-#include <PECFwk/PECReader/GeneratorInfo.hpp>
+#include <mensura/PECReader/EventID.hpp>
+#include <mensura/PECReader/PileUpInfo.hpp>
+#include <mensura/PECReader/GeneratorInfo.hpp>
 
 #include <vector>
 
