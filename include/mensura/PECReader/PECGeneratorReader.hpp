@@ -1,6 +1,6 @@
 #pragma once
 
-#include <mensura/core/ReaderPlugin.hpp>
+#include <mensura/core/GeneratorReader.hpp>
 
 #include <mensura/PECReader/GeneratorInfo.hpp>
 
@@ -20,7 +20,7 @@ class PECInputData;
  * This reader relies on PECInputData to get access to the input file. It should only be used with
  * simulated datasets.
  */
-class PECGeneratorReader: public ReaderPlugin
+class PECGeneratorReader: public GeneratorReader
 {
 public:
     /**
@@ -41,7 +41,7 @@ public:
     
 public:
     /**
-     * \brief Sets up reading of the tree with pile-up information
+     * \brief Sets up reading of the tree with generator information
      * 
      * Reimplemented from Plugin.
      */
@@ -59,14 +59,24 @@ public:
      * 
      * These weights are only available if they have been requested using method RequestAltWeights.
      * Otherwise an exception is thrown.
+     * 
+     * Reimplemented from GeneratorReader.
      */
-    double GetAltWeight(unsigned index) const;
+    virtual double GetAltWeight(unsigned index) const override;
     
-    /// Returns nominal LHE-level weight of the current event
-    double GetNominalWeight() const;
+    /**
+     * \brief Returns nominal LHE-level weight for the current event
+     * 
+     * Reimplemented from GeneratorReader.
+     */
+    virtual double GetNominalWeight() const override;
     
-    /// Returns number of available alternative weights
-    unsigned GetNumAltWeights() const;
+    /**
+     * \brief Returns number of available alternative weights
+     * 
+     * Reimplemented from GeneratorReader.
+     */
+    virtual unsigned GetNumAltWeights() const override;
     
     /// Returns process ID (as written in LHE file) of the current event
     int GetProcessID() const;
@@ -76,7 +86,7 @@ public:
     
 private:
     /**
-     * \brief Reads pile-up information for a PEC file
+     * \brief Reads generator information from a PEC file
      * 
      * Reimplemented from Plugin.
      */

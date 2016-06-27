@@ -12,7 +12,7 @@ using namespace std::literals::string_literals;
 
 
 PECGeneratorReader::PECGeneratorReader(std::string const name /*= "Generator"*/):
-    ReaderPlugin(name),
+    GeneratorReader(name),
     inputDataPluginName("InputData"),
     inputDataPlugin(nullptr),
     readAltWeights(false),
@@ -21,7 +21,7 @@ PECGeneratorReader::PECGeneratorReader(std::string const name /*= "Generator"*/)
 
 
 PECGeneratorReader::PECGeneratorReader(PECGeneratorReader const &src) noexcept:
-    ReaderPlugin(src),
+    GeneratorReader(src),
     inputDataPluginName(src.inputDataPluginName),
     inputDataPlugin(src.inputDataPlugin),
     readAltWeights(src.readAltWeights),
