@@ -55,15 +55,18 @@ public:
     virtual Plugin *Clone() const override;
     
     /**
-     * \brief Returns vector of alternative LHE-level weigts in the current event
+     * \brief Returns alternative LHE-level weight with the given index
      * 
      * These weights are only available if they have been requested using method RequestAltWeights.
      * Otherwise an exception is thrown.
      */
-    std::vector<float> GetAltWeights() const;
+    double GetAltWeight(unsigned index) const;
     
     /// Returns nominal LHE-level weight of the current event
     double GetNominalWeight() const;
+    
+    /// Returns number of available alternative weights
+    unsigned GetNumAltWeights() const;
     
     /// Returns process ID (as written in LHE file) of the current event
     int GetProcessID() const;

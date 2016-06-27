@@ -69,23 +69,41 @@ Plugin *PECGeneratorReader::Clone() const
 }
 
 
-std::vector<float> PECGeneratorReader::GetAltWeights() const
+double PECGeneratorReader::GetAltWeight(unsigned index) const
 {
     if (not readAltWeights)
     {
         std::ostringstream message;
         message << "PECGeneratorReader[\"" << GetName() <<
-          "\"]::GetAltWeights: Reading of alternative weights has not been requested.";
+          "\"]::GetAltWeight: Reading of alternative weights has not been requested.";
         throw std::logic_error(message.str());
     }
     
-    return bfGenerator.AltWeights();
+    if (index >= bfGenerator.AltWeights().size())
+    {
+        std::ostringstream message;
+        message << "PECGeneratorReader[\"" << GetName() <<
+          "\"]::GetAltWeight: Weight with index " << index << " is requested, but only " <<
+          bfGenerator.AltWeights().size() << " weights are available.";
+        throw std::logic_error(message.str());
+    }
+    
+    return bfGenerator.AltWeights()[index];
 }
 
 
 double PECGeneratorReader::GetNominalWeight() const
 {
     return bfGenerator.NominalWeight();
+}
+
+
+unsigned PECGeneratorReader::GetNumAltWeights() const
+{
+    if (not readAltWeights)
+        return 0;
+    else
+        return bfGenerator.AltWeights().size();
 }
 
 
