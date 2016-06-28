@@ -7,6 +7,7 @@
 #include <mensura/external/JERC/JetCorrectorParameters.hpp>
 
 #include <cmath>
+#include <sstream>
 #include <stdexcept>
 
 
@@ -80,8 +81,12 @@ double JetCorrectorService::Eval(Jet const &jet, double rho, SystType syst /*= S
     {
         // Sanity check
         if (jecUncProviders.size() == 0)
-            throw std::logic_error("JetCorrectorService::Eval: Cannot evaluate JEC systematics "
-              "because no uncertainties have been specified.");
+        {
+            std::ostringstream message;
+            message << "JetCorrectorService[\"" << GetName() << "\"]::Eval: Cannot evaluate JEC "
+              "systematics because no uncertainties have been specified.";
+            throw std::logic_error(message.str());
+        }
         
         
         double const jecUncertainty = EvalJECUnc(jecCorrPt, jet.Eta());
@@ -96,8 +101,12 @@ double JetCorrectorService::Eval(Jet const &jet, double rho, SystType syst /*= S
     // Sanity check before JER smearing
     if (syst == SystType::JER and direction != SystService::VarDirection::Undefined and
       not jerSFProvider)
-        throw std::logic_error("JetCorrectorService::Eval: Cannot evaluate JER systematics because "
-          "JER scale factors have not been specified.");
+    {
+        std::ostringstream message;
+        message << "JetCorrectorService[\"" << GetName() << "\"]::Eval: Cannot evaluate JER "
+          "systematics because JER scale factors have not been specified.";
+        throw std::logic_error(message.str());
+    }
     
     
     // Evaluate JER smearing. Corresponding correction factor is always evaluated after nominal
