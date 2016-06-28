@@ -157,13 +157,14 @@ bool JetMETUpdate::ProcessEvent()
         }
         
         
-        // Compute the shift in MET due to T1 corrections
+        // Compute the shift in MET due to T1 corrections. Systematic variations for L1 corrections
+        //are ignored.
         if (jet.Pt() > minPtForT1)
         {
             // Undo applied T1 corrections
             if (jetCorrForMETOrigL1)
                 metShift -=
-                  srcJet.RawP4() * jetCorrForMETOrigL1->Eval(srcJet, rho, systType, systDirection);
+                  srcJet.RawP4() * jetCorrForMETOrigL1->Eval(srcJet, rho);
             
             if (jetCorrForMETOrigFull)
                 metShift +=
@@ -173,7 +174,7 @@ bool JetMETUpdate::ProcessEvent()
             // Apply new T1 corrections
             if (jetCorrForMETL1)
                 metShift +=
-                  srcJet.RawP4() * jetCorrForMETL1->Eval(srcJet, rho, systType, systDirection);
+                  srcJet.RawP4() * jetCorrForMETL1->Eval(srcJet, rho);
             
             if (jetCorrForMETFull)
                 metShift -=

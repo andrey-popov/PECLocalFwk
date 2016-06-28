@@ -26,10 +26,17 @@ class PileUpReader;
  * i.e. with outdated corrections. If stochastic JER corrections have been used in computation of
  * MET, they can only be undone on the average due to their random nature.
  * 
- * It is also possible to start computation from the raw MET rather than default one. In this case
- * T1 corrections can be applied directly.
+ * Because old T1 corrections are undone, the source MET can have any additive corrections applied.
+ * They will be preserved by this plugin.
  * 
- * The source MET can have any additive corrections applied. They will be preserved by this plugin.
+ * Alternatively, it is also possible to start computation from the raw MET rather than default
+ * one. In this case T1 corrections can be applied directly, but any additional corrections will be
+ * lost.
+ * 
+ * If a SystService with a non-trivial name is provided (by default, the plugin looks for a service
+ * with name "Systematics"), plugin checks the requested systematics and applies variations in JEC
+ * or JER as needed. However, systematic variations are never applied to jets with L1 corrections
+ * that are used in T1 MET corrections.
  */
 class JetMETUpdate: public JetMETReader
 {
