@@ -77,7 +77,9 @@ bool PECLeptonReader::ProcessEvent()
         
         
         // Selection to define a loose electron
-        if (p4.Pt() < 20. or fabs(p4.Eta()) > 2.5 or not l.BooleanID(0) /* "veto" cut-based ID */)
+        double const absEtaSC = std::abs(l.EtaSC());
+        
+        if (p4.Pt() < 20. or absEtaSC > 2.5 or not l.BooleanID(0) /* "veto" cut-based ID */)
         //^ The cut-based ID already includes selection on isolation
             continue;
         
@@ -90,8 +92,6 @@ bool PECLeptonReader::ProcessEvent()
         
         
         // Further selection for a tight electron
-        double const absEtaSC = std::abs(l.EtaSC());
-        
         if (not l.BooleanID(3) /* "tight" cut-based ID */ or
           (absEtaSC > 1.4442 and absEtaSC < 1.5660) /* EB-EE gap */)
             continue;
