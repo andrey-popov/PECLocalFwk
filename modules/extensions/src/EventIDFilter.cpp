@@ -141,6 +141,8 @@ void EventIDFilter::LoadEventIDLists(std::string const &eventIDsFileName)
             if (std::regex_match(line, match, eventIDRegex))
                 eventIDsCurFile.emplace_back(std::stoul(match[1]), std::stoul(match[2]),
                   std::stoul(match[3]));
+            else
+                break;
         }
     }
     
