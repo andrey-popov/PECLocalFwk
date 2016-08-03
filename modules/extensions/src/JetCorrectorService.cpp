@@ -229,6 +229,25 @@ void JetCorrectorService::SetJECUncertainty(std::string const &jecUncFile_,
 }
 
 
+bool JetCorrectorService::IsSystEnabled(SystType syst) const
+{
+    switch (syst)
+    {
+        case SystType::JEC:
+            return not jecUncProviders.empty();
+        
+        case SystType::JER:
+            return bool(jerSFProvider);
+        
+        case SystType::None:
+            return true;
+        
+        default:
+            return false;
+    }
+}
+
+
 void JetCorrectorService::SetJER(std::string const &jerSFFile_, std::string const &jerMCFile_,
   unsigned long seed /*= 0*/)
 {

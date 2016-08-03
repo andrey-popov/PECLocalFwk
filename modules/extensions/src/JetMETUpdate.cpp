@@ -167,8 +167,19 @@ bool JetMETUpdate::ProcessEvent()
                   srcJet.RawP4() * jetCorrForMETOrigL1->Eval(srcJet, rho);
             
             if (jetCorrForMETOrigFull)
-                metShift +=
-                  srcJet.RawP4() * jetCorrForMETOrigFull->Eval(srcJet, rho, systType, systDirection);
+            {
+                // Sometimes some of jet systematic variations are not propagated into MET. Do not
+                //attempt to evaluate them if they are have not been specified in the corresponding
+                //jet corrector object
+                double corrFactor;
+                
+                if (jetCorrForMETOrigFull->IsSystEnabled(systType))
+                    corrFactor = jetCorrForMETOrigFull->Eval(srcJet, rho, systType, systDirection);
+                else
+                    corrFactor = jetCorrForMETOrigFull->Eval(srcJet, rho);
+                
+                metShift += srcJet.RawP4() * corrFactor;
+            }
             
             
             // Apply new T1 corrections
@@ -177,8 +188,16 @@ bool JetMETUpdate::ProcessEvent()
                   srcJet.RawP4() * jetCorrForMETL1->Eval(srcJet, rho);
             
             if (jetCorrForMETFull)
-                metShift -=
-                  srcJet.RawP4() * jetCorrForMETFull->Eval(srcJet, rho, systType, systDirection);
+            {
+                double corrFactor;
+                
+                if (jetCorrForMETFull->IsSystEnabled(systType))
+                    corrFactor = jetCorrForMETFull->Eval(srcJet, rho, systType, systDirection);
+                else
+                    corrFactor = jetCorrForMETFull->Eval(srcJet, rho);
+                
+                metShift -= srcJet.RawP4() * corrFactor;
+            }
         }
         
         

@@ -83,6 +83,9 @@ public:
      */
     double EvalJECUnc(double const corrPt, double const eta) const;
     
+    /// Reports if requested systematic variation can be computed
+    bool IsSystEnabled(SystType syst) const;
+    
     /// A short-cut for method Eval
     double operator()(Jet const &jet, double rho, SystType syst = SystType::None,
       SystService::VarDirection direction = SystService::VarDirection::Undefined) const;
