@@ -153,7 +153,7 @@ double JetCorrectorService::Eval(Jet const &jet, double rho, SystType syst /*= S
               jerProvider->getResolution({{JME::Binning::JetPt, jecCorrPt},
               {JME::Binning::JetEta, jet.Eta()}, {JME::Binning::Rho, rho}});
             double const jerFactor = 1. + rGen->Gaus(0., ptResolution) *
-              std::sqrt(std::max(std::pow(jerSF, 2) - 1., 0.)) / jecCorrPt;
+              std::sqrt(std::max(std::pow(jerSF, 2) - 1., 0.));
             
             corrFactor *= jerFactor;
         }
