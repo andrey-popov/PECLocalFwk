@@ -5,6 +5,8 @@ This directory contains data files organized into several categories:
 
 ## BTag
 
+ * `BTagWP_80X_v1.json` <br />
+   Thresholds that define standard working points for b-tagging algorithms as given [here](https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation80X?rev=18).
  * `BTagEff_76X_v1.root` <br />
    Efficiencies of b-tagging with CSVv2 algorithm, which are measured in 76X simulation. The event selection includes standard requirements on leptons, MtW > 50 GeV, and at least four jets with pt > 30 GeV and |eta| < 2.4.
  * `BTagSF_76X_CSVv2.csv` <br />

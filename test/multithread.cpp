@@ -60,7 +60,7 @@ int main()
     // Register services
     manager.RegisterService(new TFileService("output/%"));
     
-    manager.RegisterService(new BTagWPService);
+    manager.RegisterService(new BTagWPService("BTagWP_80X_v1.json"));
     
     BTagEffService *bTagEffService = new BTagEffService("BTagEff_76X_v1.root");
     // bTagEffService->SetProcessLabel(Dataset::Process::ttSemilep, "ttbar-semilep");

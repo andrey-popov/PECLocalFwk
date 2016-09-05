@@ -46,7 +46,7 @@ int main()
     
     
     // Register b-tagging services
-    processor.RegisterService(new BTagWPService);
+    processor.RegisterService(new BTagWPService("BTagWP_80X_v1.json"));
     
     BTagEffService *bTagEffService = new BTagEffService("BTagEff_76X_v1.root");
     bTagEffService->SetDefaultProcessLabel("ttbar");
