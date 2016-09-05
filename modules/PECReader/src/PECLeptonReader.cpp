@@ -43,12 +43,10 @@ void PECLeptonReader::BeginRun(Dataset const &)
     
     ROOTLock::Lock();
     TTree *t = inputDataPlugin->ExposeTree(electronTreeName);
-    t->SetBranchStatus("electrons.dB", false);
     t->SetBranchStatus("electrons.mvaId*", false);
     t->SetBranchAddress("electrons", &bfElectronPointer);
     
     t = inputDataPlugin->ExposeTree(muonTreeName);
-    t->SetBranchStatus("muons.dB", false);
     t->SetBranchAddress("muons", &bfMuonPointer);
     ROOTLock::Unlock();
 }

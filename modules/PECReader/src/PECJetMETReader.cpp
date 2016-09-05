@@ -97,7 +97,6 @@ void PECJetMETReader::BeginRun(Dataset const &)
     if (systType != SystType::JER)
         tree->SetBranchStatus("jets.jerUncertainty", false);
     
-    tree->SetBranchStatus("jets.bTagCMVA", false);
     tree->SetBranchStatus("jets.secVertexMass", false);
     tree->SetBranchStatus("jets.charge", false);
     tree->SetBranchStatus("jets.pullAngle", false);
@@ -261,7 +260,7 @@ bool PECJetMETReader::ProcessEvent()
         else
             jet.SetCorrectedP4(p4, 1.);
         
-        jet.SetBTag(BTagger::Algorithm::CSV, j.BTagCSV());
+        jet.SetBTag(BTagger::Algorithm::CSV, j.BTag(pec::Jet::BTagAlgo::CSV));
         jet.SetArea(j.Area());
         // jet.SetCharge(j.Charge());
         // jet.SetPullAngle(j.PullAngle());
@@ -295,7 +294,8 @@ bool PECJetMETReader::ProcessEvent()
         }
         
         #ifdef DEBUG
-        std::cout << "  Flavour: " << j.Flavour() << ", CSV value: " << j.BTagCSV() << '\n';
+        std::cout << "  Flavour: " << j.Flavour() << ", CSV value: " <<
+          j.BTag(pec::Jet::BTagAlgo::CSV) << '\n';
         std::cout << "  Has a GEN-level match? ";
         
         if (genJetPlugin)
