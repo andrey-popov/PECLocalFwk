@@ -138,7 +138,7 @@ int main()
         for (auto const &j: jetReader->GetJets())
         {
             cout << " pt: " << j.Pt() << ", eta: " << j.Eta() << ", b-tag: " <<
-              j.BTag(BTagger::Algorithm::CSV) << ", flavour: " << j.GetParentID() << '\n';
+              j.BTag(BTagger::Algorithm::CMVA) << ", flavour: " << j.GetParentID() << '\n';
             
             cout << "  pt of matched GEN jet: ";
             GenJet const *genJet = j.MatchedGenJet();
