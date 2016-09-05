@@ -1,3 +1,7 @@
+/**
+ * This test program applies requested JERC variations and prints resulting jet pt and MET.
+ */
+
 #include <mensura/core/Dataset.hpp>
 #include <mensura/core/Processor.hpp>
 #include <mensura/core/SystService.hpp>
@@ -56,8 +60,7 @@ int main(int argc, char **argv)
     
     // Input dataset
     Dataset dataset({Dataset::Process::ttbar}, Dataset::Generator::POWHEG);
-    string const filePrefix("/gridgroup/cms/popov/PECData/2015Charlie/");
-    dataset.AddFile(filePrefix + "ttbar-pw_3.1.0_wdo_p1.root", 831.76, 97994442);
+    dataset.AddFile("ttbar.root", 831.76, 1000000 /* a dummy value */);
     
     
     // Processor object

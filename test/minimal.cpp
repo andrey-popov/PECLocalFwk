@@ -29,18 +29,12 @@ int main()
 {
     // Input dataset
     Dataset dataset({Dataset::Process::ttbar}, Dataset::Generator::POWHEG);
-    string const filePrefix("/gridgroup/cms/popov/PECData/2015Charlie/");
-    dataset.AddFile(filePrefix + "ttbar-pw_3.1.0_wdo_p1.root", 831.76, 97994442);
-    dataset.AddFile(filePrefix + "ttbar-pw_3.1.0_wdo_p2.root", 831.76, 97994442);
-    dataset.AddFile(filePrefix + "ttbar-pw_3.1.0_wdo_p3.root", 831.76, 97994442);
-    dataset.AddFile(filePrefix + "ttbar-pw_3.1.0_wdo_p4.root", 831.76, 97994442);
-    dataset.AddFile(filePrefix + "ttbar-pw_3.1.0_wdo_p5.root", 831.76, 97994442);
-    //^ Only a fraction of available files included here
+    dataset.AddFile("ttbar.root", 831.76, 1000000 /* a dummy value */);
     
     
     // Triggers
     list<TriggerRange> triggerRanges;
-    triggerRanges.emplace_back(0, -1, "IsoMu18", 2289.901, "IsoMu18");
+    triggerRanges.emplace_back(0, -1, "IsoMu24", 1e3 /* a dummy luminosity */, "IsoMu24");
     
     
     // Common definition of b-tagging that will be used everywhere
