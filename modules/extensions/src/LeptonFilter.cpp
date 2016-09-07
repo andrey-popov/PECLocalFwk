@@ -19,13 +19,24 @@ void LeptonFilter::SelectionBin::Clear()
 
 bool LeptonFilter::SelectionBin::Fill(Lepton const &lepton)
 {
-    if (lepton.GetFlavour() == flavour and lepton.Pt() > minPt and fabs(lepton.Eta()) < maxAbsEta)
+    if (lepton.GetFlavour() != flavour or lepton.Pt() <= minPt)
+        return false;
+    
+    if (flavour == Lepton::Flavour::Electron)
     {
-        ++counts;
-        return true;
+        if (fabs(lepton.UserFloat("etaSC")) >= maxAbsEta)
+            return false;
     }
     else
-        return false;
+    {
+        if (fabs(lepton.Eta()) >= maxAbsEta)
+            return false;
+    }
+    
+    
+    // The lepton passes the selection if the workflow reaches this point
+    ++counts;
+    return true;
 }
 
 

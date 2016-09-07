@@ -26,6 +26,10 @@ class LeptonReader;
  *   AddSelectionBin(Lepton::Flavour::Muon, 20., 2.1);
  *   AddSelectionBin(Lepton::Flavour::Muon, 26., 2.1);
  * 
+ * The |eta| cut is evaluated differently, depending on the flavour of the lepton. For electrons
+ * it always refers to the pseudorapidity of the associated ECAL supercluster. For other leptons
+ * it is the component of the reconstructed momentum.
+ * 
  * The filter relies on the presence of a LeptonReader. The default name is "Leptons".
  */
 class LeptonFilter: public AnalysisPlugin
