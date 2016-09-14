@@ -11,6 +11,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <regex>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -24,19 +25,19 @@ class Jet;
  * \class BTagEffService
  * \brief Service to accesses b-tagging efficiencies stored in a ROOT file
  * 
- * The class implements access to b-tagging efficiencies in a generic way. The efficiencies are
+ * This class implements access to b-tagging efficiencies in a generic way. The efficiencies are
  * stored in a ROOT file in the form of 2D histograms in jet transverse momentum and
  * pseudorapidity. Supported format of the file is described below.
  * 
  * Histograms are organized in directories named after b tagger codes (as returned by
- * BTagger::GetTextCode). The are named following the pattern processLabel_flavour. The process
- * label is an arbitrary test label that helps to distinguish between histograms for different
- * processes. The correspondence between datasets and process labels is defined with the help of
- * methods SetProcessLabel and SetDefaultProcessLabel. The last part of the histogram name, the
- * flavour label, takes one of the following values: "b", "c", "udsg".
+ * BTagger::GetTextCode). They are named following the pattern {label}_{flavour}. The efficiency
+ * label is an arbitrary string that allows to distinguish between different physics processes or
+ * datasets. The correspondence between dataset ID, as returned by Dataset::GetSourceDatasetID,
+ * is defined using methods SetEffLabel and SetDefaultEffLabel. The last part of the histogram name
+ * is the jet flavour label, which can take values "b", "c", or "udsg".
  * 
- * Directories with efficiency histograms can be be placed in other directories in the input file.
- * This allows to store histograms for several versions of event selection, for instance.
+ * Histograms with efficiencies may be placed in in-file directories. This is useful to store
+ * efficiencies for multiple versions of event selection.
  */
 class BTagEffService: public Service
 {
@@ -60,9 +61,6 @@ public:
     /// Assignment operator is deleted
     BTagEffService &operator=(BTagEffService const &) = delete;
     
-    /// Trivial virtual destructor
-    virtual ~BTagEffService() noexcept;
-    
 private:
     /**
      * \brief Copy constructor
@@ -73,8 +71,8 @@ private:
     
 public:
     /**
-     * \brief Updates label of the current process and resets the map with efficiency histograms if
-     * needed
+     * \brief Updates efficiency label for the new dataset and resets the map with efficiency
+     * histograms if needed
      * 
      * Reimplemented from Service.
      */
@@ -98,28 +96,27 @@ public:
     /// Short-cut for the overloaded version above
     double GetEfficiency(BTagger const &bTagger, Jet const &jet) const;
     
-    /// Sets the default label to be used when no label is found for a process code
-    void SetDefaultProcessLabel(std::string const &label);
-    
     /**
-     * \brief Specifies a label to which the given process code should be mapped
+     * \brief Specifies an efficiency label to be used with datasets whose ID match the given mask
      * 
-     * The label is later used to construct the name of the histogram with efficiencies as
-     * described in the documentation of the class. The method can be called several times to
-     * specify mapping of different process codes. The mapping rules are stored in the order of
-     * their specification. If the method is called for a process code that has already been
-     * mapped, the corresponding label is updated.
+     * The efficiency label is used to identify histograms in the input file as described in the
+     * class documentation. The mask must be a valid regular expression. Each call to this method
+     * creates a new rule that matches an efficiency label to a mask.
+     * 
+     * When a new dataset is opened, its source dataset ID will be matched to masks in the rules in
+     * the order of their specification. The first match found will provide the label to be used
+     * with the dataset.
      */
-    void SetProcessLabel(Dataset::Process code, std::string const &label);
+    void SetEffLabel(std::string const &datasetIdMask, std::string const &label);
     
-    /**
-     * \brief Sequentially calls the overloaded version with a single process code for all provided
-     * values, in the order of their appearance.
-     */
-    void SetProcessLabel(std::list<Dataset::Process> const &codes, std::string const &label);
+    /// Repeatedly calls the overloaded version for each (mask, label) pair
+    void SetEffLabel(std::initializer_list<std::pair<std::string, std::string>> const &rules);
+    
+    /// Sets the default label to be used when the current dataset does not match any rules
+    void SetDefaultEffLabel(std::string const &label);
     
 private:
-    /// Reads histograms with efficiencies for the given b tagger and current process label
+    /// Reads histograms with efficiencies for the given b tagger and current efficiency label
     void LoadEfficiencies(BTagger const &bTagger);
     
     /// Opens input file and extracts name of the in-file directory
@@ -137,19 +134,17 @@ private:
     std::string inFileDirectory;
     
     /**
-     * \brief Correspondance between process codes and labels of efficiency histograms
+     * \brief Correspondence between masks for source dataset ID and efficiency label
      * 
-     * The labels are used to build names of histograms with efficiencies. The container is sorted
-     * in the order in which process codes were registered with SetProcessLabel (and for this
-     * reason it cannot be implemented as an std::map). Process codes must not repeat.
+     * The rules are stored in the order of their definition by method SetEffLabel.
      */
-    std::list<std::pair<Dataset::Process, std::string>> processLabelMap;
+    std::vector<std::pair<std::regex, std::string>> effLabelRules;
     
-    /// Label to be used with process codes for which no mapping rule is defined in processMap
-    std::string defaultProcessLabel;
+    /// Efficiency label to be used for datasets that do not match any rules
+    std::string defaultEffLabel;
     
-    /// Process label for the current dataset
-    std::string curProcessLabel;
+    /// Efficiency label for the current dataset
+    std::string curEffLabel;
     
     /**
      * \brief Map with b-tagging efficiency histograms

@@ -63,8 +63,7 @@ int main()
     manager.RegisterService(new BTagWPService("BTagWP_80X_v1.json"));
     
     BTagEffService *bTagEffService = new BTagEffService("BTagEff_76X_v1.root");
-    // bTagEffService->SetProcessLabel(Dataset::Process::ttSemilep, "ttbar-semilep");
-    bTagEffService->SetDefaultProcessLabel("ttbar");
+    bTagEffService->SetDefaultEffLabel("ttbar");
     manager.RegisterService(bTagEffService);
     
     BTagSFService *bTagSFService = new BTagSFService(bTagger, "BTagSF_76X_CSVv2.csv");

@@ -49,7 +49,7 @@ int main()
     processor.RegisterService(new BTagWPService("BTagWP_80X_v1.json"));
     
     BTagEffService *bTagEffService = new BTagEffService("BTagEff_76X_v1.root");
-    bTagEffService->SetDefaultProcessLabel("ttbar");
+    bTagEffService->SetDefaultEffLabel("ttbar");
     processor.RegisterService(bTagEffService);
     
     BTagSFService *bTagSFService = new BTagSFService(bTagger, "BTagSF_76X_CSVv2.csv");

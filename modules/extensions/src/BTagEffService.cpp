@@ -8,8 +8,7 @@
 #include <sstream>
 #include <stdexcept>
 
-
-using namespace std::literals::string_literals;
+/**/#include <iostream>
 
 
 BTagEffService::BTagEffService(std::string const &name, std::string const &path):
@@ -26,54 +25,54 @@ BTagEffService::BTagEffService(std::string const &path):
 }
 
 
-BTagEffService::~BTagEffService() noexcept
-{}
-
-
 BTagEffService::BTagEffService(BTagEffService const &src) noexcept:
     Service(src),
     srcFile(src.srcFile),  // shared
     inFileDirectory(src.inFileDirectory),
-    processLabelMap(src.processLabelMap),
-    defaultProcessLabel(src.defaultProcessLabel)
+    effLabelRules(src.effLabelRules),
+    defaultEffLabel(src.defaultEffLabel)
 {}
 
 
 void BTagEffService::BeginRun(Dataset const &dataset)
 {
-    // Find the label corresponding to the process in the dataset
-    std::string newProcessLabel;
-    auto const mapRuleIt = std::find_if(processLabelMap.begin(), processLabelMap.end(),
-      [&dataset](decltype(*processLabelMap.cbegin()) &rule){
-        return dataset.TestProcess(rule.first);});
+    // Find the efficiency label corresponding to the new dataset
+    std::string newEffLabel;
+    auto const &datasetId = dataset.GetSourceDatasetID();
+    std::smatch matchResults;
     
-    if (mapRuleIt != processLabelMap.end())
-        newProcessLabel = mapRuleIt->second;
-    else
+    for (auto const &rule: effLabelRules)
+    {
+        if (std::regex_match(datasetId, matchResults, rule.first))
+        {
+            newEffLabel = rule.second;
+            break;
+        }
+    }
+    
+    
+    if (matchResults.empty())
     {
         // No label is defined for this dataset. Check if the default one is available
-        if (defaultProcessLabel.length() == 0)
+        if (defaultEffLabel.empty())
         {
-            std::ostringstream ost;
-            ost << "BTagEffService::BeginRun: Cannot find which histogram with b-tagging " <<
-              "efficiencies should be used for the dataset containing file \"" <<
-              dataset.GetFiles().front().GetBaseName() << ".root\". " <<
-              "No rule to define the histogram name is available for the dataset, and no " <<
-              "default name is specified.";
-            
-            throw std::runtime_error(ost.str());
+            std::ostringstream message;
+            message << "BTagEffService[\"" << GetName() << "\"]::BeginRun: " <<
+              "Cannot determine efficiency label for datataset with ID \"" << datasetId <<
+              "\". No rule is satisfied, and no default label has been given.";
+            throw std::runtime_error(message.str());
         }
         
         // Apparently, there is a default label. Use it
-        newProcessLabel = defaultProcessLabel;
+        newEffLabel = defaultEffLabel;
     }
     
     
     // Clear the map with efficiency histograms if outdated
-    if (newProcessLabel != curProcessLabel)
+    if (newEffLabel != curEffLabel)
     {
         effHists.clear();
-        curProcessLabel = newProcessLabel;
+        curEffLabel = newEffLabel;
     }
 }
 
@@ -104,11 +103,11 @@ double BTagEffService::GetEfficiency(BTagger const &bTagger, double pt, double e
     // Make sure the histogram exists
     if (not hist)
     {
-        std::ostringstream ost;
-        ost << "BTagEffService::GetEfficiency: Failed to find an efficiency histogram for " <<
-          "b tagger " << bTagger.GetTextCode() << ", process label \"" << curProcessLabel <<
-          "\", jet flavour " << flavour << ".";
-        throw std::runtime_error(ost.str());
+        std::ostringstream message;
+        message << "BTagEffService[\"" << GetName() << "\"]::GetEfficiency: " <<
+          "Failed to find an efficiency histogram for b tagger " << bTagger.GetTextCode() <<
+          ", efficiency label \"" << curEffLabel << "\", jet flavour " << flavour << ".";
+        throw std::runtime_error(message.str());
     }
 
     
@@ -123,37 +122,33 @@ double BTagEffService::GetEfficiency(BTagger const &bTagger, Jet const &jet)  co
 }
 
 
-void BTagEffService::SetDefaultProcessLabel(std::string const &label)
+void BTagEffService::SetEffLabel(std::string const &datasetIdMask, std::string const &label)
 {
-    defaultProcessLabel = label;
-}
-
-
-void BTagEffService::SetProcessLabel(Dataset::Process code, std::string const &label)
-{
-    // Check if the given process code has already been registered
-    auto const mapRuleIt = std::find_if(processLabelMap.begin(), processLabelMap.end(),
-     [code](decltype(*processLabelMap.cbegin()) &rule){return (rule.first == code);});
-    
-    
-    if (mapRuleIt == processLabelMap.end())
+    try
     {
-        // Add a new mapping rule
-        processLabelMap.emplace_back(code, label);
+        effLabelRules.emplace_back(std::regex(datasetIdMask), label);
     }
-    else
+    catch (std::regex_error const &)
     {
-        // Reset the label registered for this process code
-        mapRuleIt->second = label;
+        std::ostringstream message;
+        message << "BTagEffService[\"" << GetName() << "\"]::SetEffLabel: " <<
+          "Failed to construct a regular expression from mask \"" << datasetIdMask << "\".";
+        throw std::runtime_error(message.str());
     }
 }
 
 
-void BTagEffService::SetProcessLabel(std::list<Dataset::Process> const &codes,
-  std::string const &label)
+void BTagEffService::SetEffLabel(
+  std::initializer_list<std::pair<std::string, std::string>> const &rules)
 {
-    for (auto const &code: codes)
-        SetProcessLabel(code, label);
+    for (auto const &rule: rules)
+        SetEffLabel(rule.first, rule.second);
+}
+
+
+void BTagEffService::SetDefaultEffLabel(std::string const &label)
+{
+    defaultEffLabel = label;
 }
 
 
@@ -168,11 +163,11 @@ void BTagEffService::LoadEfficiencies(BTagger const &bTagger)
     ROOTLock::Lock();
     
     shared_ptr<TH2> bHist(dynamic_cast<TH2 *>(srcFile->Get(
-      (inFileDirectory + bTaggerCode + "/" + curProcessLabel + "_b").c_str())));
+      (inFileDirectory + bTaggerCode + "/" + curEffLabel + "_b").c_str())));
     shared_ptr<TH2> cHist(dynamic_cast<TH2 *>(srcFile->Get(
-      (inFileDirectory + bTaggerCode + "/" + curProcessLabel + "_c").c_str())));
+      (inFileDirectory + bTaggerCode + "/" + curEffLabel + "_c").c_str())));
     shared_ptr<TH2> udsgHist(dynamic_cast<TH2 *>(srcFile->Get(
-      (inFileDirectory + bTaggerCode + "/" + curProcessLabel + "_udsg").c_str())));
+      (inFileDirectory + bTaggerCode + "/" + curEffLabel + "_udsg").c_str())));
     
     // Make sure the histograms are not associated with a file
     for (auto const &p: {bHist, cHist, udsgHist})
@@ -186,8 +181,13 @@ void BTagEffService::LoadEfficiencies(BTagger const &bTagger)
     
     // Make sure at least some histograms with efficiencies have been read from the file
     if (not bHist and not cHist and not udsgHist)
-        throw runtime_error("BTagEffService::LoadEfficiencies: No histograms for b tagger "s +
-          bTaggerCode + " are present in the data file.");
+    {
+        ostringstream message;
+        message << "BTagEffService[\"" << GetName() << "\"]::LoadEfficiencies: " <<
+          "No histogram for b tagger \"" << bTaggerCode << "\" with efficiency label \"" <<
+          curEffLabel << "\" is present in the data file.";
+        throw runtime_error(message.str());
+    }
     
     
     // Add the histograms to the histogram map if the pointers are not null
@@ -233,8 +233,12 @@ void BTagEffService::OpenInputFile(std::string const &path)
             inFileDirectory += '/';
     }
     else
-        throw std::runtime_error("BTagEffService::OpenInputFile: Path \""s + path +
-          "\" constains too many colons.");
+    {
+        std::ostringstream message;
+        message << "BTagEffService[\"" << GetName() << "\"]::OpenInputFile: " <<
+          "Path \"" << path << "\" contains too many colons.";
+        throw std::runtime_error(message.str());
+    }
     
     
     // Guard creation of a ROOT file

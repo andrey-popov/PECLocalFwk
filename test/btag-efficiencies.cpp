@@ -19,10 +19,9 @@ int main()
     BTagger const bTagger(BTagger::Algorithm::CSV, BTagger::WorkingPoint::Tight);
     
     BTagEffService bTagEffService("BTagEff_76X_v1.root");
-    // bTagEffService.SetProcessLabel(Dataset::Process::ttSemilep, "ttbar-semilep");
-    bTagEffService.SetDefaultProcessLabel("ttbar");
+    bTagEffService.SetDefaultEffLabel("ttbar");
     
-    Dataset fakeDataset(Dataset::Type::MC);
+    Dataset fakeDataset(Dataset::Type::MC, "ttbar");
     
     bTagEffService.BeginRun(fakeDataset);
     
