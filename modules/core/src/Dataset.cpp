@@ -11,21 +11,22 @@ using namespace std;
 
 
 Dataset::File::File() noexcept:
-    name(""), xSec(0.), nEvents(0)
+    name(""), xSec(0.), nEvents(0), meanWeight(1.)
 {}
 
 
 Dataset::File::File(string const &name) noexcept:
-    File(name, -1., 0)
+    File(name, -1., 0, 1.)
 {}
 
 
-Dataset::File::File(string const &name_, double xSec_, unsigned long nEvents_) noexcept:
-    name(name_), xSec(xSec_), nEvents(nEvents_)
+Dataset::File::File(string const &name_, double xSec_, unsigned long nEvents_,
+  double meanWeight_ /*= 1.*/) noexcept:
+    name(name_), xSec(xSec_), nEvents(nEvents_), meanWeight(meanWeight_)
 {}
 
 
-string Dataset::File::GetBaseName() const noexcept
+string Dataset::File::GetBaseName() const
 {
     int const startPos = name.find_last_of('/');
     int const endPos = name.find_last_of('.');
@@ -37,7 +38,7 @@ string Dataset::File::GetBaseName() const noexcept
 }
 
 
-string Dataset::File::GetDirName() const noexcept
+string Dataset::File::GetDirName() const
 {
     int const pos = name.find_last_of('/');
     
@@ -45,6 +46,12 @@ string Dataset::File::GetDirName() const noexcept
         return name.substr(0, pos + 1);
     else
         return "./";
+}
+
+
+double Dataset::File::GetWeight() const
+{
+    return xSec / (meanWeight * nEvents);
 }
 
 
@@ -112,10 +119,11 @@ Dataset::Dataset(Dataset::Process process,
 }
 
 
-void Dataset::AddFile(string const &path, double xSec, unsigned long nEvents)
+void Dataset::AddFile(string const &path, double xSec, unsigned long nEvents,
+  double meanWeight /*= 1.*/)
 {
     for (auto const &p: ExpandPathMask(path))
-        files.emplace_back(p, xSec, nEvents);
+        files.emplace_back(p, xSec, nEvents, meanWeight);
     
     if (sourceDatasetID == "")
         SetDefaultSourceDatasetID();

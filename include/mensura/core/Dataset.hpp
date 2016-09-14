@@ -30,8 +30,8 @@ class Dataset
 public:
     /**
      * \struct File
-     * \brief Contains the file name, the cross section, and the number of events in the parent
-     * dataset
+     * \brief Aggregates path to a file, cross section, number of events in the parent dataset, and
+     * mean generator-level weight
      */
     struct File
     {
@@ -46,17 +46,35 @@ public:
         explicit File(std::string const &name) noexcept;
         
         /// Simple initializing constructor
-        File(std::string const &name, double xSec, unsigned long nEvents) noexcept;
+        File(std::string const &name, double xSec, unsigned long nEvents, double meanWeight = 1.)
+          noexcept;
         
         /// Returns file basename with stripped extension
-        std::string GetBaseName() const noexcept;
+        std::string GetBaseName() const;
         
         /// Returns name of directory containing the file
-        std::string GetDirName() const noexcept;
+        std::string GetDirName() const;
         
-        std::string name;  ///< Fully-qualified file name
-        double xSec;  ///< Cross section in pb
-        unsigned long nEvents;  ///< Number of events in the parent dataset
+        /**
+         * \brief Computes event weight to obtain correct normalization in simulation
+         * 
+         * The weight is computed as xSec / (meanWeight * nEvents) and corresponds to normalization
+         * of simulation to an integrated luminosity of 1/pb. The result is meaningless in case of
+         * experimental data.
+         */
+        double GetWeight() const;
+        
+        /// Fully-qualified file name
+        std::string name;
+        
+        /// Cross section in pb
+        double xSec;
+        
+        /// Number of events in the parent dataset
+        unsigned long nEvents;
+        
+        /// Mean generator-leve weight
+        double meanWeight;
     };
     
     /**
@@ -209,7 +227,8 @@ public:
      * The file name part of the given path can contain wildcards '*' and '?'. Consult
      * documentation for ExpandPathMask for details.
      */
-    void AddFile(std::string const &path, double xSec, unsigned long nEvents);
+    void AddFile(std::string const &path, double xSec, unsigned long nEvents,
+      double meanWeight = 1.);
     
     /// A short-cut of the above method to be used with data
     void AddFile(std::string const &path);
