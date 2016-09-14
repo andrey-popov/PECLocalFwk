@@ -33,7 +33,7 @@ int main()
     list<Dataset> datasets;
     string const filePrefix("/gridgroup/cms/popov/PECData/2015Charlie/");
     
-    datasets.emplace_back(Dataset({Dataset::Process::ttbar}, Dataset::Generator::POWHEG));
+    datasets.emplace_back(Dataset(Dataset::Type::MC));
     Dataset *d = &datasets.back();
     d->AddFile(filePrefix + "ttbar-pw_3.1.0_wdo_p1.root", 831.76, 97994442);
     d->AddFile(filePrefix + "ttbar-pw_3.1.0_wdo_p2.root", 831.76, 97994442);

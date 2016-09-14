@@ -9,20 +9,21 @@
  * \class Dataset
  * \brief A class to store information about a dataset
  * 
- * The class aggregates all relevant information about a dataset. It includes names of ROOT files,
- * corresponding cross sections and numbers of events in the parent datasets processed in Grid. It
- * also attaches one or more codes to specify physics process represendted by the dataset. If
- * several process codes are provided, they describe the process at different levels of
- * detalisation, e.g. ttbar and semileptonic ttbar; they are never strict synonyms. In addition,
- * information about generators of the hard process and the showering can be provided.
+ * This class aggregates all basic properties of a dataset, most notably it contains a list of
+ * input ROOT files together with information needed for normalization of simulated datasets
+ * (cross sections, total numbers of processed events, and mean weights). A flag distinguishing
+ * between experimental data and simulation is also stored.
  * 
- * For each dataset a label is attached, which identifies uniquely the source dataset from which
- * the files were produced (usually, the dataset processed in Grid). Currently this label is set
- * automatically, and it coinsides with the base name of the first file in the dataset, with the
- * part number postfix stripped off.
+ * Each dataset must be assigned an arbitrary label that uniquely identifies the source dataset
+ * from which the files were produced. Physics content of files within the same dataset or multiple
+ * datasets with identical labels is the same. If user does not specify this label, referred to as
+ * source dataset ID, it is deduced automatically from the name of the first input file.
  * 
- * The user can also define arbitrary boolean flags binded with an instance of the class. Their
- * usage is not restricted by the framework.
+ * User can add arbitrary boolean flags to provide additional information about the dataset to
+ * custom plugins.
+ * 
+ * Currently a number of properties are described with enumerations Process, Generator, and
+ * ShowerGenerator. This functionality is deprecated and will be eliminated in future.
  */
 class Dataset
 {
@@ -56,6 +57,16 @@ public:
         std::string name;  ///< Fully-qualified file name
         double xSec;  ///< Cross section in pb
         unsigned long nEvents;  ///< Number of events in the parent dataset
+    };
+    
+    /**
+     * \enum Type
+     * \brief A type to distinguish collision data and simulation
+     */
+    enum class Type
+    {
+        Data,
+        MC
     };
     
     /**
@@ -139,6 +150,14 @@ public:
     Dataset() noexcept;
     
     /**
+     * \brief Create an empty dataset with the given type and source dataset ID
+     * 
+     * If an empty label is given to the source dataset ID, it will be deduced from the name of the
+     * first file when added.
+     */
+    Dataset(Type type, std::string sourceDatasetID = "");
+    
+    /**
      * \brief Constructor with parameters
      * 
      * A dataset can be assigned more than one process code. In this case the codes must be
@@ -149,6 +168,7 @@ public:
      * By default, generator and shower generator are set to Undefined. However, if the process
      * is real data, they are changed to Nature.
      */
+    [[deprecated]]
     Dataset(std::list<Process> &&processCodes, Generator generator = Generator::Undefined,
      ShowerGenerator showerGenerator = ShowerGenerator::Undefined) noexcept;
     
@@ -158,6 +178,7 @@ public:
      * A specialised version used when the list of process codes cannot be given as an rvalue.
      * Refer to documentation of the first version of constructor for details.
      */
+    [[deprecated]]
     Dataset(std::list<Process> const &processCodes, Generator generator = Generator::Undefined,
      ShowerGenerator showerGenerator = ShowerGenerator::Undefined) noexcept;
     
@@ -168,6 +189,7 @@ public:
      * dataset is assigned a single process code. Refer to documentation of the first version of
      * constructor for details.
      */
+    [[deprecated]]
     Dataset(Process process, Generator generator = Generator::Undefined,
      ShowerGenerator showerGenerator = ShowerGenerator::Undefined) noexcept;
     
@@ -208,11 +230,13 @@ public:
     /**
      * \brief Returns the hard-process generator
      */
+    [[deprecated]]
     Generator GetGenerator() const;
     
     /**
      * \brief Returns parton-shower and hadronization generator
      */
+    [[deprecated]]
     ShowerGenerator GetShowerGenerator() const;
     
     /**
@@ -221,12 +245,15 @@ public:
      * Technically, the last process code is returned because the list is ordered from most general
      * to most specialised specification.
      */
+    [[deprecated]]
     Process GetProcess() const;
     
     /// Return a list of all assigned process codes
+    [[deprecated]]
     std::list<Process> const &GetProcessCodes() const;
     
     /// Tests if the given process code is assigned to the dataset
+    [[deprecated]]
     bool TestProcess(Process code) const;
     
     /**
@@ -280,7 +307,11 @@ private:
      */
     static std::list<std::string> ExpandPathMask(std::string const &path);
     
-    /// Sets source dataset ID based on the name of the last added file
+    /**
+     * \brief Sets source dataset ID based on the name of the last added file
+     * 
+     * Optional postfix with the part number is stripped off if present.
+     */
     void SetDefaultSourceDatasetID();
     
     /// Orders process codes from most general to most specialised
@@ -307,6 +338,9 @@ private:
     
     /// A label that uniquely identifies the source dataset
     std::string sourceDatasetID;
+    
+    /// Indicates whether this dataset is data or simulation
+    bool isData;
     
     /**
      * \brief Description of the physical process

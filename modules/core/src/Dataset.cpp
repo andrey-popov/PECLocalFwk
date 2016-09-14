@@ -50,10 +50,30 @@ string Dataset::File::GetDirName() const noexcept
 
 Dataset::Dataset() noexcept:
     sourceDatasetID(""),
+    isData(false),
     processCodes({Process::Undefined}),
     generator(Generator::Undefined),
     showerGenerator(ShowerGenerator::Undefined)
 {}
+
+
+Dataset::Dataset(Dataset::Type type, std::string sourceDatasetID_ /*= ""*/):
+    sourceDatasetID(sourceDatasetID_),
+    processCodes({Process::Undefined}),
+    generator(Generator::Undefined),
+    showerGenerator(ShowerGenerator::Undefined)
+{
+    if (type == Type::Data)
+        isData = true;
+    else if (type == Type::MC)
+        isData = false;
+    else
+    {
+        std::ostringstream message;
+        message << "Dataset::Dataset: Received unknown type " << int(type) << ".";
+        throw std::logic_error(message.str());
+    }
+}
 
 
 Dataset::Dataset(list<Dataset::Process> &&processCodes_,
@@ -166,20 +186,7 @@ bool Dataset::TestProcess(Dataset::Process code) const
 
 bool Dataset::IsMC() const
 {
-    switch (processCodes.front())
-    {
-        case Process::ppData:
-        case Process::pp7TeV:
-        case Process::pp8TeV:
-        case Process::pp13TeV:
-        //^ User is expected to set ppData for any dataset with real data, but pp*TeV are checked as
-        //well to tolerate missing ppData. This check also ensures backward compatibility
-            return false;
-        
-        default:
-        //^ Note that Undefined goes here
-            return true;
-    }
+    return not isData;
 }
 
 
@@ -307,25 +314,10 @@ void Dataset::SetDefaultSourceDatasetID()
         throw std::runtime_error("Dataset::SetDefaultSourceDatasetID: Cannot be executed when "
           "the list of files is empty.");
     
-    
-    // Set the ID label to the short name of the last input file and strip the part number postfix
-    //from it if present
-    sourceDatasetID = files.back().GetBaseName();
-    unsigned lastChar = sourceDatasetID.size() - 1;
-    
-    if (sourceDatasetID[lastChar] >= '0' and sourceDatasetID[lastChar] <= '9')
-    {
-        --lastChar;
-        
-        while (sourceDatasetID[lastChar] >= '0' and sourceDatasetID[lastChar] <= '9')
-         --lastChar;
-        
-        if (sourceDatasetID[lastChar] == 'p' and sourceDatasetID[lastChar - 1] == '_')
-        {
-            // There is a postfix with the part number. Update the ID label stripping the postfix
-            sourceDatasetID = sourceDatasetID.substr(0, lastChar - 1);
-        }
-    }
+    // The source dataset ID will be based on the base name of the last added file. The base name
+    //already has the extension stripped. Here strip also the optional postfix with part number.
+    std::regex fileNameRegex(R"(([\._]p(art)?[0-9]+)?$)");
+    sourceDatasetID = std::regex_replace(files.back().GetBaseName(), fileNameRegex, "");
 }
 
 
@@ -355,10 +347,14 @@ void Dataset::Init()
     //^ Codes pp*TeV are checked to recover from a potential user's error when (s)he does not set
     //ppData. It also ensures backward compatibility
     {
+        isData = true;
+        
         if (generator == Generator::Undefined)
             generator = Generator::Nature;
         
         if (showerGenerator == ShowerGenerator::Undefined)
             showerGenerator = ShowerGenerator::Nature;
     }
+    else
+        isData = false;
 }

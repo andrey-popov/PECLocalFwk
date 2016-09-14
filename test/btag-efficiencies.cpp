@@ -22,7 +22,7 @@ int main()
     // bTagEffService.SetProcessLabel(Dataset::Process::ttSemilep, "ttbar-semilep");
     bTagEffService.SetDefaultProcessLabel("ttbar");
     
-    Dataset fakeDataset({Dataset::Process::ttbar, Dataset::Process::ttSemilep});
+    Dataset fakeDataset(Dataset::Type::MC);
     
     bTagEffService.BeginRun(fakeDataset);
     
