@@ -21,13 +21,13 @@ vpath %.cpp $(SOURCE_DIR)
 all: $(LIB_PATH)
 
 $(LIB_PATH): $(OBJECTS)
-	@ mkdir -p $(LIB_DIR)
-	@ rm -f $@
-	@ ar -cq $@ $+
+	mkdir -p $(LIB_DIR)
+	rm -f $@
+	ar -cq $@ $+
 
 $(OBJ_DIR)/%.o: $(SOURCE_DIR)/%.cpp
-	@ mkdir -p $(OBJ_DIR)
-	@ $(CC) $(CFLAGS) -c $< -o $@
+	mkdir -p $(OBJ_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	@ rm -rf $(OBJ_DIR) $(LIB_DIR)
+	rm -rf $(OBJ_DIR) $(LIB_DIR)

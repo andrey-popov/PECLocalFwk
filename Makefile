@@ -1,4 +1,4 @@
-# Check if the installation path of PECFwk is provided
+# Check if mensura installation path is provided
 ifeq ($(MENSURA_INSTALL), )
   $(error Mandatory environment variable MENSURA_INSTALL is not set)
 endif
@@ -50,27 +50,26 @@ MAIN_LIB_PATH := $(LIB_DIR)/$(MAIN_LIB_NAME)
 all: $(MAIN_LIB_PATH) link-libs
 
 $(MAIN_LIB_PATH): $(MODULES_STATIC)
-	@ mkdir -p $(LIB_DIR)
-	@ rm -f $@
-	@ $(CC) -shared -Wl,-soname,$(MAIN_LIB_NAME).4 -o $@.4.0 \
+	mkdir -p $(LIB_DIR)
+	rm -f $@
+	$(CC) -shared -Wl,-soname,$(MAIN_LIB_NAME).4 -o $@.4.0 \
 		-Wl,--whole-archive $(MODULE_STATIC_LIBS) -Wl,--no-whole-archive
-	@ ln -sf $(MAIN_LIB_NAME).4.0 $@.4; ln -sf $(MAIN_LIB_NAME).4 $@
-	@ ln -sf $(MAIN_LIB_NAME) $(LIB_DIR)/libPECFwk.so
+	ln -sf $(MAIN_LIB_NAME).4.0 $@.4; ln -sf $(MAIN_LIB_NAME).4 $@
 
 link-libs: $(MODULES_SHARED)
-	@ mkdir -p $(LIB_DIR)
-	@ cd $(LIB_DIR); for m in $(MODULES_SHARED); \
+	mkdir -p $(LIB_DIR)
+	cd $(LIB_DIR); for m in $(MODULES_SHARED); \
 		do for f in `find $(MENSURA_INSTALL)/$(MODULES_DIR)/$$m/lib/ -regex ".*/lib.*\.so.*$$"`; \
 			do ln -sf $$f .; done \
 		done
-	@ cd $(LIB_DIR); ln -sf $(wildcard $(MENSURA_INSTALL)/$(MODULES_DIR)/PECReader/lib/*.pcm) .
+	cd $(LIB_DIR); ln -sf $(wildcard $(MENSURA_INSTALL)/$(MODULES_DIR)/PECReader/lib/*.pcm) .
 
 $(MODULES):
-	@ +make -s -C $(MODULES_DIR)/$@
+	+make -C $(MODULES_DIR)/$@
 
 # unpack:
-# 	@ if [ `ls data/JERC/ | grep AK5PFchs.txt | wc -l` -eq 0 ]; \
+# 	if [ `ls data/JERC/ | grep AK5PFchs.txt | wc -l` -eq 0 ]; \
 # 	 then tar -xzf data/JERC/Summer13_V5_AK5PFchs.tar.gz -C data/JERC/; fi
 
 clean:
-	@ for m in $(MODULES); do make -s -C $(MODULES_DIR)/$$m clean; done
+	for m in $(MODULES); do make -C $(MODULES_DIR)/$$m clean; done

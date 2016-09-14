@@ -28,26 +28,26 @@ vpath %.cpp $(SOURCE_DIR)
 all: $(LIB_PATH) $(DICT_PATH)
 
 $(LIB_PATH): $(OBJECTS) $(OBJ_DIR)/$(DICT_CPP_NAME).o
-	@ mkdir -p $(LIB_DIR)
-	@ rm -f $@
-	@ $(CC) -shared -Wl,-soname,$(LIB_NAME).3 -o $@.3.0 $^
+	mkdir -p $(LIB_DIR)
+	rm -f $@
+	$(CC) -shared -Wl,-soname,$(LIB_NAME).3 -o $@.3.0 $^
     #^ It is important to use there $^ instead of $+ since $(DICT_CPP_NAME).o can occur twice among
     # the dependencies.
-	@ ln -sf $(LIB_NAME).3.0 $@.3; ln -sf $(LIB_NAME).3 $@
+	ln -sf $(LIB_NAME).3.0 $@.3; ln -sf $(LIB_NAME).3 $@
 
 $(DICT_PATH): $(SOURCE_DIR)/$(DICT_CPP_NAME).cpp
-	@ mkdir -p $(LIB_DIR)
-	@ mv $(SOURCE_DIR)/$(DICT_PCM_NAME) $@
+	mkdir -p $(LIB_DIR)
+	mv $(SOURCE_DIR)/$(DICT_PCM_NAME) $@
 
 $(OBJ_DIR)/%.o: $(SOURCE_DIR)/%.cpp
-	@ mkdir -p $(OBJ_DIR)
-	@ $(CC) $(CFLAGS) -c $< -o $@
+	mkdir -p $(OBJ_DIR)
+	$(CC) $(CFLAGS) -c $< -o $@
 
 $(SOURCE_DIR)/$(DICT_CPP_NAME).cpp: $(SOURCE_DIR)/classes.h $(SOURCE_DIR)/classes_def.xml
-	@ cd $(SOURCE_DIR); \
+	cd $(SOURCE_DIR); \
 		rootcling -f $(DICT_CPP_NAME).cpp -s $(LIB_NAME) -I$(MENSURA_INSTALL)/include \
 		classes.h classes_def.xml
-	@ touch -r $(SOURCE_DIR)/$(DICT_CPP_NAME).cpp $(SOURCE_DIR)/$(DICT_PCM_NAME)
+	touch -r $(SOURCE_DIR)/$(DICT_CPP_NAME).cpp $(SOURCE_DIR)/$(DICT_PCM_NAME)
     #^ In the first command of the recipe, rootcling produces cpp and pcm files. The $(DICT_PATH)
     # target naturally depends on the pcm file, while $(DICT_NAME).o depends on the cpp file.
     # However, GNU make is not capable of supporting multiple targets properly [1], and because of
@@ -57,5 +57,5 @@ $(SOURCE_DIR)/$(DICT_CPP_NAME).cpp: $(SOURCE_DIR)/classes.h $(SOURCE_DIR)/classe
     # [1] http://stackoverflow.com/questions/2973445/gnu-makefile-rule-generating-a-few-targets-from-a-single-source-file
 
 clean:
-	@ rm -rf $(OBJ_DIR)
-	@ rm -f $(SOURCE_DIR)/dictPEC.cpp $(wildcard $(SOURCE_DIR)/*_rdict.pcm)
+	rm -rf $(OBJ_DIR)
+	rm -f $(SOURCE_DIR)/dictPEC.cpp $(wildcard $(SOURCE_DIR)/*_rdict.pcm)
