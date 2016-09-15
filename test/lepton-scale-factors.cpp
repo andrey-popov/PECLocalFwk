@@ -59,10 +59,10 @@ int main(int argc, char **argv)
     
     if (targetFlavour == Lepton::Flavour::Muon)
         processor.RegisterPlugin(new LeptonSFWeight(Lepton::Flavour::Muon,
-          "MuonSF_2015D_76Xv1.root", {"ID_Tight"}));
+          "MuonSF_2016BCD_80Xv1.root", {"ID_Tight"}));
     else
         processor.RegisterPlugin(new LeptonSFWeight(Lepton::Flavour::Electron,
-          "ElectronSF_2015D_76Xv1.root", {"CutBasedID_Tight"}));
+          "ElectronSF_2016BCD_80Xv1.root", {"CutBasedID_Tight"}));
     
     
     // Save pointers to selected plugins to read information from them in the event loop

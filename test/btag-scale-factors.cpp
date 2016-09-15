@@ -15,11 +15,11 @@ using namespace std;
 
 int main()
 {
-    BTagger const bTagger(BTagger::Algorithm::CSV, BTagger::WorkingPoint::Medium);
+    BTagger const bTagger(BTagger::Algorithm::CMVA, BTagger::WorkingPoint::Medium);
     
-    BTagSFService bTagSFService(bTagger, "BTagSF_76X_CSVv2.csv");
-    bTagSFService.SetMeasurement(BTagSFService::Flavour::Bottom, "mujets");
-    bTagSFService.SetMeasurement(BTagSFService::Flavour::Charm, "mujets");
+    BTagSFService bTagSFService(bTagger, "BTagSF_cMVAv2_80Xv1.csv");
+    bTagSFService.SetMeasurement(BTagSFService::Flavour::Bottom, "ttbar");
+    bTagSFService.SetMeasurement(BTagSFService::Flavour::Charm, "ttbar");
     bTagSFService.SetMeasurement(BTagSFService::Flavour::Light, "incl");
     
     

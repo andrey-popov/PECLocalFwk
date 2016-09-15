@@ -38,7 +38,7 @@ int main()
     
     
     // Common definition of b-tagging that will be used everywhere
-    BTagger const bTagger(BTagger::Algorithm::CSV, BTagger::WorkingPoint::Tight);
+    BTagger const bTagger(BTagger::Algorithm::CMVA, BTagger::WorkingPoint::Medium);
     
     
     // Processor object
@@ -46,15 +46,15 @@ int main()
     
     
     // Register b-tagging services
-    processor.RegisterService(new BTagWPService("BTagWP_80X_v1.json"));
+    processor.RegisterService(new BTagWPService("BTagWP_80Xv1.json"));
     
-    BTagEffService *bTagEffService = new BTagEffService("BTagEff_76X_v1.root");
+    BTagEffService *bTagEffService = new BTagEffService("BTagEff_80Xv1.root");
     bTagEffService->SetDefaultEffLabel("ttbar");
     processor.RegisterService(bTagEffService);
     
-    BTagSFService *bTagSFService = new BTagSFService(bTagger, "BTagSF_76X_CSVv2.csv");
-    bTagSFService->SetMeasurement(BTagSFService::Flavour::Bottom, "mujets");
-    bTagSFService->SetMeasurement(BTagSFService::Flavour::Charm, "mujets");
+    BTagSFService *bTagSFService = new BTagSFService(bTagger, "BTagSF_cMVAv2_80Xv1.csv");
+    bTagSFService->SetMeasurement(BTagSFService::Flavour::Bottom, "ttbar");
+    bTagSFService->SetMeasurement(BTagSFService::Flavour::Charm, "ttbar");
     bTagSFService->SetMeasurement(BTagSFService::Flavour::Light, "incl");
     processor.RegisterService(bTagSFService);
     

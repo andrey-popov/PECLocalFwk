@@ -45,12 +45,12 @@ int main()
     
     // Triggers
     list<TriggerRange> triggerRanges;
-    triggerRanges.emplace_back(TriggerRange(0, -1, {"IsoMu20", "IsoTkMu20"}, 2289.901,
-      {"IsoMu20", "IsoTkMu20"}));
+    triggerRanges.emplace_back(TriggerRange(0, -1, {"IsoMu24", "IsoTkMu24"},
+      1e3 /* a dummy luminosity */, {"IsoMu24", "IsoTkMu24"}));
     
     
     // Common definition of b-tagging that will be used everywhere
-    BTagger const bTagger(BTagger::Algorithm::CSV, BTagger::WorkingPoint::Tight);
+    BTagger const bTagger(BTagger::Algorithm::CMVA, BTagger::WorkingPoint::Tight);
     
     
     // Construct the run manager
@@ -60,15 +60,15 @@ int main()
     // Register services
     manager.RegisterService(new TFileService("output/%"));
     
-    manager.RegisterService(new BTagWPService("BTagWP_80X_v1.json"));
+    manager.RegisterService(new BTagWPService("BTagWP_80Xv1.json"));
     
-    BTagEffService *bTagEffService = new BTagEffService("BTagEff_76X_v1.root");
+    BTagEffService *bTagEffService = new BTagEffService("BTagEff_80Xv1.root");
     bTagEffService->SetDefaultEffLabel("ttbar");
     manager.RegisterService(bTagEffService);
     
-    BTagSFService *bTagSFService = new BTagSFService(bTagger, "BTagSF_76X_CSVv2.csv");
-    bTagSFService->SetMeasurement(BTagSFService::Flavour::Bottom, "mujets");
-    bTagSFService->SetMeasurement(BTagSFService::Flavour::Charm, "mujets");
+    BTagSFService *bTagSFService = new BTagSFService(bTagger, "BTagSF_cMVAv2_80Xv1.csv");
+    bTagSFService->SetMeasurement(BTagSFService::Flavour::Bottom, "ttbar");
+    bTagSFService->SetMeasurement(BTagSFService::Flavour::Charm, "ttbar");
     bTagSFService->SetMeasurement(BTagSFService::Flavour::Light, "incl");
     manager.RegisterService(bTagSFService);
     
@@ -92,8 +92,8 @@ int main()
     manager.RegisterPlugin(new PECGeneratorReader);
     
     // Plugins to reweight events
-    manager.RegisterPlugin(new PileUpWeight("Run2015D_SingleMuon_v2_finebin.root",
-      "simPUProfiles_76X.root", 0.05));
+    manager.RegisterPlugin(new PileUpWeight("Run2016BCD_SingleMuon_v1_finebin.root",
+      "simPUProfiles_80X.root", 0.05));
     manager.RegisterPlugin(new BTagWeight(bTagger));
     manager.RegisterPlugin(new WeightCollector({"PileUpWeight", "BTagWeight"}));
     
