@@ -177,20 +177,29 @@ void PECTriggerFilterMC::BeginRun(Dataset const &dataset)
     
     for (auto &b: buffers)
     {
-        // Get the corresponding branch of the tree and make sure it exists
-        TBranch *branch = triggerTree->GetBranch((b.first + "__accept").c_str());
-        
-        if (not branch)
+        if (b.first == "1")
         {
-            ROOTLock::Unlock();
-            throw std::runtime_error("PECTriggerFilterMC::BeginRun: Decision of trigger "s +
-             "\"HLT_" + b.first + "_v*\" is not stored in the tree.");
+            // This is a pass-through selection. Just set the buffer to true. It will never be
+            //changed while the current dataset is being processed
+            b.second = true;
         }
-        
-        
-        // Set the status and address of the branch
-        branch->SetStatus(true);
-        branch->SetAddress(&b.second);
+        else
+        {
+            // Get the corresponding branch of the tree and make sure it exists
+            TBranch *branch = triggerTree->GetBranch((b.first + "__accept").c_str());
+            
+            if (not branch)
+            {
+                ROOTLock::Unlock();
+                throw std::runtime_error("PECTriggerFilterMC::BeginRun: Decision of trigger "s +
+                 "\"HLT_" + b.first + "_v*\" is not stored in the tree.");
+            }
+            
+            
+            // Set the status and address of the branch
+            branch->SetStatus(true);
+            branch->SetAddress(&b.second);
+        }
     }
     
     ROOTLock::Unlock();

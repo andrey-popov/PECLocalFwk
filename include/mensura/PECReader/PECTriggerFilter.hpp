@@ -192,7 +192,8 @@ void PECTriggerFilterData::ConstructRanges(C const &ranges_)
  * \brief Implements trigger selection in simulation
  * 
  * The selection is described by a collection of TriggerRange objects. All provided MC triggers
- * must be present.
+ * must be present, although a special value "1" can be given in place of a trigger name to
+ * disable filtering in a certain TriggerRange.
  * 
  * An event passes the trigger selection if it is accepted by at least one of the MC triggers. It
  * is assigned a weight calculated as a sum of integrated luminosities of all data-taking periods
