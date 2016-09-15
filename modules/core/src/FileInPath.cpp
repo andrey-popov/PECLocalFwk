@@ -95,11 +95,11 @@ std::string FileInPath::Resolve(std::string subDir, std::string const &path)
         std::string tryPath = subDir + path;
         
         if (fs::exists(tryPath) and fs::is_regular(tryPath))
-            return fs::current_path().native() + tryPath;
+            return fs::current_path().native() + "/" + tryPath;
     }
     
     if (fs::exists(path) and fs::is_regular(path))
-        return fs::current_path().native() + path;
+        return fs::current_path().native() + "/" + path;
     
     
     // If the workflow has reached this point, the path has not been resolved
