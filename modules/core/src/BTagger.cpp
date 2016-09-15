@@ -26,7 +26,7 @@ std::string BTagger::AlgorithmToTextCode(Algorithm algo)
             return "JP";
         
         case Algorithm::CMVA:
-            return "CMVAv2";
+            return "cMVAv2";
         
         default:
             throw std::runtime_error("BTagger::AlgorithmToTextCode: Unsupported algorithm code "s +
