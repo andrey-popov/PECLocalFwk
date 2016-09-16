@@ -283,12 +283,7 @@ public:
      */
     bool IsMC() const;
     
-    /**
-     * \brief Creates a clone of this dataset with an empty file list
-     * 
-     * The ID label of the source dataset is not copied as it will be set automatically when files
-     * are added to the newly created dataset.
-     */
+    /// Creates a clone of this dataset with an empty file list
     Dataset CopyParameters() const;
     
     /**

@@ -201,9 +201,9 @@ bool Dataset::IsMC() const
 Dataset Dataset::CopyParameters() const
 {
     Dataset emptyDataset(processCodes, generator, showerGenerator);
+    emptyDataset.sourceDatasetID = sourceDatasetID;
+    emptyDataset.isData = isData;
     emptyDataset.flags = flags;
-    // The sourceDatasetID is intentionally not copied. It will be set when files are added to
-    //the newly created dataset
     
     return emptyDataset;
 }
