@@ -42,15 +42,17 @@ std::string FileInPath::Resolve(std::string subDir, std::string const &path)
 {
     namespace fs = boost::filesystem;
     
-    // Check if an absolute path is provided. In this case the first argument is ignored and the
-    //path is returned as is
-    if (boost::starts_with(path, "/"))
+    // Check if an absolute or explicit relative path is provided. In this case the first argument
+    //is ignored and the path is returned as is
+    if (boost::starts_with(path, "/") or boost::starts_with(path, "./") or
+      boost::starts_with(path, "../"))
     {
         // Make sure the requested file exists
         if (not fs::exists(path) or not fs::is_regular(path))
         {
             std::ostringstream message;
-            message << "FileInPath::Resolve: Requested file with absolute path \"" <<
+            message << "FileInPath::Resolve: "
+              "Requested file with absolute or explicit relative path \"" <<
               path << "\" does not exist or is not a regular file.";
             throw std::runtime_error(message.str());
         }

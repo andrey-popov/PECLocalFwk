@@ -45,14 +45,14 @@ public:
     /**
      * \brief Resolves a path, allowing for an optional subdirectory
      * 
-     * If the path starts with '/', it is treated as an absolute path and returned unchanched after
-     * verifying that such file exists. If the path is not absolute, method tries to resolve it
-     * with respect to all defined locations, in a reversed order of their definition. For each
-     * location, provided subdirectory is first added to it, and the resolution is attempted. If
-     * such file is not found, the subdirectory is omitted, and the resolution is attempted again.
-     * Finally, the file is searched for in the current working directory (the one in which the
-     * executable is being run), with and without the subdirectory. If all attempts to find the
-     * file fail, an exception is thrown.
+     * If the path starts with "/", "./", or "../", it is treated as an absolute or explicit
+     * relative path and returned unchanched after verifying that such file exists. Otherwise the
+     * method tries to resolve it with respect to all defined locations, in a reversed order of
+     * their definition. For each location, provided subdirectory is first added to it, and the
+     * resolution is attempted. If such file is not found, the subdirectory is omitted, and the
+     * resolution is attempted again. Finally, the file is searched for in the current working
+     * directory (the one in which the executable is being run), with and without the subdirectory.
+     * If all attempts to find the file fail, an exception is thrown.
      */
     static std::string Resolve(std::string subDir, std::string const &path);
     
