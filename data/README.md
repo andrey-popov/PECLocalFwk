@@ -21,8 +21,8 @@ This directory contains data files organized into several categories:
 
  * `ElectronSF_2016BCD_80Xv2.root` <br />
    Scale factors for efficiencies of electron track reconstruction and tight working point of cut-based ID, scale factors and efficiencies of trigger `Ele32_eta2p1_WPTight_Gsf`. Adapted from [here](https://twiki.cern.ch/twiki/bin/view/CMS/EgammaIDRecipesRun2?rev=34#Efficiencies_and_scale_factors) and [here](https://indico.cern.ch/event/572302/contributions/2316049/). Derived on the ICHEP'16 dataset.
- * `MuonSF_2016BCD_80Xv1.root` <br />
-   Scale factors for efficiencies of muon track reconstruction, tight identification, and tight isolation. Also includes efficiency of triggers `IsoMu22 OR IsoTkMu22` in data. Adapted from [here](https://twiki.cern.ch/twiki/bin/view/CMS/MuonWorkInProgressAndPagResults?rev=16). Trigger efficiencies are mixed for the ICHEP'16 dataset.
+ * `MuonSF_2016BCD_80Xv2.root` <br />
+   Scale factors for efficiencies of muon track reconstruction, tight identification, and tight isolation. Also includes efficiency of triggers `IsoMu22 OR IsoTkMu22` in data. Adapted from [here](https://twiki.cern.ch/twiki/bin/view/CMS/MuonWorkInProgressAndPagResults?rev=16). Trigger efficiencies are mixed for the ICHEP'16 dataset. In addition to the central trigger efficiences, scale factors and efficiencies for `IsoMu24 OR IsoTkMu24` reported [here](https://indico.cern.ch/event/572303/contributions/2329366/) are included.
  * `ElectronSF_2015D_76Xv2.root` <br />
    Scale factors for electron reconstruction, tight working point of cut-based ID, and trigger `Ele23_WPLoose_Gsf`. First two are adapted from [here](https://twiki.cern.ch/twiki/bin/view/CMS/EgammaIDRecipesRun2?rev=16#Electron_efficiencies_and_scale). Trigger scale factors are taken from [this talk](https://indico.cern.ch/event/491510/contributions/2246475/attachments/1310813/1962318/2016.07.18_EGM_Electron-trigger-SF_v2.pdf). The histograms are parameterized with electron transverse momentum and pseudorapidity of the associated supercluster.
  * `MuonSF_2015D_76Xv1.root` <br />
