@@ -40,6 +40,8 @@ LIB_DIR := lib
 # Library built from modules that do not produce shared libraries on their own
 MAIN_LIB_NAME := libmensura.so
 MAIN_LIB_PATH := $(LIB_DIR)/$(MAIN_LIB_NAME)
+MAIN_LIB_LDFLAGS := $(shell root-config --libs) \
+ -L$(BOOST_ROOT)/lib -lboost_filesystem -Wl,-rpath=$(BOOST_ROOT)/lib
 
 
 # Define phony targets
@@ -53,7 +55,7 @@ $(MAIN_LIB_PATH): $(MODULES_STATIC)
 	mkdir -p $(LIB_DIR)
 	rm -f $@
 	$(CC) -shared -Wl,-soname,$(MAIN_LIB_NAME).4 -o $@.4.0 \
-		-Wl,--whole-archive $(MODULE_STATIC_LIBS) -Wl,--no-whole-archive
+		-Wl,--whole-archive $(MODULE_STATIC_LIBS) -Wl,--no-whole-archive $(MAIN_LIB_LDFLAGS)
 	ln -sf $(MAIN_LIB_NAME).4.0 $@.4; ln -sf $(MAIN_LIB_NAME).4 $@
 
 link-libs: $(MODULES_SHARED)

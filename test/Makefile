@@ -18,9 +18,7 @@ endif
 INCLUDE := -I$(MENSURA_INSTALL)/include -I$(shell root-config --incdir)
 OPFLAGS := -O2
 CFLAGS := -Wall -Wextra -std=c++14 $(INCLUDE) $(OPFLAGS)
-LDFLAGS := $(shell root-config --libs) -lTreePlayer -lHistPainter \
- -L$(MENSURA_INSTALL)/lib -lmensura -lPECReader -Wl,-rpath=$(MENSURA_INSTALL)/lib \
- -L$(BOOST_ROOT)/lib -lboost_filesystem -Wl,-rpath=$(BOOST_ROOT)/lib
+LDFLAGS := -L$(MENSURA_INSTALL)/lib -lmensura -lPECReader -Wl,-rpath=$(MENSURA_INSTALL)/lib
 
 
 # Define example and test programs
