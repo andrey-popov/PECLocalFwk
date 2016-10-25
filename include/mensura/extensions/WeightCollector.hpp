@@ -7,6 +7,7 @@
 #include <initializer_list>
 #include <list>
 #include <map>
+#include <vector>
 
 
 /**
@@ -50,6 +51,9 @@ public:
      */
     virtual Plugin *Clone() const override;
     
+    /// Returns the number of registered reweighting plugins
+    unsigned GetNumPlugins() const;
+    
     /**
      * \brief Returns a non-owning pointer to one of the associated reweighting plugins
      * 
@@ -57,6 +61,9 @@ public:
      * with this collector.
      */
     EventWeightPlugin const *GetPlugin(std::string const &name) const;
+    
+    /// Alternative version that accesses reweighting plugin by index
+    EventWeightPlugin const *GetPlugin(unsigned index) const;
     
     /**
      * \brief Computes the nominal weight for the current event
@@ -75,6 +82,9 @@ public:
      */
     double GetWeightDown(std::string const &pluginName, unsigned iVar) const;
     
+    /// Alternative version that accesses reweighting plugin by index
+    double GetWeightDown(unsigned index, unsigned iVar) const;
+    
     /**
      * \brief Computes full event weight with an up systematic variation in the given reweighting
      * plugin
@@ -82,6 +92,9 @@ public:
      * Consult documentation for method GetWeightDown for details.
      */
     double GetWeightUp(std::string const &pluginName, unsigned iVar) const;
+    
+    /// Alternative version that accesses reweighting plugin by index
+    double GetWeightUp(unsigned index, unsigned iVar) const;
     
 private:
     /**
@@ -93,5 +106,8 @@ private:
     
 private:
     /// Associated reweighting plugins
-    std::map<std::string, EventWeightPlugin const *> weightPlugins;
+    std::vector<EventWeightPlugin const *> weightPlugins;
+    
+    /// Map into indices of associated reweighting plugins
+    std::map<std::string, unsigned> weightPluginIndices;
 };

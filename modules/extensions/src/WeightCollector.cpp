@@ -6,42 +6,61 @@
 
 WeightCollector::WeightCollector(std::string const &name,
   std::initializer_list<std::string> const &weightPluginNames /*= {}*/) noexcept:
-    AnalysisPlugin(name)
+    AnalysisPlugin(name),
+    weightPlugins(weightPluginNames.size(), nullptr)
 {
+    unsigned pluginIndex = 0;
+    
     for (auto const &name: weightPluginNames)
-        weightPlugins[name] = nullptr;
+    {
+        weightPluginIndices[name] = pluginIndex;
+        ++pluginIndex;
+    }
 }
 
 
 WeightCollector::WeightCollector(std::initializer_list<std::string> const &weightPluginNames)
   noexcept:
-    AnalysisPlugin("EventWeights")
+    AnalysisPlugin("EventWeights"),
+    weightPlugins(weightPluginNames.size(), nullptr)
 {
+    unsigned pluginIndex = 0;
+    
     for (auto const &name: weightPluginNames)
-        weightPlugins[name] = nullptr;
+    {
+        weightPluginIndices[name] = pluginIndex;
+        ++pluginIndex;
+    }
 }
 
 
 void WeightCollector::AddWeightPlugin(std::string const &name)
 {
-    weightPlugins[name] = nullptr;
+    weightPlugins.emplace_back(nullptr);
+    weightPluginIndices[name] = weightPlugins.size() - 1;
 }
 
 
 void WeightCollector::BeginRun(Dataset const &)
 {
-    for (auto &p: weightPlugins)
+    for (auto &p: weightPluginIndices)
     {
-        p.second = dynamic_cast<EventWeightPlugin const *>(GetDependencyPlugin(p.first));
+        auto const &pluginName = p.first;
+        auto const &pluginIndex = p.second;
+        
+        auto const *plugin =
+          dynamic_cast<EventWeightPlugin const *>(GetDependencyPlugin(pluginName));
         
         // Make sure that dynamic_cast succeeded
-        if (not p.second)
+        if (not plugin)
         {
             std::ostringstream message;
             message << "WeightCollector[\"" << GetName() << "\"]::BeginRun: Plugin \"" <<
-              p.first << "\" cannot be cast to type EventWeightPlugin.";
+              pluginName << "\" cannot be cast to type EventWeightPlugin.";
             throw std::runtime_error(message.str());
         }
+        
+        weightPlugins[pluginIndex] = plugin;
     }
 }
 
@@ -52,11 +71,17 @@ Plugin *WeightCollector::Clone() const
 }
 
 
+unsigned WeightCollector::GetNumPlugins() const
+{
+    return weightPlugins.size();
+}
+
+
 EventWeightPlugin const *WeightCollector::GetPlugin(std::string const &name) const
 {
-    auto const res = weightPlugins.find(name);
+    auto const res = weightPluginIndices.find(name);
     
-    if (res == weightPlugins.end())
+    if (res == weightPluginIndices.end())
     {
         std::ostringstream message;
         message << "WeightCollector[\"" << GetName() << "\"]::GetPlugin: Plugin \"" <<
@@ -64,7 +89,21 @@ EventWeightPlugin const *WeightCollector::GetPlugin(std::string const &name) con
         throw std::runtime_error(message.str());
     }
     
-    return res->second;
+    return weightPlugins[res->second];
+}
+
+
+EventWeightPlugin const *WeightCollector::GetPlugin(unsigned index) const
+{
+    if (index >= weightPlugins.size())
+    {
+        std::ostringstream message;
+        message << "WeightCollector[\"" << GetName() << "\"]::GetPlugin: Plugin index " <<
+          index << " is out of range.";
+        throw std::runtime_error(message.str());
+    }
+    
+    return weightPlugins[index];
 }
 
 
@@ -73,7 +112,7 @@ double WeightCollector::GetWeight() const
     double weight = 1.;
     
     for (auto const &p: weightPlugins)
-        weight *= p.second->GetWeight();
+        weight *= p->GetWeight();
     
     return weight;
 }
@@ -81,15 +120,31 @@ double WeightCollector::GetWeight() const
 
 double WeightCollector::GetWeightDown(std::string const &pluginName, unsigned iVar) const
 {
-    EventWeightPlugin const *pluginShiftedWeight = GetPlugin(pluginName);
+    auto const res = weightPluginIndices.find(pluginName);
+    
+    if (res == weightPluginIndices.end())
+    {
+        std::ostringstream message;
+        message << "WeightCollector[\"" << GetName() << "\"]::GetWeightDown: Plugin \"" <<
+          pluginName << "\" is not known to this collector.";
+        throw std::runtime_error(message.str());
+    }
+    
+    return GetWeightDown(res->second, iVar);
+}
+
+
+double WeightCollector::GetWeightDown(unsigned index, unsigned iVar) const
+{
+    EventWeightPlugin const *pluginShiftedWeight = GetPlugin(index);
     double weight = 1.;
     
     for (auto const &p: weightPlugins)
     {
-        if (p.second == pluginShiftedWeight)
-            weight *= p.second->GetWeightDown(iVar);
+        if (p == pluginShiftedWeight)
+            weight *= p->GetWeightDown(iVar);
         else
-            weight *= p.second->GetWeight();
+            weight *= p->GetWeight();
     }
     
     return weight;
@@ -98,15 +153,31 @@ double WeightCollector::GetWeightDown(std::string const &pluginName, unsigned iV
 
 double WeightCollector::GetWeightUp(std::string const &pluginName, unsigned iVar) const
 {
-    EventWeightPlugin const *pluginShiftedWeight = GetPlugin(pluginName);
+    auto const res = weightPluginIndices.find(pluginName);
+    
+    if (res == weightPluginIndices.end())
+    {
+        std::ostringstream message;
+        message << "WeightCollector[\"" << GetName() << "\"]::GetWeightUp: Plugin \"" <<
+          pluginName << "\" is not known to this collector.";
+        throw std::runtime_error(message.str());
+    }
+    
+    return GetWeightUp(res->second, iVar);
+}
+
+
+double WeightCollector::GetWeightUp(unsigned index, unsigned iVar) const
+{
+    EventWeightPlugin const *pluginShiftedWeight = GetPlugin(index);
     double weight = 1.;
     
     for (auto const &p: weightPlugins)
     {
-        if (p.second == pluginShiftedWeight)
-            weight *= p.second->GetWeightUp(iVar);
+        if (p == pluginShiftedWeight)
+            weight *= p->GetWeightUp(iVar);
         else
-            weight *= p.second->GetWeight();
+            weight *= p->GetWeight();
     }
     
     return weight;
