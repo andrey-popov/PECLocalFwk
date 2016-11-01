@@ -8,3 +8,5 @@ The framework supports multithreaded processing.
 
 Out of the box, the framework supports reading files with events produced by the [PEC-tuples](https://github.com/andrey-popov/PEC-tuples) package.
 However, it is possible to read files of a custom format if user implements appropriate reader plugins.
+
+The framework is documented at [GitHub pages](http://andrey-popov.github.io/mensura/), including doxygen documentation.
