@@ -13,4 +13,4 @@ Out of the box, the framework supports reading files with events produced by the
 However, it is possible to read files of a custom format if user implements appropriate reader plugins.
 
 
-Link to a [test page]({{ site.baseurl }}/test-page).
+Doxygen documentation is provided [here]({{ site.baseurl }}/doxygen/html/index.html).
