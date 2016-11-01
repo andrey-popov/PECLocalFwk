@@ -1,0 +1,9 @@
+# Site settings
+title: Mēnsūra
+description: ""
+baseurl: "" # the subpath of your site, e.g. /blog/
+url: "https://andrey-popov.github.io/mensura/" # the base hostname & protocol for your site
+github_url:  "https://github.com/andrey-popov/mensura/"
+
+# Build settings
+markdown: kramdown
