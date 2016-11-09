@@ -13,15 +13,17 @@
 #include <stdexcept>
 
 
-GenWeightSyst::GenWeightSyst(std::string const name,
-  std::initializer_list<std::pair<unsigned, unsigned>> const &systWeightsIndices_):
+GenWeightSyst::GenWeightSyst(std::string const &name,
+  std::initializer_list<std::pair<unsigned, unsigned>> const &defaultSystWeightsIndices):
     EventWeightPlugin(name),
     generatorReaderName("Generator"), generatorReader(nullptr),
     referenceWeightIndex(0),
-    systWeightsIndices(systWeightsIndices_),
+    systWeightsIndicesCurDataset(nullptr),
     rescaleWeights(false),
     meanWeightsCurDataset(nullptr)
 {
+    systWeightsIndices.emplace(std::piecewise_construct, std::forward_as_tuple("*"),
+      std::forward_as_tuple(defaultSystWeightsIndices));
     EventWeightPlugin::weights.resize(1 + 2 * systWeightsIndices.size(), 1.);
 }
 
@@ -32,12 +34,140 @@ GenWeightSyst::GenWeightSyst(
 {}
 
 
+GenWeightSyst::GenWeightSyst(std::string const &name, std::string const &weightIndicesFile):
+    EventWeightPlugin(name),
+    generatorReaderName("Generator"), generatorReader(nullptr),
+    referenceWeightIndex(0),
+    systWeightsIndicesCurDataset(nullptr),
+    rescaleWeights(false),
+    meanWeightsCurDataset(nullptr)
+{
+    // Create a JSON parser and read file with mean weights
+    std::string const resolvedPath(FileInPath::Resolve(weightIndicesFile));
+    std::ifstream configFile(resolvedPath, std::ifstream::binary);
+    Json::Value root;
+    
+    try
+    {
+        configFile >> root;
+    }
+    catch (Json::Exception const &)
+    {
+        std::ostringstream message;
+        message << "GenWeightSyst[\"" << GetName() << "\"]::GenWeightSyst: " <<
+          "Failed to parse file \"" << resolvedPath << "\". It is not a valid JSON file or "
+          "corrupted.";
+        throw std::runtime_error(message.str());
+    }
+    
+    configFile.close();
+    
+    
+    // Check top-level structure of the file
+    if (not root.isArray())
+    {
+        std::ostringstream message;
+        message << "GenWeightSyst[\"" << GetName() << "\"]::GenWeightSyst: " <<
+          "File \"" << resolvedPath << "\" does not contain a list of samples on its top level.";
+        throw std::logic_error(message.str());
+    }
+    
+    if (root.size() == 0)
+    {
+        std::ostringstream message;
+        message << "GenWeightSyst[\"" << GetName() << "\"]::GenWeightSyst: " <<
+          "List of samples in file \"" << resolvedPath << "\" is empty.";
+        throw std::logic_error(message.str());
+    }
+    
+    
+    // Loop over all samples included in the file
+    for (unsigned iSample = 0; iSample < root.size(); ++iSample)
+    {
+        auto const &sample = root[iSample];
+        
+        if (not sample.isObject())
+        {
+            std::ostringstream message;
+            message << "GenWeightSyst[\"" << GetName() << "\"]::GenWeightSyst: " <<
+              "Sample #" << iSample << " in file \"" << resolvedPath <<
+              "\" does not represent a valid object.";
+            throw std::logic_error(message.str());
+        }
+        
+        
+        // Read dataset ID
+        if (not sample.isMember("datasetId") or not sample["datasetId"].isString())
+        {
+            std::ostringstream message;
+            message << "GenWeightSyst[\"" << GetName() << "\"]::GenWeightSyst: " <<
+              "Sample #" << iSample << " in file \"" << resolvedPath <<
+              "\" does not contain mandatory field \"datasetId\" or the corresponding value "
+              "is not a string.";
+            throw std::logic_error(message.str());
+        }
+        
+        std::string const datasetId(sample["datasetId"].asString());
+        
+        
+        // Read weight indices
+        std::vector<std::pair<unsigned, unsigned>> readWeightPairs;
+        
+        if (not sample.isMember("weightPairs") or not sample["weightPairs"].isArray())
+        {
+            std::ostringstream message;
+            message << "GenWeightSyst[\"" << GetName() << "\"]::GenWeightSyst: " <<
+              "Sample #" << iSample << " in file \"" << resolvedPath <<
+              "\" does not contain mandatory field \"weightPairs\" or the corresponding value "
+              "is not an array.";
+            throw std::logic_error(message.str());
+        }
+        
+        auto const &weightPairs = sample["weightPairs"];
+        
+        for (unsigned iPair = 0; iPair < weightPairs.size(); ++iPair)
+        {
+            auto const &weightPair = weightPairs[iPair];
+            
+            if (not weightPair.isArray() or weightPair.size() != 2)
+            {
+                std::ostringstream message;
+                message << "GenWeightSyst[\"" << GetName() << "\"]::GenWeightSyst: " <<
+                  "Element #" << iPair << " in array \"weightPairs\" for sample #" << iSample <<
+                  " in file \"" << resolvedPath << "\" is not an array of size 2.";
+                throw std::logic_error(message.str());
+            }
+            
+            if (not weightPair[0].isUInt() or not weightPair[1].isUInt())
+            {
+                std::ostringstream message;
+                message << "GenWeightSyst[\"" << GetName() << "\"]::GenWeightSyst: " <<
+                  "Elements of weight pair #" << iPair << " in sample #" << iSample <<
+                  " in file \"" << resolvedPath << "\" are not unsigned integer numbers.";
+                throw std::logic_error(message.str());
+            }
+            
+            
+            readWeightPairs.emplace_back(weightPair[0].asUInt(), weightPair[1].asUInt());
+        }
+        
+        systWeightsIndices.emplace(std::piecewise_construct, std::forward_as_tuple(datasetId),
+          std::forward_as_tuple(readWeightPairs));
+    }
+}
+
+
+GenWeightSyst::GenWeightSyst(std::string const &weightIndicesFile):
+    GenWeightSyst("GenWeightSyst", weightIndicesFile)
+{}
+
+
 GenWeightSyst::GenWeightSyst(GenWeightSyst const &src):
     EventWeightPlugin(src),
     generatorReaderName(src.generatorReaderName),
     generatorReader(nullptr),
     referenceWeightIndex(src.referenceWeightIndex),
-    systWeightsIndices(src.systWeightsIndices),
+    systWeightsIndices(src.systWeightsIndices), systWeightsIndicesCurDataset(nullptr),
     rescaleWeights(src.rescaleWeights),
     meanWeights(src.meanWeights), meanWeightsCurDataset(nullptr)
 {}
@@ -45,25 +175,37 @@ GenWeightSyst::GenWeightSyst(GenWeightSyst const &src):
 
 void GenWeightSyst::BeginRun(Dataset const &dataset)
 {
+    std::string const &datasetID = dataset.GetSourceDatasetID();
+    
     // Save pointer to plugin that provides generator-level weights
     generatorReader =
       dynamic_cast<GeneratorReader const *>(GetDependencyPlugin(generatorReaderName));
     
     
-    if (rescaleWeights)
+    // Determine what weights should be used for current dataset
+    systWeightsIndicesCurDataset = FindWeightIndices(datasetID);
+    
+    
+    
+    // Adjust the vector with weights from the base class. The nominal weight will never be
+    //modified.
+    unsigned const nVars = (systWeightsIndicesCurDataset) ?
+      systWeightsIndicesCurDataset->size() : 0;
+    
+    weights.resize(1 + 2 * nVars);
+    std::fill(weights.begin(), weights.end(), 1.);
+    
+    
+    if (systWeightsIndicesCurDataset and rescaleWeights)
     {
         // Save pointer to a map with mean weights for the current dataset. If the map is not
         //found, no systematics will be evaluated, and the number of weights is adjusted
         //accordingly.
-        auto const res = meanWeights.find(dataset.GetSourceDatasetID());
+        auto const res = meanWeights.find(datasetID);
         
         if (res != meanWeights.end())
         {
-            // Save the pointer and adjust array with weights from the base class. The nominal
-            //weight will never be modified.
             meanWeightsCurDataset = &res->second;
-            weights.resize(1 + 2 * systWeightsIndices.size());
-            std::fill(weights.begin(), weights.end(), 1.);
             
             
             // Make sure that there are mean weights for all specified indices
@@ -73,7 +215,7 @@ void GenWeightSyst::BeginRun(Dataset const &dataset)
                 missingIndex = referenceWeightIndex;
             else
             {
-                for (auto const &p: systWeightsIndices)
+                for (auto const &p: *systWeightsIndicesCurDataset)
                 {
                     if (meanWeightsCurDataset->find(p.first) == meanWeightsCurDataset->end())
                     {
@@ -192,6 +334,14 @@ void GenWeightSyst::NormalizeByMeanWeights(std::string const &dbFileName)
         std::string const datasetId(sample["datasetId"].asString());
         
         
+        // Find what weights need to be read for this dataset. If none, continue to the next
+        //sample.
+        auto const *selectedWeightPairs = FindWeightIndices(datasetId);
+        
+        if (not selectedWeightPairs)
+            continue;
+        
+        
         // Read mean weights
         if (not sample.isMember("meanLHEWeights") or not sample["meanLHEWeights"].isArray())
         {
@@ -213,7 +363,7 @@ void GenWeightSyst::NormalizeByMeanWeights(std::string const &dbFileName)
             {
                 std::ostringstream message;
                 message << "GenWeightSyst[\"" << GetName() << "\"]::NormalizeByMeanWeights: " <<
-                  "Weight #" << iWeight << "in sample #" << iSample << " in file \"" <<
+                  "Weight #" << iWeight << " in sample #" << iSample << " in file \"" <<
                   resolvedPath << "\" does not represent a valid object.";
                 throw std::logic_error(message.str());
             }
@@ -224,7 +374,7 @@ void GenWeightSyst::NormalizeByMeanWeights(std::string const &dbFileName)
             {
                 std::ostringstream message;
                 message << "GenWeightSyst[\"" << GetName() << "\"]::NormalizeByMeanWeights: " <<
-                  "Weight #" << iWeight << "in sample #" << iSample << " in file \"" <<
+                  "Weight #" << iWeight << " in sample #" << iSample << " in file \"" <<
                   resolvedPath << "\" does not contain mandatory field \"index\" or the "
                   "corresponding value is not an unsigned integer number.";
                 throw std::logic_error(message.str());
@@ -236,7 +386,7 @@ void GenWeightSyst::NormalizeByMeanWeights(std::string const &dbFileName)
             // Skip to the next weight if the current index is used in the reweighting
             bool indexUsedForSyst = false;
             
-            for (auto const &p: systWeightsIndices)
+            for (auto const &p: *selectedWeightPairs)
             {
                 if (p.first == index or p.second == index)
                 {
@@ -254,7 +404,7 @@ void GenWeightSyst::NormalizeByMeanWeights(std::string const &dbFileName)
             {
                 std::ostringstream message;
                 message << "GenWeightSyst[\"" << GetName() << "\"]::NormalizeByMeanWeights: " <<
-                  "Weight #" << iWeight << "in sample #" << iSample << " in file \"" <<
+                  "Weight #" << iWeight << " in sample #" << iSample << " in file \"" <<
                   resolvedPath << "\" does not contain mandatory field \"value\" or the "
                   "corresponding value is not a valid number.";
                 throw std::logic_error(message.str());
@@ -267,8 +417,32 @@ void GenWeightSyst::NormalizeByMeanWeights(std::string const &dbFileName)
 }
 
 
+std::vector<std::pair<unsigned, unsigned>> const *GenWeightSyst::FindWeightIndices(
+  std::string const &datasetID) const
+{
+    auto const res = systWeightsIndices.find(datasetID);
+    
+    if (res != systWeightsIndices.end())
+        return &res->second;
+    else
+    {
+        // Check if a default exists
+        auto const defaultEntryIt = systWeightsIndices.find("*");
+        
+        if (defaultEntryIt != systWeightsIndices.end())
+            return &defaultEntryIt->second;
+    }
+    
+    return nullptr;
+}
+
+
 bool GenWeightSyst::ProcessEvent()
 {
+    // Do nothing if no weight indices are defined for the current dataset
+    if (not systWeightsIndicesCurDataset)
+        return true;
+    
     // Treat speciall a case when weight renormalization has been requested, but mean weights are
     //not avaliable for the current dataset. Do not compute any systematic weights.
     if (rescaleWeights and not meanWeightsCurDataset)
@@ -281,10 +455,11 @@ bool GenWeightSyst::ProcessEvent()
     if (meanWeightsCurDataset)
     {
         // Reweighting using weights normalized to their mean values
-        for (unsigned iVar = 0; iVar < systWeightsIndices.size(); ++iVar)
+        double const refWeightMean = meanWeightsCurDataset->at(referenceWeightIndex);
+        
+        for (unsigned iVar = 0; iVar < systWeightsIndicesCurDataset->size(); ++iVar)
         {
-            auto const &indices = systWeightsIndices[iVar];
-            double const refWeightMean = meanWeightsCurDataset->at(referenceWeightIndex);
+            auto const &indices = (*systWeightsIndicesCurDataset)[iVar];
             
             weights.at(1 + 2 * iVar) =
               (generatorReader->GetAltWeight(indices.first) * refWeightMean) /
@@ -297,9 +472,9 @@ bool GenWeightSyst::ProcessEvent()
     else if (not rescaleWeights)
     {
         // Reweighting using unnormalized weights
-        for (unsigned iVar = 0; iVar < systWeightsIndices.size(); ++iVar)
+        for (unsigned iVar = 0; iVar < systWeightsIndicesCurDataset->size(); ++iVar)
         {
-            auto const &indices = systWeightsIndices[iVar];
+            auto const &indices = (*systWeightsIndicesCurDataset)[iVar];
             
             weights.at(1 + 2 * iVar) = generatorReader->GetAltWeight(indices.first) / refWeight;
             weights.at(2 + 2 * iVar) = generatorReader->GetAltWeight(indices.second) / refWeight;

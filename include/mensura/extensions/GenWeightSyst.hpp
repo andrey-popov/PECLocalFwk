@@ -20,6 +20,10 @@ class GeneratorReader;
  * systematic variations based on them. Nominal weight is always unit. Weights are accessed from a
  * GeneratorReader with a default name "Generator".
  * 
+ * Indices of weights are organized in pairs corresponding to "up" and "down" variations. Depending
+ * on what constructor is used, they can be specified in a JSON file, individually for each
+ * dataset, or the same set of weight pairs can be used for all datasets.
+ * 
  * There are three modes of running. In the simplest case weights with specified indices are used
  * directly, after they are divided by a reference weight in the current event (by default given by
  * index 0). Using method NormalizeByMeanWeights, user can request that weights are normalized by
@@ -41,11 +45,30 @@ public:
      * to an independent systematic variation, first weight is for "up" variation, second is for
      * "down" one.
      */
-    GenWeightSyst(std::string const name,
+    GenWeightSyst(std::string const &name,
       std::initializer_list<std::pair<unsigned, unsigned>> const &systWeightsIndices);
     
     /// A short-cut for the above version with a default name "GenWeightSyst"
     GenWeightSyst(std::initializer_list<std::pair<unsigned, unsigned>> const &systWeightsIndices);
+    
+    /**
+     * \brief Constructs a new reweighting plugin with dataset-specific weight indices
+     * 
+     * The pairs of weight indices are read from a JSON file, which provides an independent list
+     * for each dataset ID. The syntax is as in the following example:
+     *   [
+     *     {
+     *       "datasetId": "ttbar-pw_320_hFE",
+     *       "weightPairs": [[1, 2], [3, 6], [4, 8], [240, 231]]
+     *     },
+     *     ...
+     *   ]
+     * A default set of index pairs can be provided as an entry with datasetId "*".
+     */
+    GenWeightSyst(std::string const &name, std::string const &weightIndicesFile);
+    
+    /// A short-cut for the above version with a default name "GenWeightSyst"
+    GenWeightSyst(std::string const &weightIndicesFile);
     
     /// Copy constructor
     GenWeightSyst(GenWeightSyst const &src);
@@ -104,6 +127,15 @@ public:
     
 private:
     /**
+     * \brief Returns a vector of pairs of weight indices for the given dataset ID.
+     * 
+     * The returned pointer refers to an element in map systWeightsIndices. It might be null if
+     * the map does not contain the given dataset ID, and there is no default.
+     */
+    std::vector<std::pair<unsigned, unsigned>> const *FindWeightIndices(
+      std::string const &datasetID) const;
+    
+    /**
      * \brief Computes systematic weights
      * 
      * Reimplemented from Plugin.
@@ -123,10 +155,13 @@ private:
     /**
      * \brief Indices of weights for systematic variations
      * 
-     * In each pair first weight corresponds to "up" variation and second one to the "down"
-     * variation.
+     * Key of the map is the dataset ID. In each pair first weight corresponds to "up" variation
+     * and second one to the "down" variation.
      */
-    std::vector<std::pair<unsigned, unsigned>> systWeightsIndices;
+    std::map<std::string, std::vector<std::pair<unsigned, unsigned>>> systWeightsIndices;
+    
+    /// Indices of weights for systematic variations for the current dataset
+    std::vector<std::pair<unsigned, unsigned>> const *systWeightsIndicesCurDataset;
     
     /// Flag showing if weights should be rescaled by their mean values
     bool rescaleWeights;
