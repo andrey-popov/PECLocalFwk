@@ -31,6 +31,24 @@ public:
         CvsL = 1
     };
     
+    /**
+     * \brief Supported definitions of jet flavour
+     * 
+     * Detailed descriptions of the definitions are provided in [1].
+     * [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagMCTools
+     */
+    enum class FlavourType: unsigned
+    {
+        /// Jet clustering with ghost b- and c-hadrons
+        Hadron = 0,
+        
+        /// Jet clustering with ghost partons
+        Parton = 1,
+        
+        /// Matching to partons in final state of matrix element (the "physics" definition)
+        ME = 2
+    };
+    
 public:
     /// Constructor with no parameters
     Jet() noexcept;
@@ -54,11 +72,11 @@ public:
     /// Sets value of the given c-tagging discriminator
     void SetCTag(CTagAlgo algo, float value);
     
-    /// Sets mass of the secondary vertex associated with the jet
-    void SetSecVertexMass(float mass);
-    
     /// Sets value of the pile-up discriminator
     void SetPileUpID(float pileUpMVA);
+    
+    /// Sets value of the quark-gluon discriminator
+    void SetQGTag(float value);
     
     /// Sets jet area
     void SetArea(float area);
@@ -78,13 +96,12 @@ public:
     void SetPullAngle(float angle);
     
     /**
-     * \brief Sets jet flavour
+     * \brief Sets jet flavour according to multiple definitions
      * 
-     * This method must be used for simulation only. It is assumed that the flavour is determined
-     * with the clustering of ghost hadrons as described in [1].
-     * [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagMCTools
+     * Provided flavours must follow definitions referenced in enumeration FlavourType. This method
+     * should only be used in simulation.
      */
-    void SetFlavour(int flavour);
+    void SetFlavour(int hadronFlavour, int partonFlavour = 0, int meFlavour = 0);
     
     /**
      * \brief Returns full jet energy correction factor
@@ -122,12 +139,8 @@ public:
     /// Returns value of the pile-up discriminator
     float PileUpID() const;
     
-    /**
-     * \brief Returns mass of the secondary vertex associated with the jet
-     * 
-     * When there is no secondary vertex associated with the jet, the method returns 0.
-     */
-    float SecVertexMass() const;
+    /// Returns value of the quark-gluon discriminator
+    float QGTag() const;
     
     /// Returns jet area
     float Area() const;
@@ -152,13 +165,8 @@ public:
      */
     float PullAngle() const;
     
-    /**
-     * \brief Returns jet flavour
-     * 
-     * Expected to return zero for real data. If the flavour of a jet in a simulated event is
-     * undefined, a zero is returned.
-     */
-    int Flavour() const;
+    /// Returns jet flavour of the requested type
+    int Flavour(FlavourType type = FlavourType::Hadron) const;
     
 private:
     /**
@@ -185,11 +193,11 @@ private:
     /// Values of b-tagging  and c-tagging discriminators
     Float_t bTags[2], cTags[2];
     
-    /// Mass of the secondary vertex associated to the jet (if any), GeV/c^2
-    Float_t secVertexMass;
-    
     /// Value of an MVA discriminator against pile-up
     Float_t pileUpMVA;
+    
+    /// Value of quark-gluon discriminator
+    Float_t qgTag;
     
     /// Jet area
     Float_t area;
@@ -208,7 +216,14 @@ private:
      */
     Float_t pullAngle;
     
-    /// Jet flavour
-    Char_t flavour;
+    /**
+     * \brief Jet flavours according to multiple definitions, which are encoded in a 16-bit number
+     * 
+     * Flavour according to each definition is represented by a group of four bits. The number they
+     * form is set to 15 for gluons, flavour + 6 for quarks, and remains 0 for unidentified
+     * flavour. Starting from lower bits, definitions are written in the following order: hadron,
+     * parton, and ME parton flavour. They are described in enumeration FlavourType.
+     */
+    UShort_t flavours;
 };
 }  // end of namespace pec

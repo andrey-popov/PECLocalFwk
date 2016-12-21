@@ -97,7 +97,6 @@ void PECJetMETReader::BeginRun(Dataset const &)
     if (systType != SystType::JER)
         tree->SetBranchStatus("jets.jerUncertainty", false);
     
-    tree->SetBranchStatus("jets.secVertexMass", false);
     tree->SetBranchStatus("jets.charge", false);
     tree->SetBranchStatus("jets.pullAngle", false);
     
@@ -327,15 +326,15 @@ bool PECJetMETReader::ProcessEvent()
     switch (systType)
     {
         case SystType::JEC:
-            metIndex = (systDirection > 0) ? 2 : 3;
+            metIndex = (systDirection > 0) ? 1 : 2;
             break;
         
         case SystType::JER:
-            metIndex = (systDirection > 0) ? 4 : 5;
+            metIndex = (systDirection > 0) ? 3 : 4;
             break;
         
         case SystType::METUncl:
-            metIndex = (systDirection > 0) ? 6 : 7;
+            metIndex = (systDirection > 0) ? 5 : 6;
             break;
         
         default:

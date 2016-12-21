@@ -1,17 +1,19 @@
 #include <mensura/PECReader/Jet.hpp>
 
+#include <cstdlib>
 #include <stdexcept>
 
 
 pec::Jet::Jet() noexcept:
     CandidateWithID(),
     corrFactor(0), jecUncertainty(0), jerUncertainty(0),
-    bTags{0, 0}, cTags{0, 0}, secVertexMass(0),
+    bTags{0, 0}, cTags{0, 0},
     pileUpMVA(0),
+    qgTag(0),
     area(0),
     charge(0),
     pullAngle(0),
-    flavour(0)
+    flavours(0)
 {}
 
 
@@ -22,12 +24,12 @@ void pec::Jet::Reset()
     corrFactor = 0;
     jecUncertainty = jerUncertainty = 0;
     bTags[0] = bTags[1] = cTags[0] = cTags[1] = 0;
-    secVertexMass = 0;
     pileUpMVA = 0;
+    qgTag = 0;
     area = 0;
     charge = 0;
     pullAngle = 0;
-    flavour = 0;
+    flavours = 0;
 }
 
 
@@ -61,20 +63,15 @@ void pec::Jet::SetCTag(CTagAlgo algo, float value)
 }
 
 
-void pec::Jet::SetSecVertexMass(float mass)
-{
-    // The mass is set to a negative value when there is no secondary vertex associated with the
-    //jet. In this case reset the mass to zero to allow a better compression.
-    if (mass < 0.)
-        mass = 0.;
-    
-    secVertexMass = mass;
-}
-
-
 void pec::Jet::SetPileUpID(float pileUpMVA_)
 {
     pileUpMVA = pileUpMVA_;
+}
+
+
+void pec::Jet::SetQGTag(float value)
+{
+    qgTag = value;
 }
 
 
@@ -96,9 +93,38 @@ void pec::Jet::SetPullAngle(float angle)
 }
 
 
-void pec::Jet::SetFlavour(int flavour_)
+void pec::Jet::SetFlavour(int hadronFlavour, int partonFlavour /*= 0*/, int meFlavour /*= 0*/)
 {
-    flavour = flavour_;
+    if ((std::abs(hadronFlavour) > 5 and hadronFlavour != 21) or
+      (std::abs(partonFlavour) > 5 and partonFlavour != 21) or
+      (std::abs(meFlavour) > 5 and meFlavour != 21))
+        throw std::runtime_error("Jet::SetFlavour: Illegal value for jet flavour is given.");
+    
+    
+    unsigned hadronFlavourEncoded, partonFlavourEncoded, meFlavourEncoded;
+    
+    if (hadronFlavour == 21)
+        hadronFlavourEncoded = 0xF;
+    else if (hadronFlavour != 0)
+        hadronFlavourEncoded = hadronFlavour + 6;
+    else
+        hadronFlavourEncoded = 0;
+    
+    if (partonFlavour == 21)
+        partonFlavourEncoded = 0xF;
+    else if (partonFlavour != 0)
+        partonFlavourEncoded = partonFlavour + 6;
+    else
+        partonFlavourEncoded = 0;
+    
+    if (meFlavour == 21)
+        meFlavourEncoded = 0xF;
+    else if (meFlavour != 0)
+        meFlavourEncoded = meFlavour + 6;
+    else
+        meFlavourEncoded = 0;
+    
+    flavours = hadronFlavourEncoded + (partonFlavourEncoded<<4) + (meFlavourEncoded<<8);
 }
 
 
@@ -132,15 +158,15 @@ float pec::Jet::CTag(CTagAlgo algo) const
 }
 
 
-float pec::Jet::SecVertexMass() const
-{
-    return secVertexMass;
-}
-
-
 float pec::Jet::PileUpID() const
 {
     return pileUpMVA;
+}
+
+
+float pec::Jet::QGTag() const
+{
+    return qgTag;
 }
 
 
@@ -162,7 +188,14 @@ float pec::Jet::PullAngle() const
 }
 
 
-int pec::Jet::Flavour() const
+int pec::Jet::Flavour(FlavourType type /*= FlavourType::Hadron*/) const
 {
-    return flavour;
+    unsigned const encodedFlavour = flavours>>(4 * unsigned(type)) & 0xF;
+    
+    if (encodedFlavour == 0xF)
+        return 21;
+    else if (encodedFlavour == 0)
+        return 0;
+    else
+        return encodedFlavour - 6;
 }
