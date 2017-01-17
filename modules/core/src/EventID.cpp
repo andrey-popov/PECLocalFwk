@@ -2,13 +2,14 @@
 
 
 EventID::EventID():
-    runNumber(0), lumiBlockNumber(0), eventNumber(0)
+    runNumber(0), lumiBlockNumber(0), eventNumber(0), bxNumber(0)
 {}
 
 
 EventID::EventID(unsigned long runNumber_, unsigned long lumiBlockNumber_,
- unsigned long eventNumber_):
-    runNumber(runNumber_), lumiBlockNumber(lumiBlockNumber_), eventNumber(eventNumber_)
+  unsigned long eventNumber_, unsigned bxNumber_ /*= 0*/):
+    runNumber(runNumber_), lumiBlockNumber(lumiBlockNumber_), eventNumber(eventNumber_),
+    bxNumber(bxNumber_)
 {}
 
 
@@ -19,11 +20,12 @@ EventID::EventID(unsigned long runNumber_, bool minimal /*= true*/)
 
 
 void EventID::Set(unsigned long runNumber_, unsigned long lumiBlockNumber_,
- unsigned long eventNumber_)
+  unsigned long eventNumber_, unsigned bxNumber_ /*= 0*/)
 {
     runNumber = runNumber_;
     lumiBlockNumber = lumiBlockNumber_;
     eventNumber = eventNumber_;
+    bxNumber = bxNumber_;
 }
 
 
@@ -84,4 +86,10 @@ unsigned long EventID::LumiBlock() const
 unsigned long EventID::Event() const
 {
     return eventNumber;
+}
+
+
+unsigned EventID::BunchCrossing() const
+{
+    return bxNumber;
 }

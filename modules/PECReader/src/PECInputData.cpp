@@ -207,7 +207,8 @@ bool PECInputData::ProcessEvent()
     ++nextEvent;
     
     // Translate the ID from the storage format to the standard format of the framework
-    eventID.Set(bfEventID.RunNumber(), bfEventID.LumiSectionNumber(), bfEventID.EventNumber());
+    eventID.Set(bfEventID.RunNumber(), bfEventID.LumiSectionNumber(), bfEventID.EventNumber(),
+      bfEventID.BunchCrossing());
     
     
     // Debug output

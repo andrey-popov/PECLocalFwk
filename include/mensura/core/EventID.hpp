@@ -18,8 +18,8 @@ public:
     EventID();
     
     /// Constructor to specify the ID
-    EventID(unsigned long runNumber_, unsigned long lumiBlockNumber_,
-     unsigned long eventNumber_);
+    EventID(unsigned long runNumber, unsigned long lumiBlockNumber, unsigned long eventNumber,
+      unsigned bxNumber = 0);
     
     /**
      * \brief Constructor from run number solely
@@ -36,8 +36,8 @@ public:
 
 public:
     /// Sets the ID
-    void Set(unsigned long runNumber_, unsigned long lumiBlockNumber_,
-     unsigned long eventNumber_);
+    void Set(unsigned long runNumber, unsigned long lumiBlockNumber, unsigned long eventNumber,
+      unsigned bxNumber = 0);
     
     /**
      * \brief Sets the ID with the run number only
@@ -68,9 +68,18 @@ public:
     
     /// Get the event number
     unsigned long Event() const;
+    
+    /**
+     * \brief Returns bunch crossing number
+     * 
+     * In case of simulation or if the bunch crossing number was not provided in the first place,
+     * returns zero.
+     */
+    unsigned BunchCrossing() const;
 
 private:
     unsigned long runNumber;  ///< The run number
     unsigned long lumiBlockNumber;  ///< The luminosity block number
     unsigned long eventNumber;  ///< The event number
+    unsigned bxNumber;  ///< Bunch crossing number
 };
