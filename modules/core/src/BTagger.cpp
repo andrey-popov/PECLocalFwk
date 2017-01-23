@@ -28,6 +28,9 @@ std::string BTagger::AlgorithmToTextCode(Algorithm algo)
         case Algorithm::CMVA:
             return "cMVAv2";
         
+        case Algorithm::DeepCSV:
+            return "DeepCSV";
+        
         default:
             throw std::runtime_error("BTagger::AlgorithmToTextCode: Unsupported algorithm code "s +
               std::to_string(unsigned(algo)) + ".");

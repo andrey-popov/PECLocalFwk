@@ -18,9 +18,10 @@ public:
     /// Supported b-tagging algorithms
     enum class Algorithm: unsigned
     {
-        CSV,  ///< Combined secondary vertex, v2
-        JP,   ///< Jet probability
-        CMVA  ///< Combined MVA, v2
+        CSV,     ///< Combined secondary vertex, v2
+        JP,      ///< Jet probability
+        CMVA,    ///< Combined MVA, v2
+        DeepCSV  ///< CSV with DeepNN
     };
     
     /// Supported working points for b-tagging algorithms

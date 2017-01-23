@@ -261,6 +261,9 @@ bool PECJetMETReader::ProcessEvent()
         
         jet.SetBTag(BTagger::Algorithm::CSV, j.BTag(pec::Jet::BTagAlgo::CSV));
         jet.SetBTag(BTagger::Algorithm::CMVA, j.BTag(pec::Jet::BTagAlgo::CMVA));
+        jet.SetBTag(BTagger::Algorithm::DeepCSV,
+          j.BTagDNN(pec::Jet::BTagDNNType::BB) + j.BTagDNN(pec::Jet::BTagDNNType::B));
+        
         jet.SetArea(j.Area());
         // jet.SetCharge(j.Charge());
         // jet.SetPullAngle(j.PullAngle());
