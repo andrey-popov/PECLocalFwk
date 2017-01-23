@@ -91,7 +91,8 @@ bool PECLeptonReader::ProcessEvent()
         
         // Further selection for a tight electron
         if (not l.BooleanID(3) /* "tight" cut-based ID */ or
-          (absEtaSC > 1.4442 and absEtaSC < 1.5660) /* EB-EE gap */)
+          (absEtaSC > 1.4442 and absEtaSC < 1.5660) /* EB-EE gap */ or
+          not l.TestBit(0) /* loose selection on impact parameters */)
             continue;
         
         leptons.push_back(lepton);
