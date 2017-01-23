@@ -118,7 +118,7 @@ double BTagEffService::GetEfficiency(BTagger const &bTagger, double pt, double e
 
 double BTagEffService::GetEfficiency(BTagger const &bTagger, Jet const &jet)  const
 {
-    return GetEfficiency(bTagger, jet.Pt(), jet.Eta(), jet.GetParentID());
+    return GetEfficiency(bTagger, jet.Pt(), jet.Eta(), jet.Flavour(Jet::FlavourType::Hadron));
 }
 
 

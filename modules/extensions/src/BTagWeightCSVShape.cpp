@@ -103,7 +103,7 @@ bool BTagWeightCSVShape::ProcessEvent()
         
         
         // Find the histogram corresponding to the flavour of the current jet
-        unsigned flavour = std::abs(jet.GetParentID());
+        unsigned flavour = std::abs(jet.Flavour(Jet::FlavourType::Hadron));
         
         if (flavour == 21 or flavour < 4)
             flavour = 0;
@@ -112,7 +112,8 @@ bool BTagWeightCSVShape::ProcessEvent()
         
         if (histIt == csvScaleFactors.end())
             throw std::runtime_error("BTagWeightCSVShape::ProcessEvent: Cannot find scale "s +
-              "factors for jet flavour " + std::to_string(jet.GetParentID()) + ".");
+              "factors for jet flavour " + std::to_string(jet.Flavour(Jet::FlavourType::Hadron)) +
+              ".");
         
         
         // Update the event weight

@@ -171,7 +171,7 @@ int Lepton::Charge() const noexcept
 Jet::Jet() noexcept:
     Candidate(),
     rawMomentumSF(0.),
-    parentPDGID(0),
+    flavours{0, 0, 0},
     charge(-10.), pullAngle(-10.),
     puDiscriminator(0.),
     matchedGenJet(nullptr)
@@ -181,7 +181,7 @@ Jet::Jet() noexcept:
 Jet::Jet(TLorentzVector const &correctedP4) noexcept:
     Candidate(correctedP4),
     rawMomentumSF(0.),
-    parentPDGID(0),
+    flavours{0, 0, 0},
     charge(-10.), pullAngle(-10.),
     puDiscriminator(0.),
     matchedGenJet(nullptr)
@@ -191,7 +191,7 @@ Jet::Jet(TLorentzVector const &correctedP4) noexcept:
 Jet::Jet(TLorentzVector const &rawP4, double corrSF) noexcept:
     Candidate(rawP4 * corrSF),
     rawMomentumSF(1. / corrSF),
-    parentPDGID(0),
+    flavours{0, 0, 0},
     charge(-10.), pullAngle(-10.),
     puDiscriminator(0.),
     matchedGenJet(nullptr)
@@ -213,13 +213,28 @@ void Jet::SetBTag(BTagger::Algorithm algo, double value) noexcept
 
 void Jet::SetParentID(int pdgID) noexcept
 {
-    parentPDGID = pdgID;
+    SetFlavour(FlavourType::Hadron, pdgID);
 }
 
 
 void Jet::SetCharge(double charge_) noexcept
 {
     charge = charge_;
+}
+
+
+void Jet::SetFlavour(Jet::FlavourType type, int flavour)
+{
+    try
+    {
+        flavours.at(unsigned(type)) = flavour;
+    }
+    catch (std::out_of_range const &)
+    {
+        std::ostringstream message;
+        message << "Jet::SetFlavour: Unknown jet flavour (" << unsigned(type) << ") is given.";
+        throw std::runtime_error(message.str());
+    }
 }
 
 
@@ -276,9 +291,24 @@ double Jet::JP() const
 }
 
 
+int Jet::Flavour(Jet::FlavourType type /*= FlavourType::Hadron*/) const
+{
+    try
+    {
+        return flavours.at(unsigned(type));
+    }
+    catch (std::out_of_range const &)
+    {
+        std::ostringstream message;
+        message << "Jet::Flavour: Unknown jet flavour (" << unsigned(type) << ") is given.";
+        throw std::runtime_error(message.str());
+    }
+}
+
+
 int Jet::GetParentID() const noexcept
 {
-    return parentPDGID;
+    return Flavour(FlavourType::Hadron);
 }
 
 

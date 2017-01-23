@@ -136,7 +136,7 @@ double BTagSFService::GetScaleFactor(double pt, double eta, int flavour,
 
 double BTagSFService::GetScaleFactor(Jet const &jet, Variation var /*= Variation::Nominal*/) const
 {
-    return GetScaleFactor(jet.Pt(), jet.Eta(), jet.GetParentID(), var);
+    return GetScaleFactor(jet.Pt(), jet.Eta(), jet.Flavour(Jet::FlavourType::Hadron), var);
 }
 
 

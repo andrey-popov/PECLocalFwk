@@ -269,7 +269,9 @@ bool PECJetMETReader::ProcessEvent()
         // jet.SetPullAngle(j.PullAngle());
         jet.SetPileUpID(j.PileUpID());
         
-        jet.SetParentID(j.Flavour());
+        jet.SetFlavour(Jet::FlavourType::Hadron, j.Flavour(pec::Jet::FlavourType::Hadron));
+        jet.SetFlavour(Jet::FlavourType::Parton, j.Flavour(pec::Jet::FlavourType::Parton));
+        jet.SetFlavour(Jet::FlavourType::ME, j.Flavour(pec::Jet::FlavourType::ME));
         
         
         // Perform matching to generator-level jets if the corresponding reader is available. Choose

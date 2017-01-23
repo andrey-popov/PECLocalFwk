@@ -10,6 +10,7 @@
 
 #include <TLorentzVector.h>
 
+#include <array>
 #include <map>
 #include <unordered_map>
 
@@ -153,6 +154,25 @@ private:
 class Jet: public Candidate
 {
 public:
+    /**
+     * \brief Definitions of jet flavour
+     * 
+     * Detailed descriptions of the definitions are provided in [1].
+     * [1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideBTagMCTools
+     */
+    enum class FlavourType: unsigned
+    {
+        /// Jet clustering with ghost b- and c-hadrons
+        Hadron = 0,
+        
+        /// Jet clustering with ghost partons
+        Parton = 1,
+        
+        /// Matching to partons in final state of matrix element (the "physics" definition)
+        ME = 2
+    };
+    
+public:
     /// Default constructor
     Jet() noexcept;
     
@@ -179,11 +199,15 @@ public:
     /// Sets value of a b-tagging discriminator
     void SetBTag(BTagger::Algorithm algo, double value) noexcept;
     
-    /// Sets the parent's PDF ID
+    /// Sets "hadron" flavour of the jet
+    [[deprecated("Use Jet::SetFlavour instead")]]
     void SetParentID(int pdgID) noexcept;
     
     /// Sets the electric charge
     void SetCharge(double charge) noexcept;
+    
+    /// Sets jet flavour according to the given definition
+    void SetFlavour(FlavourType type, int flavour);
     
     /// Sets jet pull angle
     void SetPullAngle(double pullAngle) noexcept;
@@ -211,7 +235,16 @@ public:
     [[deprecated("Use Jet::BTag instead")]]
     double JP() const;
     
-    /// Gets the parent's PDG ID
+    /**
+     * \brief Returns jet flavour according to the requested definition
+     * 
+     * A value of zero is returned if flavour of the jet is not identified or has never been
+     * filled.
+     */
+    int Flavour(FlavourType type = FlavourType::Hadron) const;
+    
+    /// Returns "hadron" flavour of the jet
+    [[deprecated("Use Jet::Flavour instead")]]
     int GetParentID() const noexcept;
     
     /// Gets the electric charge
@@ -240,8 +273,12 @@ private:
     /// Values of b-tagging discriminators
     std::map<BTagger::Algorithm, double> bTagValues;
     
-    /// PDG ID of the parent
-    int parentPDGID;
+    /**
+     * \brief Jet flavours
+     * 
+     * The order is the same as in the enumeration FlavourType.
+     */
+    std::array<int, 3> flavours;
     
     /// Electric charge
     double charge;

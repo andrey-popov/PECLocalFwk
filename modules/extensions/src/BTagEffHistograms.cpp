@@ -131,7 +131,7 @@ bool BTagEffHistograms::ProcessEvent()
     for (auto const &j: jetPlugin->GetJets())
     {
         // Determine jet flavour. All light-flavour jets are considered together
-        unsigned flavour = std::abs(j.GetParentID());
+        unsigned flavour = std::abs(j.Flavour(Jet::FlavourType::Hadron));
         
         if (flavour != 4 and flavour != 5)
             flavour = 0;

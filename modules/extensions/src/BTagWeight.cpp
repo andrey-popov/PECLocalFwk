@@ -88,7 +88,8 @@ double BTagWeight::CalcWeight(Variation var /*=Variation::Nominal*/) const
         
         // Precalculate b-tagging scale factor for the current jet
         double const sf =
-          bTagSFService->GetScaleFactor(jet, TranslateVariation(var, jet.GetParentID()));
+          bTagSFService->GetScaleFactor(jet,
+            TranslateVariation(var, jet.Flavour(Jet::FlavourType::Hadron)));
         
         
         // Update the weight
