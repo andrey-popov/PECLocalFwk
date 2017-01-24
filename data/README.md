@@ -5,8 +5,10 @@ This directory contains data files organized into several categories:
 
 ## BTag
 
+ * `BTagWP_80Xv2.json` <br />
+   Thresholds that define standard working points for b-tagging algorithms for re-reconstruction of 2016 data as given [here](https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation80XReReco?rev=3).
  * `BTagWP_80Xv1.json` <br />
-   Thresholds that define standard working points for b-tagging algorithms as given [here](https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation80X?rev=18).
+   Thresholds that define standard working points for b-tagging algorithms for promt reconstruction of 2016 data as given [here](https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation80X?rev=18).
  * `BTagEff_80Xv1.root` <br />
    Efficiencies of b-tagging with cMVAv2 and CSVv2 algorithms. Measured in POWHEG ttbar sample in `CMSSW_8_0_X`. The event selection targets l+jets signature and asks for at least for jets with pt > 30 GeV and |eta| < 2.4.
  * `BTagSF_cMVAv2_80Xv1.csv` <br />

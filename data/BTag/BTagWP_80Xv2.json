@@ -1,0 +1,22 @@
+// Working points are taken from [1]
+// [1] https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation80XReReco?rev=3
+{
+  "CSVv2":
+  {
+    "L": 0.5426,
+    "M": 0.8484,
+    "T": 0.9535
+  },
+  "cMVAv2":
+  {
+    "L": -0.5884,
+    "M":  0.4432,
+    "T":  0.9432
+  },
+  "DeepCSV":
+  {
+    "L": 0.2219,
+    "M": 0.6324,
+    "T": 0.8958
+  }
+}
