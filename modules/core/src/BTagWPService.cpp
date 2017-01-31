@@ -50,7 +50,8 @@ BTagWPService::BTagWPService(std::string const &name, std::string const &dataFil
     
     // Set thresholds
     for (auto const &t: {std::make_tuple(BTagger::Algorithm::CSV, "CSVv2"),
-      std::make_tuple(BTagger::Algorithm::CMVA, "cMVAv2")})
+      std::make_tuple(BTagger::Algorithm::CMVA, "cMVAv2"),
+      std::make_tuple(BTagger::Algorithm::DeepCSV, "DeepCSV")})
     {
         auto const &bTagAlgo = std::get<0>(t);
         auto const &bTagLabel = std::get<1>(t);
