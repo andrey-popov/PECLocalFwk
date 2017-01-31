@@ -25,6 +25,10 @@ This directory contains data files organized into several categories:
 
 ## LeptonSF
 
+ * `ElectronSF_2016_80Xv1.root`, `ElectronSF_2016_80Xv1_BtoF.root`, `ElectronSF_2016_80Xv1_GtoH.root` <br />
+   Scale factors for efficiencies of electron track reconstruction, tight working point of cut-based ID, and trigger `Ele32_eta2p1_WPTight_Gsf`. First two adapted from [here](https://twiki.cern.ch/twiki/bin/view/CMS/EgammaIDRecipesRun2?rev=38#Electron_efficiencies_and_scale), trigger scale factors taken from [here](https://indico.cern.ch/event/609479/contributions/2457323/). Only trigger scale factors differ between the three files.
+ * `MuonSF_2016_80Xv1.root`, `MuonSF_2016_80Xv1_BtoF.root`, `MuonSF_2016_80Xv1_GtoH.root` <br />
+   Scale factors for efficiencies of tight muon ID, tight isolation, and triggers `IsoMu22 OR IsoTkMu22`. Adapted from [here](https://twiki.cern.ch/twiki/bin/view/CMS/MuonWorkInProgressAndPagResults?rev=22). In runs B to F use trigger scale factors measured in run F only since measurements for earlier data are not available yet.
  * `ElectronSF_2016BCD_80Xv2.root` <br />
    Scale factors for efficiencies of electron track reconstruction and tight working point of cut-based ID, scale factors and efficiencies of trigger `Ele32_eta2p1_WPTight_Gsf`. Adapted from [here](https://twiki.cern.ch/twiki/bin/view/CMS/EgammaIDRecipesRun2?rev=34#Efficiencies_and_scale_factors) and [here](https://indico.cern.ch/event/572302/contributions/2316049/). Derived on the ICHEP'16 dataset.
  * `MuonSF_2016BCD_80Xv2.root` <br />
