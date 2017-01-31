@@ -33,7 +33,7 @@ This directory contains data files organized into several categories:
 
 ## PileUp
 
- * `simPUProfiles_Moriond17.root` <br />
+ * `simPUProfiles_80Xv2.root` <br />
    File with simulated pileup profiles for the `RunIISummer16` campaign. Only includes the nominal profile taken from [this configuration](https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_24/SimGeneral/MixingModule/python/mix_2016_25ns_Moriond17MC_PoissonOOTPU_cfi.py).
  * `simPUProfiles_80X.root` <br />
    File with simulated pileup profiles for the `RunIISpring16DR80` campaign. Only includes the nominal profile taken from [this configuration](https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_8/SimGeneral/MixingModule/python/mix_2016_25ns_SpringMC_PUScenarioV1_PoissonOOTPU_cfi.py).
