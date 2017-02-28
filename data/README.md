@@ -37,6 +37,8 @@ This directory contains data files organized into several categories:
 
 ## PileUp
 
+ * `Run2016_SingleMuon_v1_finebin.root`, `Run2016_SingleElectron_v1_finebin.root` <br />
+   Pileup profiles for 2016 dataset. Computed for certified data included in `SingleMuon` and `SingleElectron` PD, assuming an effective cross section of 69.2 mb.
  * `simPUProfiles_80Xv2.root` <br />
    File with simulated pileup profiles for the `RunIISummer16` campaign. Only includes the nominal profile taken from [this configuration](https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_24/SimGeneral/MixingModule/python/mix_2016_25ns_Moriond17MC_PoissonOOTPU_cfi.py).
  * `simPUProfiles_80X.root` <br />
