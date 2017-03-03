@@ -7,16 +7,10 @@ This directory contains data files organized into several categories:
 
  * `BTagWP_80Xv2.json` <br />
    Thresholds that define standard working points for b-tagging algorithms for re-reconstruction of 2016 data as given [here](https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation80XReReco?rev=3).
- * `BTagWP_80Xv1.json` <br />
-   Thresholds that define standard working points for b-tagging algorithms for promt reconstruction of 2016 data as given [here](https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation80X?rev=18).
  * `BTagEff_80Xv3.root` <br />
    Efficiencies of b-tagging with cMVAv2, CSVv2, and DeepCSV algorithms. Measured in POWHEG ttbar sample from `Summer16` campaign. The event selection targets l+jets signature and asks for at least four jets with pt > 20 GeV and |eta| < 2.4.
- * `BTagEff_80Xv1.root` <br />
-   Efficiencies of b-tagging with cMVAv2 and CSVv2 algorithms. Measured in POWHEG ttbar sample in `CMSSW_8_0_X`. The event selection targets l+jets signature and asks for at least four jets with pt > 30 GeV and |eta| < 2.4.
  * `BTagSF_cMVAv2_80Xv2.csv`, `BTagSF_cMVAv2_80Xv2_BtoF.csv`, `BTagSF_cMVAv2_80Xv2_GtoH.csv` <br />
    Scale factors for b-tagging with cMVAv2 algorithm, as measured with 2016 data and `Spring16` simulation. The files are copied from [this page](https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation80XReReco?rev=5).
- * `BTagSF_cMVAv2_80Xv1.csv` <br />
-   Scale factors for b-tagging with cMVAv2 algorithm, as measured in `CMSSW_8_0_X`. The file is copied from [this page](https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation80X?rev=18#Supported_Algorithms_and_Operati).
  * `BTagEff_76X_v1.root` <br />
    Efficiencies of b-tagging with CSVv2 algorithm, which are measured in 76X simulation. The event selection includes standard requirements on leptons, MtW > 50 GeV, and at least four jets with pt > 30 GeV and |eta| < 2.4.
  * `BTagSF_76X_CSVv2.csv` <br />
