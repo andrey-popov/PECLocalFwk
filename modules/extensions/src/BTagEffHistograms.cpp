@@ -3,7 +3,7 @@
 #include <mensura/core/BTagWPService.hpp>
 #include <mensura/core/JetMETReader.hpp>
 #include <mensura/core/Processor.hpp>
-#include <mensura/extensions/PileUpWeight.hpp>
+#include <mensura/extensions/WeightCollector.hpp>
 #include <mensura/extensions/TFileService.hpp>
 
 #include <cmath>
@@ -19,7 +19,7 @@ BTagEffHistograms::BTagEffHistograms(std::string const &name, BTagger::Algorithm
     fileServiceName("TFileService"), fileService(nullptr),
     jetPluginName("JetMET"), jetPlugin(nullptr),
     bTagWPServiceName("BTagWP"), bTagWPService(nullptr),
-    puWeightPluginName("PileUpWeight"), puWeightPlugin(nullptr)
+    weightCollectorName("EventWeights"), weightCollector(nullptr)
 {
     Initialize();
 }
@@ -32,7 +32,7 @@ BTagEffHistograms::BTagEffHistograms(BTagger::Algorithm algo_,
     fileServiceName("TFileService"), fileService(nullptr),
     jetPluginName("JetMET"), jetPlugin(nullptr),
     bTagWPServiceName("BTagWP"), bTagWPService(nullptr),
-    puWeightPluginName("PileUpWeight"), puWeightPlugin(nullptr)
+    weightCollectorName("EventWeights"), weightCollector(nullptr)
 {
     Initialize();
 }
@@ -49,7 +49,8 @@ void BTagEffHistograms::BeginRun(Dataset const &)
     bTagWPService = dynamic_cast<BTagWPService const *>(GetMaster().GetService(bTagWPServiceName));
     
     jetPlugin = dynamic_cast<JetMETReader const *>(GetDependencyPlugin(jetPluginName));
-    puWeightPlugin = dynamic_cast<PileUpWeight const *>(GetDependencyPlugin(puWeightPluginName));
+    weightCollector =
+      dynamic_cast<WeightCollector const *>(GetDependencyPlugin(weightCollectorName));
     
     
     // Construct the histograms for all jet flavours
@@ -124,7 +125,7 @@ void BTagEffHistograms::Initialize()
 bool BTagEffHistograms::ProcessEvent()
 {
     // Calculate event weight
-    double const weight = puWeightPlugin->GetWeight();
+    double const weight = weightCollector->GetWeight();
     
     
     // Loop over reconstructed jets

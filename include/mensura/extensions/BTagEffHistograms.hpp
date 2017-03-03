@@ -15,8 +15,8 @@
 
 class BTagWPService;
 class JetMETReader;
-class PileUpWeight;
 class TFileService;
+class WeightCollector;
 
 
 /**
@@ -31,10 +31,10 @@ class TFileService;
  * By default, the histograms have very fine binning. It is foreseen that bins will be merged when
  * the efficiencies are calculated.
  * 
- * This plugin only accounts for the event weight due to pile-up.
+ * The histograms are filled with nominal event weight read from a WeightCollector.
  * 
  * This plugin depends on a number of services and plugins: BTagWPService (default name "BTagWP"),
- * TFileService ("TFileService"), JetMETReader("JetMET"), PileUpWeight ("PileUpWeight").
+ * TFileService ("TFileService"), JetMETReader("JetMET"), WeightCollector("EventWeights").
  */
 class BTagEffHistograms: public AnalysisPlugin
 {
@@ -148,11 +148,11 @@ private:
     /// Non-owning pointer to the service that provides b-tagging working points
     BTagWPService const *bTagWPService;
     
-    /// Name of the plugin that performs pile-up reweighting
-    std::string puWeightPluginName;
+    /// Name of the weight collector
+    std::string weightCollectorName;
     
-    /// Non-owning pointer to the plugin that performs pile-up reweighting
-    PileUpWeight const *puWeightPlugin;
+    /// Non-owning pointer to the weight collector
+    WeightCollector const *weightCollector;
     
     /**
      * \brief Distributions of all and b-tagged jets with the given flavour
