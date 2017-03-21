@@ -104,6 +104,17 @@ public:
     /// Requests reading of raw MET
     void ReadRawMET(bool enable = true);
     
+    /**
+     * \brief Specifies whether jet ID selection should be applied or not
+     * 
+     * The selection is applied or not depending on the value of the given flag; by default, the
+     * plugin is configured to apply it. If the selection is applied, jets that fail loose ID are
+     * rejected. Otherwise all jets are written to the output collection, and for each jet a
+     * UserInt with label "ID" is added whose value is 1 or 0 depending on whether the jet passes
+     * the ID selection or not.
+     */
+    void SetApplyJetID(bool applyJetID);
+    
     /// Specifies name of the plugin that provides generator-level jets
     void SetGenJetReader(std::string const name = "GenJetMET");
     
@@ -159,6 +170,9 @@ private:
     
     /// Specifies whether raw MET should be read
     bool readRawMET;
+    
+    /// Specifies whether selection on jet ID should be applied
+    bool applyJetID;
     
     /**
      * \brief Name of the plugin that produces leptons

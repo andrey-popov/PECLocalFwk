@@ -19,7 +19,7 @@ PECJetMETReader::PECJetMETReader(std::string name /*= "JetMET"*/):
     treeName("pecJetMET/JetMET"),
     bfJetPointer(&bfJets), bfMETPointer(&bfMETs), bfUncorrMETPointer(&bfUncorrMETs),
     minPt(0.), maxAbsEta(std::numeric_limits<double>::infinity()),
-    readRawMET(false),
+    readRawMET(false), applyJetID(true),
     leptonPluginName("Leptons"), leptonPlugin(nullptr),
     genJetPluginName(""), genJetPlugin(nullptr),
     systType(SystType::None), systDirection(0)
@@ -35,7 +35,7 @@ PECJetMETReader::PECJetMETReader(PECJetMETReader const &src) noexcept:
     treeName(src.treeName),
     bfJetPointer(&bfJets), bfMETPointer(&bfMETs), bfUncorrMETPointer(&bfUncorrMETs),
     minPt(src.minPt), maxAbsEta(src.maxAbsEta),
-    readRawMET(src.readRawMET),
+    readRawMET(src.readRawMET), applyJetID(src.applyJetID),
     leptonPluginName(src.leptonPluginName), leptonPlugin(src.leptonPlugin),
     leptonDR2(src.leptonDR2),
     genJetPluginName(src.genJetPluginName), genJetPlugin(src.genJetPlugin),
@@ -142,6 +142,12 @@ void PECJetMETReader::ReadRawMET(bool enable /*= true*/)
 }
 
 
+void PECJetMETReader::SetApplyJetID(bool applyJetID_)
+{
+    applyJetID = applyJetID_;
+}
+
+
 void PECJetMETReader::SetGenJetReader(std::string const name /*= "GenJetMET"*/)
 {
     genJetPluginName = name;
@@ -214,8 +220,9 @@ bool PECJetMETReader::ProcessEvent()
         
         
         // Loose physics selection
-        if (not j.TestBit(1) /* "loose" jet ID */)
+        if (applyJetID and not j.TestBit(1) /* "loose" jet ID */)
             continue;
+        
         
         // User-defined selection on momentum
         if (p4.Pt() < minPt or fabs(p4.Eta()) > maxAbsEta)
@@ -272,6 +279,9 @@ bool PECJetMETReader::ProcessEvent()
         jet.SetFlavour(Jet::FlavourType::Hadron, j.Flavour(pec::Jet::FlavourType::Hadron));
         jet.SetFlavour(Jet::FlavourType::Parton, j.Flavour(pec::Jet::FlavourType::Parton));
         jet.SetFlavour(Jet::FlavourType::ME, j.Flavour(pec::Jet::FlavourType::ME));
+        
+        if (not applyJetID)
+            jet.SetUserInt("ID", int(j.TestBit(1)));
         
         
         // Perform matching to generator-level jets if the corresponding reader is available. Choose
