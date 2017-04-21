@@ -4,6 +4,7 @@
 #include <mensura/core/Processor.hpp>
 
 #include <cmath>
+#include <iostream>
 #include <limits>
 #include <sstream>
 #include <stdexcept>
@@ -216,6 +217,25 @@ bool JetMETUpdate::ProcessEvent()
       jetmetPlugin->GetRawMET().P4() : jetmetPlugin->GetMET().P4();
     TLorentzVector updatedMET(startingMET + metShift);
     met.SetPtEtaPhiM(updatedMET.Pt(), 0., updatedMET.Phi(), 0.);
+    
+    
+    // Debug information
+    #ifdef DEBUG
+    std::cout << "\nJetMETUpdate[\"" << GetName() << "\"]: Jets:\n";
+    unsigned i = 1;
+    
+    for (auto const &j: jets)
+    {
+        std::cout << " Jet #" << i << "\n";
+        std::cout << "  Fully corrected momentum (pt, eta, phi, m): " << j.Pt() << ", " <<
+          j.Eta() << ", " << j.Phi() << ", " << j.M() << '\n';
+        ++i;
+    }
+    
+    std::cout << "\nJetMETUpdate[\"" << GetName() << "\"]: MET:\n";
+    std::cout << " Starting MET (pt, phi): " << startingMET.Pt() << ", " << startingMET.Phi() << '\n';
+    std::cout << " Fully corrected MET (pt, phi): " << met.Pt() << ", " << met.Phi() << '\n';
+    #endif
     
     
     return true;
