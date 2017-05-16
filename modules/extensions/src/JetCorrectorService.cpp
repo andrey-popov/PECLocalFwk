@@ -7,6 +7,7 @@
 #include <mensura/external/JERC/JetCorrectorParameters.hpp>
 
 #include <cmath>
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
 
@@ -166,30 +167,44 @@ double JetCorrectorService::Eval(Jet const &jet, double rho, SystType syst /*= S
 
 double JetCorrectorService::EvalJECUnc(double const corrPt, double const eta) const
 {
-    if (jecUncProviders.size() == 1)
+    double unc;
+    
+    try
     {
-        // Consider the case of a single uncertainty specially in order to avoid unnecessary
-        //computation of sqrt(unc^2)
-        auto &acc = jecUncProviders.front();
-        acc->setJetEta(eta);
-        acc->setJetPt(corrPt);
-        
-        return acc->getUncertainty(true);
-    }
-    else
-    {
-        double unc2 = 0.;
-        
-        for (auto &acc: jecUncProviders)
+        if (jecUncProviders.size() == 1)
         {
+            // Consider the case of a single uncertainty specially in order to avoid unnecessary
+            //computation of sqrt(unc^2)
+            auto &acc = jecUncProviders.front();
             acc->setJetEta(eta);
             acc->setJetPt(corrPt);
             
-            unc2 += std::pow(acc->getUncertainty(true), 2);
+            unc = acc->getUncertainty(true);
         }
-        
-        return std::sqrt(unc2);
+        else
+        {
+            double unc2 = 0.;
+            
+            for (auto &acc: jecUncProviders)
+            {
+                acc->setJetEta(eta);
+                acc->setJetPt(corrPt);
+                
+                unc2 += std::pow(acc->getUncertainty(true), 2);
+            }
+            
+            unc = std::sqrt(unc2);
+        }
     }
+    catch (std::out_of_range const &e)
+    {
+        std::ostringstream message;
+        message << "Failed to evaluate JEC uncertainty for jet with corrected pt = " << corrPt <<
+          ", eta = " << eta << "\n";
+        throw std::runtime_error(message.str());
+    };
+    
+    return unc;
 }
 
 

@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <stdexcept>
 using std::cerr;
 
 /////////////////////////////////////////////////////////////////////////
@@ -33,7 +34,7 @@ float SimpleJetCorrectionUncertainty::uncertainty(std::vector<float> fX, float f
   int bin = mParameters->binIndex(fX);
   if (bin<0) 
     //throw cms::Exception(
-    cerr << "SimpleJetCorrectionUncertainty"<<" bin variables out of range";
+    cerr << "SimpleJetCorrectionUncertainty bin variables out of range\n";
   result = uncertaintyBin((unsigned)bin,fY,fDirection);
   return result;
 }
@@ -41,8 +42,11 @@ float SimpleJetCorrectionUncertainty::uncertainty(std::vector<float> fX, float f
 float SimpleJetCorrectionUncertainty::uncertaintyBin(unsigned fBin, float fY, bool fDirection) const 
 {
   if (fBin >= mParameters->size()) 
+  {
     //throw cms::Exception(
-    cerr << "SimpleJetCorrectionUncertainty"<<" wrong bin: "<<fBin<<": only "<<mParameters->size()<<" are available";
+    cerr << "SimpleJetCorrectionUncertainty wrong bin: "<<fBin<<": only "<<mParameters->size()<<" are available";
+    throw std::out_of_range("Bin number out of range");
+  }
   const std::vector<float>& p = mParameters->record(fBin).parameters();
   if ((p.size() % 3) != 0)
     //throw cms::Exception (
