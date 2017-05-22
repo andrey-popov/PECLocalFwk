@@ -51,12 +51,8 @@ void PECGeneratorReader::BeginRun(Dataset const &dataset)
     TTree *tree = inputDataPlugin->ExposeTree(treeName);
     
     ROOTLock::Lock();
-    tree->SetBranchStatus("*", false);
-    tree->SetBranchStatus("processId", true);
-    tree->SetBranchStatus("nominalWeight", true);
-    
-    if (readAltWeights)
-        tree->SetBranchStatus("altWeights", true);
+    if (not readAltWeights)
+        tree->SetBranchStatus("altWeights", false);
     
     tree->SetBranchAddress("generator", &bfGeneratorPointer);
     ROOTLock::Unlock();
