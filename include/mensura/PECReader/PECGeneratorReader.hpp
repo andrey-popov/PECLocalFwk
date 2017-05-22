@@ -4,6 +4,7 @@
 
 #include <mensura/PECReader/GeneratorInfo.hpp>
 
+#include <utility>
 #include <vector>
 
 
@@ -78,8 +79,29 @@ public:
      */
     virtual unsigned GetNumAltWeights() const override;
     
+    /**
+     * \brief Returns PDG ID of particles sampled from PDF
+     * 
+     * Reimplemented from GeneratorReader.
+     */
+    virtual std::pair<int, int> GetPdfPart() const override;
+    
+    /**
+     * \brief Returns Bjorken x for particles sampled from PDF
+     * 
+     * Reimplemented from GeneratorReader.
+     */
+    virtual std::pair<double, double> GetPdfX() const override;
+    
     /// Returns process ID (as written in LHE file) of the current event
     int GetProcessID() const;
+    
+    /**
+     * \brief Returns nominal energy scale of the event, in GeV
+     * 
+     * Reimplemented from GeneratorReader.
+     */
+    virtual double GetScale() const override;
     
     /// Specifies whether alternative LHE-level weights should be read
     void RequestAltWeights(bool on = true);

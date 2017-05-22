@@ -3,13 +3,15 @@
 #include <mensura/core/ReaderPlugin.hpp>
 
 #include <string>
+#include <utility>
 
 
 /**
  * \class GeneratorReader
  * \brief Abstract base class for a reader plugin that provides process-level generator information
  * 
- * Provides an interface to access nominal and alternative generator-level event weights.
+ * Provides an interface to access event energy scale, information to evaluate PDF, nominal and
+ * alternative generator-level event weights.
  */
 class GeneratorReader: public ReaderPlugin
 {
@@ -38,4 +40,25 @@ public:
      * In the default implementation this number is always zero.
      */
     virtual unsigned GetNumAltWeights() const;
+    
+    /**
+     * \brief Returns PDG ID of particles sampled from PDF
+     * 
+     * Unconditionally throws an exception in the default implementation.
+     */
+    virtual std::pair<int, int> GetPdfPart() const;
+    
+    /**
+     * \brief Returns Bjorken x for particles sampled from PDF
+     * 
+     * Unconditionally throws an exception in the default implementation.
+     */
+    virtual std::pair<double, double> GetPdfX() const;
+    
+    /**
+     * \brief Returns nominal energy scale of the event, in GeV
+     * 
+     * Unconditionally throws an exception in the default implementation.
+     */
+    virtual double GetScale() const;
 };

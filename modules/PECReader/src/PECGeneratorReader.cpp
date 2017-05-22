@@ -107,9 +107,27 @@ unsigned PECGeneratorReader::GetNumAltWeights() const
 }
 
 
+std::pair<int, int> PECGeneratorReader::GetPdfPart() const
+{
+    return {bfGenerator.PdfId(0), bfGenerator.PdfId(1)};
+}
+
+
+std::pair<double, double> PECGeneratorReader::GetPdfX() const
+{
+    return {bfGenerator.PdfX(0), bfGenerator.PdfX(1)};
+}
+
+
 int PECGeneratorReader::GetProcessID() const
 {
     return bfGenerator.ProcessId();
+}
+
+
+double PECGeneratorReader::GetScale() const
+{
+    return bfGenerator.PdfQScale();
 }
 
 
