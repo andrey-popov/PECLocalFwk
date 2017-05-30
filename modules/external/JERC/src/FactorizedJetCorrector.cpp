@@ -13,6 +13,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <stdexcept>
 
 //------------------------------------------------------------------------ 
 //--- Default FactorizedJetCorrector constructor -------------------------
@@ -125,6 +126,13 @@ FactorizedJetCorrector::FactorizedJetCorrector(const std::vector<JetCorrectorPar
         mLevels.push_back(kL7);
       else if (ss == "L1FastJet")
         mLevels.push_back(kL1fj);
+      else
+      {
+        std::ostringstream message;
+        message << "Unknown JEC level \"" << ss << "\".";
+        throw std::runtime_error(message.str());
+      }
+      
       mCorrectors.push_back(new SimpleJetCorrector(fParameters[i]));
       mBinTypes.push_back(mapping(mCorrectors[i]->parameters().definitions().binVar()));
       mParTypes.push_back(mapping(mCorrectors[i]->parameters().definitions().parVar()));
