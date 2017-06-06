@@ -18,6 +18,7 @@ EventIDFilter::EventIDFilter(std::string const &name, std::string const &eventID
     AnalysisPlugin(name),
     eventIDPluginName("InputData"), eventIDPlugin(nullptr),
     rejectKnownEvent(rejectKnownEvent_),
+    useFileName(false),
     eventIDsCurFile(nullptr)
 {
     LoadEventIDLists(eventIDsFileName);
@@ -26,19 +27,15 @@ EventIDFilter::EventIDFilter(std::string const &name, std::string const &eventID
 
 EventIDFilter::EventIDFilter(std::string const &eventIDsFileName,
   bool rejectKnownEvent_ /*= true*/):
-    AnalysisPlugin("EventIDFilter"),
-    eventIDPluginName("InputData"), eventIDPlugin(nullptr),
-    rejectKnownEvent(rejectKnownEvent_),
-    eventIDsCurFile(nullptr)
-{
-    LoadEventIDLists(eventIDsFileName);
-}
+    EventIDFilter("EventIDFilter", eventIDsFileName, rejectKnownEvent_)
+{}
 
 
 EventIDFilter::EventIDFilter(EventIDFilter const &src):
     AnalysisPlugin(src),
     eventIDPluginName(src.eventIDPluginName), eventIDPlugin(nullptr),
     rejectKnownEvent(src.rejectKnownEvent),
+    useFileName(src.useFileName),
     eventIDsAllFiles(),
     eventIDsCurFile(nullptr)
 {}
@@ -58,7 +55,17 @@ void EventIDFilter::BeginRun(Dataset const &dataset)
     
     
     // Make a short-cut for list of event IDs for the new atomic dataset
-    auto const resIt = eventIDsAllFiles.find(dataset.GetSourceDatasetID());
+    std::string datasetID;
+    
+    if (useFileName)
+    {
+        std::string const &fileName = dataset.GetFiles().front().name;
+        datasetID = fileName.substr(fileName.find_last_of('/') + 1);
+    }
+    else
+        datasetID = dataset.GetSourceDatasetID();
+    
+    auto const resIt = eventIDsAllFiles.find(datasetID);
     eventIDsCurFile = (resIt == eventIDsAllFiles.end()) ? nullptr : &resIt->second;
 }
 
@@ -72,6 +79,12 @@ Plugin *EventIDFilter::Clone() const
 void EventIDFilter::SetEventIDPluginName(std::string const &name)
 {
     eventIDPluginName = name;
+}
+
+
+void EventIDFilter::SetUseFileName(bool on /*= true*/)
+{
+    useFileName = on;
 }
 
 
@@ -93,7 +106,6 @@ void EventIDFilter::LoadEventIDLists(std::string const &eventIDsFileName)
     
     
     // Regular expressions to parse the file
-    // std::regex datasetRegex("^[ \t]*Dataset:[ \t]*([^[ \t]]+)[ \t]*$", std::regex::extended);
     std::regex datasetRegex("^[ \t]*Dataset:[ \t]*([^ \t]+)[ \t]*$", std::regex::extended);
     std::regex eventIDRegex("^[ \t]*([0-9]+):([0-9]+):([0-9]+)[ \t]*$", std::regex::extended);
     std::smatch match;

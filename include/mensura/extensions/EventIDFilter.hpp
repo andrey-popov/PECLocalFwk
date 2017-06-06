@@ -22,11 +22,13 @@ class EventIDReader;
  * found in the list.
  * 
  * The file should have the following format. First, it identifies the dataset to which provided
- * event IDs correpond. This is done with line "Dataset: <ID>", where <ID> is the unique label of
- * the source dataset, as given by Dataset::GetSourceDatasetID(). Then IDs are provided in the
- * format <run>:<lumi>:<event>, one per line. An arbitrary number of similar groups can be
- * provided for other datasets. Empty lines can be inserted anywhere. Comments starting with symbol
- * '#' are ignored.
+ * event IDs correpond. This is done with line "Dataset: <ID>", where by default <ID> is the unique
+ * label of the source dataset, as given by Dataset::GetSourceDatasetID(). Alternatively, the
+ * plugin can be configured to use name of the first file in the dataset, see documentation for
+ * method SetUseFileName. After the dataset ID, a list of event IDs is provided in the format
+ * <run>:<lumi>:<event>, one per line. Entries for as many datasets as needed can be provided in
+ * the input file. Empty lines can be inserted anywhere. Comments starting with symbol '#' are
+ * ignored.
  * 
  * The filter relies on the presence of a EventIDReader with a default name "InputData".
  * 
@@ -58,7 +60,7 @@ public:
      * 
      * Reimplemented from Plugin.
      */
-    virtual void BeginRun(Dataset const &) override;
+    virtual void BeginRun(Dataset const &dataset) override;
     
     /**
      * \brief Creates a newly configured clone
@@ -69,6 +71,16 @@ public:
     
     /// Changes name of the plugin that provides event ID
     void SetEventIDPluginName(std::string const &name);
+    
+    /**
+     * \brief Switches between identifying the event list by source dataset ID or file name
+     * 
+     * If called with the argument set to true, the plugin will identify the event list to be used
+     * using the name of the first file in the dataset (with the directory path stripped) instead
+     * of the source dataset ID. The default behaviour of using the source dataset ID can be
+     * restored by calling this method with the argument set to false.
+     */
+    void SetUseFileName(bool on = true);
     
 private:
     /**
@@ -109,6 +121,9 @@ private:
      * If set to false, it keeps only events with IDs written in the file.
      */
     bool rejectKnownEvent;
+    
+    /// Instructs to use name of the current file instead of the source dataset ID
+    bool useFileName;
     
     /// Map to store event IDs. The key of the map is a short name of corresponding input file
     std::map<std::string, std::vector<EventID>> eventIDsAllFiles;
