@@ -6,6 +6,7 @@
 
 #include <istream>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -51,8 +52,8 @@ public:
     EventIDFilter &operator=(EventIDFilter const &) = delete;
     
 private:
-    /// Copy constructor used in method Clone
-    EventIDFilter(EventIDFilter const &src);
+    /// Default copy constructor used in method Clone
+    EventIDFilter(EventIDFilter const &) = default;
     
 public:
     /**
@@ -126,7 +127,7 @@ private:
     bool useFileName;
     
     /// Map to store event IDs. The key of the map is a short name of corresponding input file
-    std::map<std::string, std::vector<EventID>> eventIDsAllFiles;
+    std::shared_ptr<std::map<std::string, std::vector<EventID>>> eventIDsAllFiles;
     
     /// Pointer to vector of event IDs for the current ROOT file (note it might be null)
     std::vector<EventID> const *eventIDsCurFile;

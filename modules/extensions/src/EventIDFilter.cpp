@@ -19,6 +19,7 @@ EventIDFilter::EventIDFilter(std::string const &name, std::string const &eventID
     eventIDPluginName("InputData"), eventIDPlugin(nullptr),
     rejectKnownEvent(rejectKnownEvent_),
     useFileName(false),
+    eventIDsAllFiles(new decltype(eventIDsAllFiles)::element_type),
     eventIDsCurFile(nullptr)
 {
     LoadEventIDLists(eventIDsFileName);
@@ -28,16 +29,6 @@ EventIDFilter::EventIDFilter(std::string const &name, std::string const &eventID
 EventIDFilter::EventIDFilter(std::string const &eventIDsFileName,
   bool rejectKnownEvent_ /*= true*/):
     EventIDFilter("EventIDFilter", eventIDsFileName, rejectKnownEvent_)
-{}
-
-
-EventIDFilter::EventIDFilter(EventIDFilter const &src):
-    AnalysisPlugin(src),
-    eventIDPluginName(src.eventIDPluginName), eventIDPlugin(nullptr),
-    rejectKnownEvent(src.rejectKnownEvent),
-    useFileName(src.useFileName),
-    eventIDsAllFiles(),
-    eventIDsCurFile(nullptr)
 {}
 
 
@@ -65,8 +56,8 @@ void EventIDFilter::BeginRun(Dataset const &dataset)
     else
         datasetID = dataset.GetSourceDatasetID();
     
-    auto const resIt = eventIDsAllFiles.find(datasetID);
-    eventIDsCurFile = (resIt == eventIDsAllFiles.end()) ? nullptr : &resIt->second;
+    auto const resIt = eventIDsAllFiles->find(datasetID);
+    eventIDsCurFile = (resIt == eventIDsAllFiles->end()) ? nullptr : &resIt->second;
 }
 
 
@@ -137,7 +128,7 @@ void EventIDFilter::LoadEventIDLists(std::string const &eventIDsFileName)
         
         
         // Read event IDs
-        auto &eventIDsCurFile = eventIDsAllFiles[datasetID];
+        auto &eventIDsCurFile = (*eventIDsAllFiles)[datasetID];
         
         while (true)
         {
