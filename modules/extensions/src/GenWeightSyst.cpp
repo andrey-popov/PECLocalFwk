@@ -3,6 +3,7 @@
 #include <mensura/core/Dataset.hpp>
 #include <mensura/core/FileInPath.hpp>
 #include <mensura/core/GeneratorReader.hpp>
+#include <mensura/core/Logger.hpp>
 
 #include <mensura/external/JsonCpp/json.hpp>
 
@@ -241,6 +242,11 @@ void GenWeightSyst::BeginRun(Dataset const &dataset)
         }
         else
         {
+            logging::logger << "Warning in GenWeightSyst[\"" << GetName() << "\"]::BeginRun: "
+              "When starting processing file \"" << dataset.GetFiles().front().name <<
+              "\" (dataset ID \"" << datasetID << "\") mean weights were not found. All "
+              "systematic uncertainties from this plugin will be switched off." << logging::eom;
+            
             meanWeightsCurDataset = nullptr;
             weights.resize(1);
             weights[0] = 1.;

@@ -27,7 +27,7 @@ class GeneratorReader;
  * There are three modes of running. In the simplest case weights with specified indices are used
  * directly, after they are divided by a reference weight in the current event (by default given by
  * index 0). Using method NormalizeByMeanWeights, user can request that weights are normalized by
- * their man values read from a database file. In this case a weight w_i is rescaled as
+ * their mean values read from a database file. In this case a weight w_i is rescaled as
  *   (w_i / w_0) / (<w_i> / <w_0>),
  * where w_0 is the reference weight, and <w> denotes corresponding mean weights. Rescaling by
  * mean weights allows to preserve the total normalization. Finally, if the rescaling has been
