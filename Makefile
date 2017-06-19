@@ -41,7 +41,7 @@ LIB_DIR := lib
 MAIN_LIB_NAME := libmensura.so
 MAIN_LIB_PATH := $(LIB_DIR)/$(MAIN_LIB_NAME)
 MAIN_LIB_LDFLAGS := $(shell root-config --libs) \
- -L$(BOOST_ROOT)/lib -lboost_filesystem -Wl,-rpath=$(BOOST_ROOT)/lib
+ -L$(BOOST_ROOT)/lib -lboost_filesystem
 
 
 # Define phony targets

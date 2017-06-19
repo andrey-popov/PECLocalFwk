@@ -1,14 +1,14 @@
-# Check if an installation path of PECFwk is provided
+# Check if an installation path of the mensura framework is provided
 ifeq ($(MENSURA_INSTALL), )
   $(error Mandatory environment variable MENSURA_INSTALL is not set)
 endif
 
-# Make sure ROOT is available
+
+# Make sure that other dependencies available
 ifeq ($(shell which root-config), )
   $(error ROOT installation is not found)
 endif
 
-# Make sure Boost is available
 ifeq ($(BOOST_ROOT), )
   $(error Mandatory environment variable BOOST_ROOT is not set)
 endif
@@ -18,7 +18,7 @@ endif
 INCLUDE := -I$(MENSURA_INSTALL)/include -I$(shell root-config --incdir)
 OPFLAGS := -O2
 CFLAGS := -Wall -Wextra -std=c++14 $(INCLUDE) $(OPFLAGS)
-LDFLAGS := -L$(MENSURA_INSTALL)/lib -lmensura -lPECReader -Wl,-rpath=$(MENSURA_INSTALL)/lib
+LDFLAGS := -L$(MENSURA_INSTALL)/lib -lmensura -lPECReader
 
 
 # Define example and test programs
