@@ -43,8 +43,8 @@ LeptonSFWeight::LeptonSFWeight(std::string const &name,
 {
     LoadScaleFactors(srcFileName, histogramNames);
     
-    // The plugin will calculate one weight per event
-    EventWeightPlugin::weights.push_back(0.);
+    // The plugin will calculate one weight per event with one systematic variation
+    EventWeightPlugin::weights = {0., 0., 0.};
 }
 
 
