@@ -100,15 +100,22 @@ void JetMETUpdate::SetJetCorrection(std::string const &jetCorrServiceName)
 void JetMETUpdate::SetJetCorrectionForMET(std::string const &fullNew, std::string const &l1New,
   std::string const &fullOrig, std::string const &l1Orig)
 {
-    // If new and original correctors are the same, drop them since their effect would cancel out
-    if (fullNew != fullOrig)
+    // Make sure that at least one full correction is provided. It will be used to choose what
+    //jets contribute to MET.
+    if (fullNew == "" and fullOrig == "")
     {
-        jetCorrForMETFullName = fullNew;
-        jetCorrForMETOrigFullName = fullOrig;
+        std::ostringstream message;
+        message << "JetMETUpdate[\"" << GetName() << "\"]::SetJetCorrectionForMET: At least one "
+          "full correction must be provided.";
+        throw std::runtime_error(message.str());
     }
-    else
-        jetCorrForMETFullName = jetCorrForMETOrigFullName = "";
     
+    jetCorrForMETFullName = fullNew;
+    jetCorrForMETOrigFullName = fullOrig;
+    
+    
+    // If new and original L1 correctors are the same, drop them since their effect would cancel
+    //out
     if (l1New != l1Orig)
     {
         jetCorrForMETL1Name = l1New;
@@ -158,9 +165,52 @@ bool JetMETUpdate::ProcessEvent()
         }
         
         
+        // Precompute full correction factors used for T1 MET corrections
+        double corrFactorMETFull = 1., corrFactorMETOrigFull = 1.;
+        
+        if (jetCorrForMETFull)
+        {
+            // Sometimes some of jet systematic variations are not propagated into MET. Do not
+            //attempt to evaluate them if they are have not been specified in the corresponding
+            //jet corrector object
+            if (jetCorrForMETFull->IsSystEnabled(systType))
+                corrFactorMETFull = jetCorrForMETFull->Eval(srcJet, rho, systType, systDirection);
+            else
+                corrFactorMETFull = jetCorrForMETFull->Eval(srcJet, rho);
+        }
+        
+        if (jetCorrForMETOrigFull)
+        {
+            if (jetCorrForMETOrigFull->IsSystEnabled(systType))
+                corrFactorMETOrigFull =
+                  jetCorrForMETOrigFull->Eval(srcJet, rho, systType, systDirection);
+            else
+                corrFactorMETOrigFull = jetCorrForMETOrigFull->Eval(srcJet, rho);
+        }
+        
+        
+        // Determine if the current jet contributes to the T1 correction. Use the target full
+        //correction; if it is not available (e.g. user tries to undo the T1 correction), then use
+        //the full original correction. Note that at least one of the two full corrections must
+        //have been provided.
+        double corrPtForT1 = srcJet.RawP4().Pt();
+        
+        if (jetCorrForMETFull)
+            corrPtForT1 *= corrFactorMETFull;
+        else if (jetCorrForMETOrigFull)
+            corrPtForT1 *= corrFactorMETOrigFull;
+        else
+        {
+            std::ostringstream message;
+            message << "JetMETUpdate[\"" << GetName() << "\"]::ProcessEvent: Jet corrections "
+              "required to evaluate T1 MET correction are missing.";
+            throw std::runtime_error(message.str());
+        }
+        
+        
         // Compute the shift in MET due to T1 corrections. Systematic variations for L1 corrections
         //are ignored.
-        if (jet.Pt() > minPtForT1)
+        if (corrPtForT1 > minPtForT1)
         {
             // Undo applied T1 corrections
             if (jetCorrForMETOrigL1)
@@ -168,19 +218,7 @@ bool JetMETUpdate::ProcessEvent()
                   srcJet.RawP4() * jetCorrForMETOrigL1->Eval(srcJet, rho);
             
             if (jetCorrForMETOrigFull)
-            {
-                // Sometimes some of jet systematic variations are not propagated into MET. Do not
-                //attempt to evaluate them if they are have not been specified in the corresponding
-                //jet corrector object
-                double corrFactor;
-                
-                if (jetCorrForMETOrigFull->IsSystEnabled(systType))
-                    corrFactor = jetCorrForMETOrigFull->Eval(srcJet, rho, systType, systDirection);
-                else
-                    corrFactor = jetCorrForMETOrigFull->Eval(srcJet, rho);
-                
-                metShift += srcJet.RawP4() * corrFactor;
-            }
+                metShift += srcJet.RawP4() * corrFactorMETOrigFull;
             
             
             // Apply new T1 corrections
@@ -189,16 +227,7 @@ bool JetMETUpdate::ProcessEvent()
                   srcJet.RawP4() * jetCorrForMETL1->Eval(srcJet, rho);
             
             if (jetCorrForMETFull)
-            {
-                double corrFactor;
-                
-                if (jetCorrForMETFull->IsSystEnabled(systType))
-                    corrFactor = jetCorrForMETFull->Eval(srcJet, rho, systType, systDirection);
-                else
-                    corrFactor = jetCorrForMETFull->Eval(srcJet, rho);
-                
-                metShift -= srcJet.RawP4() * corrFactor;
-            }
+                metShift -= srcJet.RawP4() * corrFactorMETFull;
         }
         
         
