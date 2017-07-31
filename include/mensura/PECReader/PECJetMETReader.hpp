@@ -6,10 +6,15 @@
 #include <mensura/core/GenJetMETReader.hpp>
 #include <mensura/core/SystService.hpp>
 
+#include <mensura/external/JERC/JetResolution.hpp>
+
 #include <mensura/PECReader/Candidate.hpp>
 #include <mensura/PECReader/Jet.hpp>
 
+#include <memory>
 
+
+class PileUpReader;
 class PECInputData;
 
 
@@ -25,7 +30,8 @@ class PECInputData;
  * 
  * If the name of a plugin that reads generator-level jets is provided with the help of the method
  * SetGenJetReader, angular matching to them is performed. The maximal allowed angular distance for
- * matching is set to half of the radius parameter of reconstructed jets.
+ * matching is set to half of the radius parameter of reconstructed jets. User can additionally
+ * impose a cut on the difference between pt of the two jets via method SetGenPtMatching.
  * 
  * Systematic variations in JEC, JER, or "unclustered MET" are applied as requested by a
  * SystService with a default name "Systematics". The service is optional; if it is not defined,
@@ -118,6 +124,23 @@ public:
     /// Specifies name of the plugin that provides generator-level jets
     void SetGenJetReader(std::string const name = "GenJetMET");
     
+    /**
+     * \brief Add a condition on difference in pt for the matching to generator-level jets
+     * 
+     * If this method is called, the matching to generator-level jets will be performed based not
+     * only on the angular distance but requiring additionally that the difference in pt between
+     * the two jets is compatible with the pt resolution in simulation.
+     * 
+     * The pt resultion is described in file jerFile, which must follow the standard format adopted
+     * in the JERC group. The path to the file is resolved using the FileInPath service under a
+     * subdirectory "JERC". The factor jerPtFactor is applied to the resolution before the
+     * comparison.
+     * 
+     * If the pt matching has been requested, this plugin will also attempt to read pileup
+     * information from the dedicated plugin.
+     */
+    void SetGenPtMatching(std::string const &jerFile, double jerPtFactor = 3.);
+    
     /// Specifies desired selection on jets
     void SetSelection(double minPt, double maxAbsEta);
     
@@ -200,6 +223,33 @@ private:
     
     /// Non-owning pointer to a plugin that produces generator-level jets
     GenJetMETReader const *genJetPlugin;
+    
+    /// Name of the plugin that provides information about pileup
+    std::string puPluginName;
+    
+    /**
+     * \brief Non-owning pointer to a plugin that produces information about pileup
+     * 
+     * Only used when jet resolution needs to be accessed and can be null in other cases.
+     */
+    PileUpReader const *puPlugin;
+    
+    /**
+     * \brief Fully-qualified path to file with jet pt resolution in simulation
+     * 
+     * This string is empty if the jet matching based on pt has not been requested.
+     */
+    std::string jerFilePath;
+    
+    /// Factor used to define the cut for the jet pt matching
+    double jerPtFactor;
+    
+    /**
+     * \brief An object that provides jet pt resolution in simulation
+     * 
+     * Uninitialized if the jet matching based on pt has not been requested.
+     */
+    std::unique_ptr<JME::JetResolution> jerProvider;
     
     /// Type of requested systematical variation
     SystType systType;

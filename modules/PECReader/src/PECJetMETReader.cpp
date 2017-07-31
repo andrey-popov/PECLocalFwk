@@ -1,5 +1,7 @@
 #include <mensura/PECReader/PECJetMETReader.hpp>
 
+#include <mensura/core/FileInPath.hpp>
+#include <mensura/core/PileUpReader.hpp>
 #include <mensura/core/Processor.hpp>
 #include <mensura/core/PhysicsObjects.hpp>
 #include <mensura/core/ROOTLock.hpp>
@@ -22,6 +24,8 @@ PECJetMETReader::PECJetMETReader(std::string name /*= "JetMET"*/):
     readRawMET(false), applyJetID(true),
     leptonPluginName("Leptons"), leptonPlugin(nullptr),
     genJetPluginName(""), genJetPlugin(nullptr),
+    puPluginName("PileUp"), puPlugin(nullptr),
+    jerFilePath(""), jerPtFactor(0.),
     systType(SystType::None), systDirection(0)
 {
     leptonDR2 = std::pow(GetJetRadius(), 2);
@@ -39,21 +43,25 @@ PECJetMETReader::PECJetMETReader(PECJetMETReader const &src) noexcept:
     leptonPluginName(src.leptonPluginName), leptonPlugin(src.leptonPlugin),
     leptonDR2(src.leptonDR2),
     genJetPluginName(src.genJetPluginName), genJetPlugin(src.genJetPlugin),
+    puPluginName(src.puPluginName), puPlugin(src.puPlugin),
+    jerFilePath(src.jerFilePath), jerPtFactor(src.jerPtFactor),
     systType(src.systType), systDirection(src.systDirection)
 {}
 
 
 void PECJetMETReader::BeginRun(Dataset const &)
 {
-    // Save pointer to the plugin providing access to input data
+    // Save pointers to required plugins
     inputDataPlugin = dynamic_cast<PECInputData const *>(GetDependencyPlugin(inputDataPluginName));
     
-    // Save pointers to plugins that produce leptons and generator-level jets
     if (leptonPluginName != "")
         leptonPlugin = dynamic_cast<LeptonReader const *>(GetDependencyPlugin(leptonPluginName));
     
     if (genJetPluginName != "")
         genJetPlugin = dynamic_cast<GenJetMETReader const *>(GetDependencyPlugin(genJetPluginName));
+    
+    if (jerFilePath != "")
+        puPlugin = dynamic_cast<PileUpReader const *>(GetDependencyPlugin(puPluginName));
     
     
     // Read requested systematic variation
@@ -107,6 +115,11 @@ void PECJetMETReader::BeginRun(Dataset const &)
         tree->SetBranchAddress("uncorrMETs", &bfUncorrMETPointer);
     
     ROOTLock::Unlock();
+    
+    
+    // Create an object to access jet pt resolution
+    if (jerFilePath != "")
+        jerProvider.reset(new JME::JetResolution(jerFilePath));
 }
 
 
@@ -151,6 +164,13 @@ void PECJetMETReader::SetApplyJetID(bool applyJetID_)
 void PECJetMETReader::SetGenJetReader(std::string const name /*= "GenJetMET"*/)
 {
     genJetPluginName = name;
+}
+
+
+void PECJetMETReader::SetGenPtMatching(std::string const &jerFile, double jerPtFactor_ /*= 3.*/)
+{
+    jerFilePath = FileInPath::Resolve("JERC", jerFile);
+    jerPtFactor = jerPtFactor_;
 }
 
 
@@ -284,13 +304,24 @@ bool PECJetMETReader::ProcessEvent()
             jet.SetUserInt("ID", int(j.TestBit(1)));
         
         
-        // Perform matching to generator-level jets if the corresponding reader is available. Choose
-        //the closest jet but require that the angular separation is not larger than half of the
-        //radius parameter of the reconstructed jets
+        // Perform matching to generator-level jets if the corresponding reader is available.
+        //Choose the closest jet but require that the angular separation is not larger than half of
+        //the radius parameter of reconstructed jets and, if the plugin has been configured to
+        //check this, that the difference in pt is compatible with the pt resolution in simulation.
         if (genJetPlugin)
         {
             double minDR2 = std::pow(GetJetRadius() / 2., 2);
             GenJet const *matchedGenJet = nullptr;
+            double maxDPt = std::numeric_limits<double>::infinity();
+            
+            if (jerProvider)
+            {
+                double const ptResolution = jerProvider->getResolution(
+                  {{JME::Binning::JetPt, p4.Pt()}, {JME::Binning::JetEta, p4.Eta()},
+                  {JME::Binning::Rho, puPlugin->GetRho()}});
+                maxDPt = ptResolution * p4.Pt() * jerPtFactor;
+            }
+            
             
             for (auto const &genJet: genJetPlugin->GetJets())
             {
@@ -298,7 +329,7 @@ bool PECJetMETReader::ProcessEvent()
                   std::pow(TVector2::Phi_mpi_pi(p4.Phi() - genJet.Phi()), 2);
                 //^ Do not use TLorentzVector::DeltaR to avoid calculating sqrt
                 
-                if (dR2 < minDR2)
+                if (dR2 < minDR2 and std::abs(p4.Pt() - genJet.Pt()) < maxDPt)
                 {
                     matchedGenJet = &genJet;
                     minDR2 = dR2;
