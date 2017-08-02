@@ -107,6 +107,14 @@ public:
      */
     virtual double GetJetRadius() const override;
     
+    /**
+     * \brief Requires that variations of unclustered MET be propagated into raw MET
+     * 
+     * This is useful when the raw MET is used later on to recompute the type-1 correction. It only
+     * makes sense to request this when raw MET is read as requested by ReadRawMET.
+     */
+    void PropagateUnclVarToRaw(bool enable = true);
+    
     /// Requests reading of raw MET
     void ReadRawMET(bool enable = true);
     
@@ -193,6 +201,9 @@ private:
     
     /// Specifies whether raw MET should be read
     bool readRawMET;
+    
+    /// Specifies whether variation of unclustered MET should be propagated into raw MET
+    bool propagateUnclVarToRaw;
     
     /// Specifies whether selection on jet ID should be applied
     bool applyJetID;

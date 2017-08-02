@@ -21,7 +21,7 @@ PECJetMETReader::PECJetMETReader(std::string name /*= "JetMET"*/):
     treeName("pecJetMET/JetMET"),
     bfJetPointer(&bfJets), bfMETPointer(&bfMETs), bfUncorrMETPointer(&bfUncorrMETs),
     minPt(0.), maxAbsEta(std::numeric_limits<double>::infinity()),
-    readRawMET(false), applyJetID(true),
+    readRawMET(false), propagateUnclVarToRaw(false), applyJetID(true),
     leptonPluginName("Leptons"), leptonPlugin(nullptr),
     genJetPluginName(""), genJetPlugin(nullptr),
     puPluginName("PileUp"), puPlugin(nullptr),
@@ -39,7 +39,8 @@ PECJetMETReader::PECJetMETReader(PECJetMETReader const &src) noexcept:
     treeName(src.treeName),
     bfJetPointer(&bfJets), bfMETPointer(&bfMETs), bfUncorrMETPointer(&bfUncorrMETs),
     minPt(src.minPt), maxAbsEta(src.maxAbsEta),
-    readRawMET(src.readRawMET), applyJetID(src.applyJetID),
+    readRawMET(src.readRawMET), propagateUnclVarToRaw(src.propagateUnclVarToRaw),
+    applyJetID(src.applyJetID),
     leptonPluginName(src.leptonPluginName), leptonPlugin(src.leptonPlugin),
     leptonDR2(src.leptonDR2),
     genJetPluginName(src.genJetPluginName), genJetPlugin(src.genJetPlugin),
@@ -146,6 +147,12 @@ void PECJetMETReader::ConfigureLeptonCleaning(std::string const leptonPluginName
 double PECJetMETReader::GetJetRadius() const
 {
     return 0.4;
+}
+
+
+void PECJetMETReader::PropagateUnclVarToRaw(bool enable /*= true*/)
+{
+    propagateUnclVarToRaw = enable;
 }
 
 
@@ -395,7 +402,21 @@ bool PECJetMETReader::ProcessEvent()
     if (readRawMET)
     {
         pec::Candidate const &pecRawMET = bfUncorrMETs.at(0);
-        rawMET.SetPtEtaPhiM(pecRawMET.Pt(), 0., pecRawMET.Phi(), 0.);
+        double x = pecRawMET.Pt() * std::cos(pecRawMET.Phi());
+        double y = pecRawMET.Pt() * std::sin(pecRawMET.Phi());
+        
+        if (propagateUnclVarToRaw and systType == SystType::METUncl)
+        {
+            pec::Candidate const &nominalMET = bfMETs.at(0);
+            
+            x += correctedMET.Pt() * std::cos(correctedMET.Phi());
+            x -= nominalMET.Pt() * std::cos(nominalMET.Phi());
+            
+            y += correctedMET.Pt() * std::sin(correctedMET.Phi());
+            y -= nominalMET.Pt() * std::sin(nominalMET.Phi());
+        }
+        
+        rawMET.SetPxPyPzE(x, y, 0., std::hypot(x, y));
     }
     
     
