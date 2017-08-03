@@ -501,8 +501,25 @@ void JetCorrectorService::UpdateJECUncEvaluator()
         else
         {
             for (auto const &uncSource: iov.jecUncSources)
-                jecUncProviders.emplace_back(
-                  new JetCorrectionUncertainty(JetCorrectorParameters(iov.jecUncFile, uncSource)));
+            {
+                std::unique_ptr<JetCorrectorParameters> jecUncParams;
+                
+                try
+                {
+                    jecUncParams.reset(new JetCorrectorParameters(iov.jecUncFile, uncSource));
+                }
+                catch (std::runtime_error)
+                {
+                    std::ostringstream message;
+                    message << "JetCorrectorService[\"" << GetName() <<
+                      "\"]::UpdateJECUncEvaluator: Error while constructing JEC uncertainty \"" <<
+                      uncSource << "\" from file \"" << iov.jecUncFile << "\". The file might not "
+                      "contain definition for the requested uncertainty.";
+                    throw std::runtime_error(message.str());
+                }
+                
+                jecUncProviders.emplace_back(new JetCorrectionUncertainty(*jecUncParams));
+            }
         }
     }
     else
