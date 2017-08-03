@@ -2,6 +2,8 @@
 
 #include <mensura/core/Logger.hpp>
 
+#include <TROOT.h>
+
 #include <iomanip>
 #include <iostream>
 #include <functional>
@@ -81,6 +83,11 @@ void RunManager::ProcessImp(int nThreads)
     
     if (nThreads > int(datasets.size()))
         nThreads = datasets.size();
+    
+    
+    // Enable built-in thread awareness in ROOT
+    if (nThreads > 1)
+        ROOT::EnableThreadSafety();
     
     
     // Create processing objects. The template processor is used as the first one, others are copy-
