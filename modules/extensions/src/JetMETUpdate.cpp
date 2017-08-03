@@ -1,5 +1,6 @@
 #include <mensura/extensions/JetMETUpdate.hpp>
 
+#include <mensura/core/EventIDReader.hpp>
 #include <mensura/core/PileUpReader.hpp>
 #include <mensura/core/Processor.hpp>
 
@@ -13,6 +14,7 @@
 JetMETUpdate::JetMETUpdate(std::string const name /*= "JetMET"*/):
     JetMETReader(name),
     jetmetPlugin(nullptr), jetmetPluginName("OrigJetMET"),
+    eventIDPlugin(nullptr), eventIDPluginName("InputData"),
     puPlugin(nullptr), puPluginName("PileUp"),
     systServiceName("Systematics"),
     jetCorrForJets(nullptr),
@@ -27,6 +29,7 @@ void JetMETUpdate::BeginRun(Dataset const &)
 {
     // Save pointers to the original JetMETReader and a PileUpReader
     jetmetPlugin = dynamic_cast<JetMETReader const *>(GetDependencyPlugin(jetmetPluginName));
+    eventIDPlugin = dynamic_cast<EventIDReader const *>(GetDependencyPlugin(eventIDPluginName));
     puPlugin = dynamic_cast<PileUpReader const *>(GetDependencyPlugin(puPluginName));
     
     
@@ -141,6 +144,15 @@ void JetMETUpdate::UseRawMET(bool set /*= true*/)
 
 bool JetMETUpdate::ProcessEvent()
 {
+    // Update IOV in jet correctors
+    unsigned long const run = eventIDPlugin->GetEventID().Run();
+    
+    for (auto const &corrService: {jetCorrForJets, jetCorrForMETFull, jetCorrForMETL1,
+      jetCorrForMETOrigFull, jetCorrForMETOrigL1})
+        if (corrService)
+            corrService->SelectIOV(run);
+    
+    
     jets.clear();
     
     

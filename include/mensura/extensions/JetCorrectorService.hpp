@@ -11,6 +11,7 @@
 #include <TRandom3.h>
 
 #include <initializer_list>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -26,6 +27,15 @@ class Jet;
  * This class computes jet corrections to adjust energy scale and resolution. Inputs for the
  * computation are provided in form of standard text files used by JetMET POG. The computed
  * correction is returned as a factor to rescale jet four-momentum.
+ * 
+ * Intervals of validity (IOVs) in terms of run ranges are supported. User must register all IOVs
+ * with method RegisterIOV and provide JERC parameters for each of them using methods
+ * SetJEC, SetJECUncertainty, and SetJER. Before jet corrections can be evaluated, the appropriate
+ * IOV must be chosen with SelectIOV.
+ * 
+ * Alternatively, it is possible to use a single match-all IOV. It does not need to be registered,
+ * and there are dedicated versions of methods to provide JERC parameters. There is also no need to
+ * call for SelectIOV in that case.
  * 
  * Any levels of the full correction can be omitted. If JEC text files are not provided, jet
  * momentum is assumed to be corrected for the energy scale. Otherwise the corresponding correction
@@ -47,6 +57,45 @@ public:
         JER
     };
     
+private:
+    /// Auxiliary structure to aggregate JERC parameters for a single IOV
+    struct IOVParams
+    {
+        /// Constructor from a run range
+        IOVParams(unsigned long minRun, unsigned long maxRun);
+        
+        /**
+         * \brief Run range for this IOV
+         * 
+         * The boundaries are included in the range.
+         */
+        unsigned long minRun, maxRun;
+        
+        /**
+         * \brief Files with requested jet energy corrections
+         * 
+         * Paths to files are fully qualified.
+         */
+        std::vector<std::string> jecFiles;
+        
+        /**
+         * \brief Path to file with requested JEC uncertainties
+         * 
+         * The path is fully qualified.
+         */
+        std::string jecUncFile;
+        
+        /// Requested sources of JEC uncertainty
+        std::vector<std::string> jecUncSources;
+        
+        /**
+         * \brief Paths to files with JER scale factors and MC resolutions
+         * 
+         * The paths are fully qualified.
+         */
+        std::string jerSFFile, jerMCFile;
+    };
+    
 public:
     /// Creates a service with the given name
     JetCorrectorService(std::string const name = "JetCorrector");
@@ -66,7 +115,7 @@ public:
     virtual Service *Clone() const override;
     
     /**
-     * \brief Computes full correction factor for requested effects
+     * \brief Computes full correction factor for requested effects with the current IOV
      * 
      * Returned factor can include correction of the energy scale and resolution. As explained in
      * documentation for the class, any part of the correction is optional.
@@ -75,7 +124,7 @@ public:
       SystService::VarDirection direction = SystService::VarDirection::Undefined) const;
     
     /**
-     * \brief Computes JEC uncertainty
+     * \brief Computes JEC uncertainty with the current IOV
      * 
      * The arguments are the JES-corrected pt and pseudorapidity. The uncertainty is calculated as
      * a sum in quadrature of uncertainties from all sources specified in a call to
@@ -83,7 +132,7 @@ public:
      */
     double EvalJECUnc(double const corrPt, double const eta) const;
     
-    /// Reports if requested systematic variation can be computed
+    /// Reports if requested systematic variation can be computed with the current IOV
     bool IsSystEnabled(SystType syst) const;
     
     /// A short-cut for method Eval
@@ -91,10 +140,29 @@ public:
       SystService::VarDirection direction = SystService::VarDirection::Undefined) const;
     
     /**
+     * \brief Registers a new IOV
+     * 
+     * The IOV is defined with the given run range (the boundaries are included in the range). The
+     * first argument specifies an arbitrary label to identify this IOV for the purpose of
+     * configuration.
+     */
+    void RegisterIOV(std::string const &label, unsigned long minRun, unsigned long maxRun);
+    
+    /// Selects IOV that includes the given run
+    void SelectIOV(unsigned long run) const;
+    
+    /**
      * \brief Specifies text files for JEC
      * 
      * Different levels of corrections are applied in the same order as specified here. Paths to
      * the files are resolved using FileInPath, with a subdirectory "JERC".
+     */
+    void SetJEC(std::string const &iovLabel, std::initializer_list<std::string> const &jecFiles);
+    
+    /**
+     * \brief Specifies text files for JEC for the match-all implicit IOV
+     * 
+     * This is a special version of the above method to be used when no explicit IOVs are defined.
      */
     void SetJEC(std::initializer_list<std::string> const &jecFiles);
     
@@ -104,6 +172,14 @@ public:
      * There is no need to provide the name of an uncertainty source if the file defines only a
      * single one. Path to the file is resolved using FileInPath, with a subdirectory "JERC".
      */
+    void SetJECUncertainty(std::string const &iovLabel, std::string const &jecUncFile,
+      std::initializer_list<std::string> uncSources = {});
+    
+    /**
+     * \brief Specifies text files for JEC uncertainties for the match-all implicit IOV
+     * 
+     * This is a special version of the above method to be used when no explicit IOVs are defined.
+     */
     void SetJECUncertainty(std::string const &jecUncFile,
       std::initializer_list<std::string> uncSources = {});
     
@@ -112,75 +188,83 @@ public:
      * 
      * Paths to the files are resolved using FileInPath, with a subdirectory "JERC". The file with
      * pt resolution in simulation is optional. Only when it is specified, a random-number
-     * generator is created to perform stochastic JER smearing. The last argument defines the seed
-     * for the generator; 0 means that the seed will be chosen randomly.
+     * generator is created to perform stochastic JER smearing.
      */
-    void SetJER(std::string const &jerSFFile, std::string const &jerMCFile,
-      unsigned long seed = 0);
+    void SetJER(std::string const &iovLabel, std::string const &jerSFFile,
+      std::string const &jerMCFile);
     
-private:
-    /// Constructs an object to evaluate JEC
-    void CreateJECEvaluator();
-    
-    /// Constructs an object to evaluate JEC uncertainty
-    void CreateJECUncEvaluator();
-    
-    /// Constructs objects to evaluate effect of JER smearing
-    void CreateJEREvaluator();
-    
-private:
     /**
-     * \brief Files with requested jet energy corrections
+     * \brief Specifies text files JER smearing for the match-all implicit IOV
      * 
-     * Needed to create a clone of FactorizedJetCorrector. Paths to files are fully qualified.
+     * This is a special version of the above method to be used when no explicit IOVs are defined.
      */
-    std::vector<std::string> jecFiles;
+    void SetJER(std::string const &jerSFFile, std::string const &jerMCFile);
+    
+private:
+    /**
+     * \brief Finds IOV for the given label
+     * 
+     * An empty label has a special meaning and refers to the match-all IOV. The main purpose of
+     * this method is error handling.
+     */
+    IOVParams &GetIOVByLabel(std::string const &label);
+    
+    /// (Re)creates an object to evaluate JEC for the current IOV
+    void UpdateJECEvaluator();
+    
+    /// (Re)creates an object to evaluate JEC uncertainty for the current IOV
+    void UpdateJECUncEvaluator();
+    
+    /// (Re)creates objects to evaluate effect of JER smearing for the current IOV
+    void UpdateJEREvaluator();
+    
+private:
+    /// Parameter sets for all IOVs
+    std::vector<IOVParams> iovParams;
     
     /**
-     * \brief An object that evaluates jet energy corrections
+     * \brief Map to identify IOVs by labels
+     * 
+     * Values stored in the map are indices in vector iovParams.
+     */
+    std::map<std::string, unsigned> iovLabelMap;
+    
+    /// Flag indicating that a single match-all IOV is used
+    bool matchAllMode;
+    
+    /// Index of the current IOV
+    mutable unsigned curIOV;
+    
+    /**
+     * \brief Current run number
+     * 
+     * Used as a cache to speed up SelectIOV.
+     */
+    mutable unsigned long curRun;
+    
+    /**
+     * \brief An object that evaluates jet energy corrections with the current IOV
      * 
      * Can be uninitialized if no JEC have been provided.
      */
     std::unique_ptr<FactorizedJetCorrector> jetEnergyCorrector;
     
     /**
-     * \brief Path to file with requested JEC uncertainties
-     * 
-     * Needed to create a clone of JetCorrectionUncertainty. The path is fully qualified.
-     */
-    std::string jecUncFile;
-    
-    /**
-     * \brief Requested sources of JEC uncertainty
-     * 
-     * Needed to create a clone of JetCorrectionUncertainty.
-     */
-    std::vector<std::string> jecUncSources;
-    
-    /**
-     * \brief Objects that compute JEC uncertainties
+     * \brief Objects that compute JEC uncertainties with the current IOV
      * 
      * The vector can be empty if no uncertainties have been specified.
      */
     std::vector<std::unique_ptr<JetCorrectionUncertainty>> jecUncProviders;
     
     /**
-     * \brief Paths to files with JER scale factors and MC resolutions
-     * 
-     * Needed to create clones of JetResolution and JetResolutionScaleFactor. The paths are fully
-     * qualified.
-     */
-    std::string jerSFFile, jerMCFile;
-    
-    /**
-     * \brief An object that provides pt resolution in simulation
+     * \brief An object that provides pt resolution in simulation with the current IOV
      * 
      * Can be uninitialized if resolutions have not been specified.
      */
     std::unique_ptr<JME::JetResolution> jerProvider;
     
     /**
-     * \brief An object that provides data/MC scale factors for JER
+     * \brief An object that provides data/MC scale factors for JER with the current IOV
      * 
      * Can be uninitialized if the scale factors have not been specified.
      */

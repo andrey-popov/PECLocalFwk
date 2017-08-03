@@ -12,26 +12,25 @@
 #include <stdexcept>
 
 
+JetCorrectorService::IOVParams::IOVParams(unsigned long minRun_, unsigned long maxRun_):
+    minRun(minRun_), maxRun(maxRun_)
+{}
+
+
 JetCorrectorService::JetCorrectorService(std::string const name /*= "JetCorrector"*/):
-    Service(name)
+    Service(name),
+    matchAllMode(false), curIOV(-1), curRun(0)
 {}
 
 
 JetCorrectorService::JetCorrectorService(JetCorrectorService const &src):
     Service(src),
-    jecFiles(src.jecFiles),
-    jecUncFile(src.jecUncFile), jecUncSources(src.jecUncSources),
-    jerSFFile(src.jerSFFile), jerMCFile(src.jerMCFile)
+    iovParams(src.iovParams), iovLabelMap(src.iovLabelMap),
+    matchAllMode(src.matchAllMode), curIOV(-1), curRun(0)
 {
-    // Construct all objects to evaluate JEC and impact of JER
-    CreateJECEvaluator();
-    CreateJECUncEvaluator();
-    CreateJEREvaluator();
-    
-    
     // Create a random-number generator if needed. Cannot share the same generator between copies
     //because generation of random numbers is not thread-safe
-    if (jerMCFile != "")
+    if (src.rGen)
     {
         ROOTLock::Lock();
         rGen.reset(new TRandom3(src.rGen->GetSeed()));
@@ -49,6 +48,15 @@ Service *JetCorrectorService::Clone() const
 double JetCorrectorService::Eval(Jet const &jet, double rho, SystType syst /*= SystType::None*/,
   SystService::VarDirection direction /*= SystService::VarDirection::Undefined*/) const
 {
+    if (iovParams.empty())
+    {
+        std::ostringstream message;
+        message << "JetCorrectorService[\"" << GetName() << "\"]::Eval: Service has not been "
+          "configured.";
+        throw std::logic_error(message.str());
+    }
+    
+    
     // Variable that will accumulate the total correction factor
     double corrFactor = 1.;
     
@@ -167,6 +175,15 @@ double JetCorrectorService::Eval(Jet const &jet, double rho, SystType syst /*= S
 
 double JetCorrectorService::EvalJECUnc(double const corrPt, double const eta) const
 {
+    if (iovParams.empty())
+    {
+        std::ostringstream message;
+        message << "JetCorrectorService[\"" << GetName() << "\"]::EvalJECUnc: Service has not "
+          "been configured.";
+        throw std::logic_error(message.str());
+    }
+    
+    
     double unc;
     
     try
@@ -208,42 +225,6 @@ double JetCorrectorService::EvalJECUnc(double const corrPt, double const eta) co
 }
 
 
-double JetCorrectorService::operator()(Jet const &jet, double rho, SystType syst /*= SystType::None*/,
-  SystService::VarDirection direction /*= SystService::VarDirection::Undefined*/) const
-{
-    return Eval(jet, rho, syst, direction);
-}
-
-
-void JetCorrectorService::SetJEC(std::initializer_list<std::string> const &jecFiles_)
-{
-    jecFiles.clear();
-    
-    for (auto const &jecFile: jecFiles_)
-        jecFiles.emplace_back(FileInPath::Resolve("JERC", jecFile));
-    
-    CreateJECEvaluator();
-}
-
-
-void JetCorrectorService::SetJECUncertainty(std::string const &jecUncFile_,
-  std::initializer_list<std::string> uncSources /*= {}*/)
-{
-    if (jecUncFile_ != "")
-    {
-        jecUncFile = FileInPath::Resolve("JERC", jecUncFile_);
-        jecUncSources = std::vector<std::string>(uncSources);
-    }
-    else
-    {
-        jecUncFile = "";
-        jecUncSources.clear();
-    }
-    
-    CreateJECUncEvaluator();
-}
-
-
 bool JetCorrectorService::IsSystEnabled(SystType syst) const
 {
     switch (syst)
@@ -263,31 +244,234 @@ bool JetCorrectorService::IsSystEnabled(SystType syst) const
 }
 
 
-void JetCorrectorService::SetJER(std::string const &jerSFFile_, std::string const &jerMCFile_,
-  unsigned long seed /*= 0*/)
+double JetCorrectorService::operator()(Jet const &jet, double rho, SystType syst /*= SystType::None*/,
+  SystService::VarDirection direction /*= SystService::VarDirection::Undefined*/) const
 {
-    if (jerSFFile_ != "")
-        jerSFFile = FileInPath::Resolve("JERC", jerSFFile_);
-    else
-        jerSFFile = "";
-    
-    if (jerMCFile_ != "")
-    {
-        jerMCFile = FileInPath::Resolve("JERC", jerMCFile_);
-        
-        ROOTLock::Lock();
-        rGen.reset(new TRandom3(seed));
-        ROOTLock::Unlock();
-    }
-    else
-        jerMCFile = "";
-    
-    CreateJEREvaluator();
+    return Eval(jet, rho, syst, direction);
 }
 
 
-void JetCorrectorService::CreateJECEvaluator()
+void JetCorrectorService::RegisterIOV(std::string const &label, unsigned long minRun,
+  unsigned long maxRun)
 {
+    // Sanity checks
+    if (label == "")
+    {
+        std::ostringstream message;
+        message << "JetCorrectorService[\"" << GetName() << "\"]::RegisterIOV: An empty label is "
+          "not allowed.";
+        throw std::runtime_error(message.str());
+    }
+    
+    if (iovLabelMap.find(label) != iovLabelMap.end())
+    {
+        std::ostringstream message;
+        message << "JetCorrectorService[\"" << GetName() << "\"]::RegisterIOV: An IOV with "
+          "label \"" << label << "\" has already been registered.";
+        throw std::runtime_error(message.str());
+    }
+    
+    for (auto const &iov: iovParams)
+        if ((minRun >= iov.minRun and minRun <= iov.maxRun) or
+          (maxRun >= iov.minRun and maxRun <= iov.maxRun))
+        {
+            std::ostringstream message;
+            message << "JetCorrectorService[\"" << GetName() << "\"]::RegisterIOV: Run range (" <<
+              minRun << ", " << maxRun << "), which is being registered under the label \"" <<
+              label << "\" overlaps with a previously registered run range (" << iov.minRun <<
+              ", " << maxRun << ").";
+            throw std::runtime_error(message.str());
+        }
+    
+    if (maxRun < minRun)
+    {
+        std::ostringstream message;
+        message << "JetCorrectorService[\"" << GetName() << "\"]::RegisterIOV: Wrong ordering of "
+          "boundaries of the run range (" << minRun << ", " << maxRun << ") registered under "
+          "label \"" << label << "\".";
+        throw std::runtime_error(message.str());
+    }
+    
+    
+    // Add a new IOV
+    iovParams.emplace_back(minRun, maxRun);
+    iovLabelMap[label] = iovParams.size() - 1;
+}
+
+
+void JetCorrectorService::SelectIOV(unsigned long run) const
+{
+    // Do nothing if there is only a match-all IOV and correctors have already been constructed
+    if (matchAllMode and curIOV == 0)
+        return;
+    
+    
+    if (run == curRun)
+        return;
+    
+    
+    curRun = run;
+    unsigned iovIndex = -1;
+    
+    for (unsigned i = 0; i < iovParams.size(); ++i)
+        if (curRun >= iovParams[i].minRun and curRun <= iovParams[i].maxRun)
+        {
+            iovIndex = i;
+            break;
+        }
+    
+    if (iovIndex == unsigned(-1))
+    {
+        std::ostringstream message;
+        message << "JetCorrectorService[\"" << GetName() << "\"]::SelectIOV: None of registered "
+          "IOVs includes run " << run << ".";
+        throw std::runtime_error(message.str());
+    }
+    
+    if (iovIndex == curIOV)
+    {
+        // The run number has changed, but it still belongs to the same IOV. No need to update
+        //anything.
+        return;
+    }
+    
+    
+    // Update all JERC evaluators
+    curIOV = iovIndex;
+    
+    auto nonConstThis = const_cast<JetCorrectorService *>(this);
+    nonConstThis->UpdateJECEvaluator();
+    nonConstThis->UpdateJECUncEvaluator();
+    nonConstThis->UpdateJEREvaluator();
+}
+
+
+void JetCorrectorService::SetJEC(std::string const &iovLabel,
+  std::initializer_list<std::string> const &jecFiles_)
+{
+    auto &jecFiles = GetIOVByLabel(iovLabel).jecFiles;
+    jecFiles.clear();
+    
+    for (auto const &jecFile: jecFiles_)
+        jecFiles.emplace_back(FileInPath::Resolve("JERC", jecFile));
+}
+
+
+void JetCorrectorService::SetJEC(std::initializer_list<std::string> const &jecFiles)
+{
+    SetJEC("", jecFiles);
+}
+
+
+void JetCorrectorService::SetJECUncertainty(std::string const &iovLabel,
+  std::string const &jecUncFile, std::initializer_list<std::string> uncSources /*= {}*/)
+{
+    auto &iov = GetIOVByLabel(iovLabel);
+    
+    if (jecUncFile != "")
+    {
+        iov.jecUncFile = FileInPath::Resolve("JERC", jecUncFile);
+        iov.jecUncSources = std::vector<std::string>(uncSources);
+    }
+    else
+    {
+        iov.jecUncFile = "";
+        iov.jecUncSources.clear();
+    }
+}
+
+
+void JetCorrectorService::SetJECUncertainty(std::string const &jecUncFile,
+  std::initializer_list<std::string> uncSources /*= {}*/)
+{
+    SetJECUncertainty("", jecUncFile, uncSources);
+}
+
+
+void JetCorrectorService::SetJER(std::string const &iovLabel, std::string const &jerSFFile,
+  std::string const &jerMCFile)
+{
+    auto &iov = GetIOVByLabel(iovLabel);
+    
+    if (jerSFFile != "")
+        iov.jerSFFile = FileInPath::Resolve("JERC", jerSFFile);
+    else
+        iov.jerSFFile = "";
+    
+    if (jerMCFile != "")
+    {
+        iov.jerMCFile = FileInPath::Resolve("JERC", jerMCFile);
+        
+        if (not rGen)
+        {
+            ROOTLock::Lock();
+            rGen.reset(new TRandom3(0));
+            ROOTLock::Unlock();
+        }
+    }
+    else
+        iov.jerMCFile = "";
+}
+
+
+void JetCorrectorService::SetJER(std::string const &jerSFFile, std::string const &jerMCFile)
+{
+    SetJER("", jerSFFile, jerMCFile);
+}
+
+
+JetCorrectorService::IOVParams &JetCorrectorService::GetIOVByLabel(std::string const &label)
+{
+    if (label == "")
+    {
+        // Special case of a match-all IOV. Make sure that no explicit IOV have been defined.
+        if (not iovLabelMap.empty())
+        {
+            std::ostringstream message;
+            message << "JetCorrectorService[\"" << GetName() << "\"]::GetIOVByLabel: Not possible "
+              "to use the match-all implicit IOV when some explicit IOVs have been registered.";
+            throw std::runtime_error(message.str());
+        }
+        
+        // The match-all IOV might not have been created yet
+        if (iovParams.empty())
+        {
+            iovParams.emplace_back(0, -1);
+            matchAllMode = true;
+        }
+        
+        return iovParams.front();
+    }
+    else
+    {
+        if (matchAllMode)
+        {
+            std::ostringstream message;
+            message << "JetCorrectorService[\"" << GetName() << "\"]::GetIOVByLabel: Not possible "
+              "to use together explicit IOVs with an implicit match-all one.";
+            throw std::runtime_error(message.str());
+        }
+        
+        
+        auto const &res = iovLabelMap.find(label);
+        
+        if (res == iovLabelMap.end())
+        {
+            std::ostringstream message;
+            message << "JetCorrectorService[\"" << GetName() << "\"]::GetIOVByLabel: IOV with "
+              "label \"" << label << "\" has not been registered.";
+            throw std::runtime_error(message.str());
+        }
+        
+        return iovParams[res->second];
+    }
+}
+
+
+void JetCorrectorService::UpdateJECEvaluator()
+{
+    auto const &jecFiles = iovParams[curIOV].jecFiles;
+    
     if (jecFiles.size() > 0)
     {
         // Create an object that computes jet energy corrections. Code follows an example in [1].
@@ -304,19 +488,21 @@ void JetCorrectorService::CreateJECEvaluator()
 }
 
 
-void JetCorrectorService::CreateJECUncEvaluator()
+void JetCorrectorService::UpdateJECUncEvaluator()
 {
-    if (jecUncFile != "")
+    auto const &iov = iovParams[curIOV];
+    
+    if (iov.jecUncFile != "")
     {
         // Create objects to compute JEC uncertainties. Code follows an example in [1].
         //[1] https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookJetEnergyCorrections?rev=136#JetCorUncertainties
-        if (jecUncSources.size() == 0)
-            jecUncProviders.emplace_back(new JetCorrectionUncertainty(jecUncFile));
+        if (iov.jecUncSources.size() == 0)
+            jecUncProviders.emplace_back(new JetCorrectionUncertainty(iov.jecUncFile));
         else
         {
-            for (auto const &uncSource: jecUncSources)
+            for (auto const &uncSource: iov.jecUncSources)
                 jecUncProviders.emplace_back(
-                  new JetCorrectionUncertainty(JetCorrectorParameters(jecUncFile, uncSource)));
+                  new JetCorrectionUncertainty(JetCorrectorParameters(iov.jecUncFile, uncSource)));
         }
     }
     else
@@ -324,16 +510,18 @@ void JetCorrectorService::CreateJECUncEvaluator()
 }
 
 
-void JetCorrectorService::CreateJEREvaluator()
+void JetCorrectorService::UpdateJEREvaluator()
 {
-    if (jerSFFile != "")
+    auto const &iov = iovParams[curIOV];
+    
+    if (iov.jerSFFile != "")
         jerSFProvider.reset(
-          new JME::JetResolutionScaleFactor(jerSFFile));
+          new JME::JetResolutionScaleFactor(iov.jerSFFile));
     else
         jerSFProvider.reset();
     
-    if (jerMCFile != "")
-        jerProvider.reset(new JME::JetResolution(jerMCFile));
+    if (iov.jerMCFile != "")
+        jerProvider.reset(new JME::JetResolution(iov.jerMCFile));
     else
         jerProvider.reset();
 }

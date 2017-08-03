@@ -6,6 +6,7 @@
 #include <mensura/extensions/JetCorrectorService.hpp>
 
 
+class EventIDReader;
 class PileUpReader;
 
 
@@ -116,6 +117,10 @@ private:
     /// Non-owning pointer to and name of a plugin that reads jets and MET
     JetMETReader const *jetmetPlugin;
     std::string jetmetPluginName;
+    
+    /// Non-owning pointer to a plugin that reports event ID
+    EventIDReader const *eventIDPlugin;
+    std::string eventIDPluginName;
     
     /// Non-owning pointer to and name of a plugin that reads information about pile-up
     PileUpReader const *puPlugin;
