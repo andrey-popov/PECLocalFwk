@@ -28,11 +28,22 @@ RunManager::PluginStat::PluginStat(std::string const &pluginName_):
 
 void RunManager::PrintSummary() const
 {
-    std::cout << std::setw(20) << std::left << "Plugin" << "    " <<
+    unsigned maxNameLength = 0;
+    
+    for (auto const &stat: pathStat)
+    {
+        unsigned const n = stat.pluginName.length();
+        
+        if (n > maxNameLength)
+            maxNameLength = n;
+    }
+    
+    
+    std::cout << std::setw(maxNameLength + 4) << std::left << "Plugin" << "    " <<
       std::setw(9) << std::right << "Visited" << "    " << std::setw(9) << "Passed\n";
     
     for (auto const &stat: pathStat)
-        std::cout << std::setw(20) << std::left << stat.pluginName << "    " <<
+        std::cout << std::setw(maxNameLength + 4) << std::left << stat.pluginName << "    " <<
           std::setw(9) << std::right << stat.numVisited << "   " << std::setw(9) << stat.numPassed <<
           std::endl;
 }
