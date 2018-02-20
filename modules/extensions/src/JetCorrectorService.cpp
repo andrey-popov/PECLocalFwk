@@ -1,6 +1,5 @@
 #include <mensura/extensions/JetCorrectorService.hpp>
 
-#include <mensura/core/FileInPath.hpp>
 #include <mensura/core/PhysicsObjects.hpp>
 #include <mensura/core/ROOTLock.hpp>
 
@@ -346,45 +345,16 @@ void JetCorrectorService::SelectIOV(unsigned long run) const
 }
 
 
-void JetCorrectorService::SetJEC(std::string const &iovLabel,
-  std::initializer_list<std::string> const &jecFiles_)
-{
-    auto &jecFiles = GetIOVByLabel(iovLabel).jecFiles;
-    jecFiles.clear();
-    
-    for (auto const &jecFile: jecFiles_)
-        jecFiles.emplace_back(FileInPath::Resolve("JERC", jecFile));
-}
-
-
-void JetCorrectorService::SetJEC(std::initializer_list<std::string> const &jecFiles)
-{
-    SetJEC("", jecFiles);
-}
-
-
 void JetCorrectorService::SetJECUncertainty(std::string const &iovLabel,
-  std::string const &jecUncFile, std::initializer_list<std::string> uncSources /*= {}*/)
+ std::string const &jecUncFile, std::string uncSource)
 {
-    auto &iov = GetIOVByLabel(iovLabel);
-    
-    if (jecUncFile != "")
-    {
-        iov.jecUncFile = FileInPath::Resolve("JERC", jecUncFile);
-        iov.jecUncSources = std::vector<std::string>(uncSources);
-    }
-    else
-    {
-        iov.jecUncFile = "";
-        iov.jecUncSources.clear();
-    }
+    SetJECUncertainty(iovLabel, jecUncFile, {uncSource});
 }
 
 
-void JetCorrectorService::SetJECUncertainty(std::string const &jecUncFile,
-  std::initializer_list<std::string> uncSources /*= {}*/)
+void JetCorrectorService::SetJECUncertainty(std::string const &jecUncFile, std::string uncSource)
 {
-    SetJECUncertainty("", jecUncFile, uncSources);
+    SetJECUncertainty("", jecUncFile, {uncSource});
 }
 
 

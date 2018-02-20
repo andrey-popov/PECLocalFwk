@@ -2,6 +2,7 @@
 
 #include <mensura/core/Service.hpp>
 
+#include <mensura/core/FileInPath.hpp>
 #include <mensura/core/SystService.hpp>
 
 #include <mensura/external/JERC/FactorizedJetCorrector.hpp>
@@ -14,6 +15,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 
@@ -157,31 +159,52 @@ public:
      * Different levels of corrections are applied in the same order as specified here. Paths to
      * the files are resolved using FileInPath, with a subdirectory "JERC".
      */
-    void SetJEC(std::string const &iovLabel, std::initializer_list<std::string> const &jecFiles);
+    template<typename C = std::initializer_list<std::string>>
+    void SetJEC(std::string const &iovLabel, C const &jecFiles);
     
     /**
      * \brief Specifies text files for JEC for the match-all implicit IOV
      * 
      * This is a special version of the above method to be used when no explicit IOVs are defined.
      */
-    void SetJEC(std::initializer_list<std::string> const &jecFiles);
+    template<typename C = std::initializer_list<std::string>>
+    void SetJEC(C const &jecFiles);
     
     /**
      * \brief Specifies text file for JEC uncertainties and desired uncertainty sources
      * 
-     * There is no need to provide the name of an uncertainty source if the file defines only a
-     * single one. Path to the file is resolved using FileInPath, with a subdirectory "JERC".
+     * Path to the file is resolved using FileInPath, with a subdirectory "JERC". If the file
+     * defines only a single uncertainty source, the last argument may be an empty collection.
+     */
+    template<typename C = std::initializer_list<std::string>>
+    void SetJECUncertainty(std::string const &iovLabel, std::string const &jecUncFile,
+      C const &uncSources);
+    
+    /**
+     * \brief Specifies text file for JEC uncertainties and desired uncertainty sources
+     * 
+     * Specialized version of SetJECUncertainty for a single uncertainty source. If the file
+     * defines only a single source, its label may be omitted.
      */
     void SetJECUncertainty(std::string const &iovLabel, std::string const &jecUncFile,
-      std::initializer_list<std::string> uncSources = {});
+      std::string uncSource = "");
     
     /**
      * \brief Specifies text files for JEC uncertainties for the match-all implicit IOV
      * 
-     * This is a special version of the above method to be used when no explicit IOVs are defined.
+     * Specialized version of SetJECUncertainty to be used when no explicit IOVs are defined.
      */
-    void SetJECUncertainty(std::string const &jecUncFile,
-      std::initializer_list<std::string> uncSources = {});
+    template<typename C = std::initializer_list<std::string>>
+    void SetJECUncertainty(std::string const &jecUncFile, C const &uncSources);
+    
+    /**
+     * \brief Specifies text file for JEC uncertainties and desired uncertainty sources
+     * 
+     * Specialized version of SetJECUncertainty for the case when no explicit IOVs are defined and
+     * a single uncertainty source is used. If the file defines only a single uncertainty source,
+     * its label may be omitted.
+     */
+    void SetJECUncertainty(std::string const &jecUncFile, std::string uncSource = "");
     
     /**
      * Specifies text files for data/MC JER scale factors and pt resolution in MC
@@ -278,3 +301,61 @@ private:
      */
     std::unique_ptr<TRandom3> rGen;
 };
+
+
+template<typename C>
+void JetCorrectorService::SetJEC(std::string const &iovLabel, C const &jecFiles_)
+{
+    static_assert(
+      std::is_convertible<typename C::value_type,
+      decltype(IOVParams::jecFiles)::value_type>::value,
+      "Wrong type of elements of the container");
+    
+    auto &jecFiles = GetIOVByLabel(iovLabel).jecFiles;
+    jecFiles.clear();
+    
+    for (auto const &jecFile: jecFiles_)
+        jecFiles.emplace_back(FileInPath::Resolve("JERC", jecFile));
+}
+
+
+template<typename C>
+void JetCorrectorService::SetJEC(C const &jecFiles_)
+{
+    SetJEC<C>("", jecFiles_);
+}
+
+
+template<typename C>
+void JetCorrectorService::SetJECUncertainty(std::string const &iovLabel,
+  std::string const &jecUncFile, C const &uncSources)
+{
+    static_assert(
+      std::is_convertible<typename C::value_type,
+      decltype(IOVParams::jecUncSources)::value_type>::value,
+      "Wrong type of elements of the container");
+    
+    auto &iov = GetIOVByLabel(iovLabel);
+    
+    if (jecUncFile != "")
+    {
+        iov.jecUncFile = FileInPath::Resolve("JERC", jecUncFile);
+        iov.jecUncSources.clear();
+        
+        for (auto const &uncSource: uncSources)
+            iov.jecUncSources.emplace_back(uncSource);
+    }
+    else
+    {
+        iov.jecUncFile = "";
+        iov.jecUncSources.clear();
+    }
+}
+
+
+template<typename C>
+void JetCorrectorService::SetJECUncertainty(std::string const &jecUncFile, C const &uncSources)
+{
+    SetJECUncertainty<C>("", jecUncFile, uncSources);
+}
+
