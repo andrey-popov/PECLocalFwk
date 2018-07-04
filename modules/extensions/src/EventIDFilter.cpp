@@ -147,6 +147,9 @@ void EventIDFilter::LoadEventIDLists(std::string const &eventIDsFileName)
             else
                 break;
         }
+        
+        // Sort event ID
+        std::sort(eventIDsCurFile.begin(), eventIDsCurFile.end());
     }
     
     eventIDsFile.close();
@@ -161,8 +164,8 @@ bool EventIDFilter::ProcessEvent()
     
     // Search for ID of the current event in the vector
     auto const &id = eventIDPlugin->GetEventID();
-    bool const eventFound = (std::find(eventIDsCurFile->begin(), eventIDsCurFile->end(),
-      EventID(id.Run(), id.LumiBlock(), id.Event())) != eventIDsCurFile->end());
+    bool const eventFound = std::binary_search(eventIDsCurFile->begin(), eventIDsCurFile->end(),
+      EventID(id.Run(), id.LumiBlock(), id.Event()));
     
     
     return (rejectKnownEvent) ? not eventFound : eventFound;
