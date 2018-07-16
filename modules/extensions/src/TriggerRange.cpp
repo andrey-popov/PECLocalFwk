@@ -6,7 +6,7 @@
 #include <stdexcept>
 
 
-TriggerRange::TriggerRange(unsigned long firstRun, unsigned long lastRun,
+TriggerRange::TriggerRange(EventID::RunNumber_t firstRun, EventID::RunNumber_t lastRun,
   std::initializer_list<std::string> const &dataTriggers_, double intLumi_,
   std::initializer_list<std::string> const &mcTriggers_):
     firstEvent(firstRun, true), lastEvent(lastRun, false),
@@ -17,7 +17,7 @@ TriggerRange::TriggerRange(unsigned long firstRun, unsigned long lastRun,
 }
 
 
-TriggerRange::TriggerRange(unsigned long firstRun, unsigned long lastRun,
+TriggerRange::TriggerRange(EventID::RunNumber_t firstRun, EventID::RunNumber_t lastRun,
   std::string const &dataTrigger, double intLumi_, std::string const &mcTrigger):
     firstEvent(firstRun, true), lastEvent(lastRun, false), intLumi(intLumi_)
 {

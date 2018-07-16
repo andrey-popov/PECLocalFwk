@@ -14,19 +14,25 @@
 class EventID
 {
 public:
+    using RunNumber_t = unsigned long;
+    using LumiBlockNumber_t = unsigned long;
+    using EventNumber_t = unsigned long long;
+    using BXNumber_t = unsigned;
+    
+public:
     /// Default constructor
     EventID();
     
     /// Constructor to specify the ID
-    EventID(unsigned long runNumber, unsigned long lumiBlockNumber, unsigned long eventNumber,
-      unsigned bxNumber = 0);
+    EventID(RunNumber_t runNumber, LumiBlockNumber_t lumiBlockNumber, EventNumber_t eventNumber,
+      BXNumber_t bxNumber = 0);
     
     /**
      * \brief Constructor from run number solely
      * 
      * Consult the documentation for method Set(unsigned long, bool) for the description.
      */
-    EventID(unsigned long runNumber_, bool minimal = true);
+    EventID(RunNumber_t runNumber, bool minimal = true);
     
     /// Default copy constructor
     EventID(EventID const &) = default;
@@ -36,8 +42,8 @@ public:
 
 public:
     /// Sets the ID
-    void Set(unsigned long runNumber, unsigned long lumiBlockNumber, unsigned long eventNumber,
-      unsigned bxNumber = 0);
+    void Set(RunNumber_t runNumber, LumiBlockNumber_t lumiBlockNumber, EventNumber_t eventNumber,
+      BXNumber_t bxNumber = 0);
     
     /**
      * \brief Sets the ID with the run number only
@@ -49,7 +55,7 @@ public:
      * one with the same run number. This method is useful if the user wants to specify some
      * range based on the run numbers only.
      */
-    void Set(unsigned long runNumber_, bool minimal = true);
+    void Set(RunNumber_t runNumber, bool minimal = true);
     
     /// Comparison operator
     bool operator<(EventID const &rhs) const;
@@ -61,13 +67,13 @@ public:
     bool operator<=(EventID const &rhs) const;
     
     /// Get the run number
-    unsigned long Run() const;
+    RunNumber_t Run() const;
     
     /// Get the luminosity block number
-    unsigned long LumiBlock() const;
+    LumiBlockNumber_t LumiBlock() const;
     
     /// Get the event number
-    unsigned long Event() const;
+    EventNumber_t Event() const;
     
     /**
      * \brief Returns bunch crossing number
@@ -75,11 +81,11 @@ public:
      * In case of simulation or if the bunch crossing number was not provided in the first place,
      * returns zero.
      */
-    unsigned BunchCrossing() const;
+    BXNumber_t BunchCrossing() const;
 
 private:
-    unsigned long runNumber;  ///< The run number
-    unsigned long lumiBlockNumber;  ///< The luminosity block number
-    unsigned long eventNumber;  ///< The event number
-    unsigned bxNumber;  ///< Bunch crossing number
+    RunNumber_t runNumber;  ///< The run number
+    LumiBlockNumber_t lumiBlockNumber;  ///< The luminosity block number
+    EventNumber_t eventNumber;  ///< The event number
+    BXNumber_t bxNumber;  ///< Bunch crossing number
 };

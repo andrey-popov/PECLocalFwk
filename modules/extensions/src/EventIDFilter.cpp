@@ -142,8 +142,8 @@ void EventIDFilter::LoadEventIDLists(std::string const &eventIDsFileName)
             // Try to parse the line as an event ID. However, it might also be the name of the
             //next dataset
             if (std::regex_match(line, match, eventIDRegex))
-                eventIDsCurFile.emplace_back(std::stoul(match[1]), std::stoul(match[2]),
-                  std::stoul(match[3]));
+                eventIDsCurFile.emplace_back(std::stoull(match[1]), std::stoull(match[2]),
+                  std::stoull(match[3]));
             else
                 break;
         }

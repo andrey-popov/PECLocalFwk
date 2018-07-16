@@ -2,6 +2,7 @@
 
 #include <mensura/core/Service.hpp>
 
+#include <mensura/core/EventID.hpp>
 #include <mensura/core/FileInPath.hpp>
 #include <mensura/core/SystService.hpp>
 
@@ -64,14 +65,14 @@ private:
     struct IOVParams
     {
         /// Constructor from a run range
-        IOVParams(unsigned long minRun, unsigned long maxRun);
+        IOVParams(EventID::RunNumber_t minRun, EventID::RunNumber_t maxRun);
         
         /**
          * \brief Run range for this IOV
          * 
          * The boundaries are included in the range.
          */
-        unsigned long minRun, maxRun;
+        EventID::RunNumber_t minRun, maxRun;
         
         /**
          * \brief Files with requested jet energy corrections
@@ -148,10 +149,11 @@ public:
      * first argument specifies an arbitrary label to identify this IOV for the purpose of
      * configuration.
      */
-    void RegisterIOV(std::string const &label, unsigned long minRun, unsigned long maxRun);
+    void RegisterIOV(std::string const &label, EventID::RunNumber_t minRun,
+      EventID::RunNumber_t maxRun);
     
     /// Selects IOV that includes the given run
-    void SelectIOV(unsigned long run) const;
+    void SelectIOV(EventID::RunNumber_t run) const;
     
     /**
      * \brief Specifies text files for JEC
@@ -263,7 +265,7 @@ private:
      * 
      * Used as a cache to speed up SelectIOV.
      */
-    mutable unsigned long curRun;
+    mutable EventID::RunNumber_t curRun;
     
     /**
      * \brief An object that evaluates jet energy corrections with the current IOV

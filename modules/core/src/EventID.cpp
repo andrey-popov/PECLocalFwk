@@ -6,21 +6,21 @@ EventID::EventID():
 {}
 
 
-EventID::EventID(unsigned long runNumber_, unsigned long lumiBlockNumber_,
-  unsigned long eventNumber_, unsigned bxNumber_ /*= 0*/):
+EventID::EventID(RunNumber_t runNumber_, LumiBlockNumber_t lumiBlockNumber_,
+  EventNumber_t eventNumber_, BXNumber_t bxNumber_ /*= 0*/):
     runNumber(runNumber_), lumiBlockNumber(lumiBlockNumber_), eventNumber(eventNumber_),
     bxNumber(bxNumber_)
 {}
 
 
-EventID::EventID(unsigned long runNumber_, bool minimal /*= true*/)
+EventID::EventID(RunNumber_t runNumber_, bool minimal /*= true*/)
 {
     Set(runNumber_, minimal);
 }
 
 
-void EventID::Set(unsigned long runNumber_, unsigned long lumiBlockNumber_,
-  unsigned long eventNumber_, unsigned bxNumber_ /*= 0*/)
+void EventID::Set(RunNumber_t runNumber_, LumiBlockNumber_t lumiBlockNumber_,
+  EventNumber_t eventNumber_, BXNumber_t bxNumber_ /*= 0*/)
 {
     runNumber = runNumber_;
     lumiBlockNumber = lumiBlockNumber_;
@@ -29,7 +29,7 @@ void EventID::Set(unsigned long runNumber_, unsigned long lumiBlockNumber_,
 }
 
 
-void EventID::Set(unsigned long runNumber_, bool minimal /*= true*/)
+void EventID::Set(RunNumber_t runNumber_, bool minimal /*= true*/)
 {
     runNumber = runNumber_;
     
@@ -71,25 +71,25 @@ bool EventID::operator<=(EventID const &rhs) const
 }
 
 
-unsigned long EventID::Run() const
+EventID::RunNumber_t EventID::Run() const
 {
     return runNumber;
 }
 
 
-unsigned long EventID::LumiBlock() const
+EventID::LumiBlockNumber_t EventID::LumiBlock() const
 {
     return lumiBlockNumber;
 }
 
 
-unsigned long EventID::Event() const
+EventID::EventNumber_t EventID::Event() const
 {
     return eventNumber;
 }
 
 
-unsigned EventID::BunchCrossing() const
+EventID::BXNumber_t EventID::BunchCrossing() const
 {
     return bxNumber;
 }

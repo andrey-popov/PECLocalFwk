@@ -145,7 +145,7 @@ void JetMETUpdate::UseRawMET(bool set /*= true*/)
 bool JetMETUpdate::ProcessEvent()
 {
     // Update IOV in jet correctors
-    unsigned long const run = eventIDPlugin->GetEventID().Run();
+    auto const run = eventIDPlugin->GetEventID().Run();
     
     for (auto const &corrService: {jetCorrForJets, jetCorrForMETFull, jetCorrForMETL1,
       jetCorrForMETOrigFull, jetCorrForMETOrigL1})

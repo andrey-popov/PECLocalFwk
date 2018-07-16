@@ -11,7 +11,8 @@
 #include <stdexcept>
 
 
-JetCorrectorService::IOVParams::IOVParams(unsigned long minRun_, unsigned long maxRun_):
+JetCorrectorService::IOVParams::IOVParams(EventID::RunNumber_t minRun_,
+  EventID::RunNumber_t maxRun_):
     minRun(minRun_), maxRun(maxRun_)
 {}
 
@@ -250,8 +251,8 @@ double JetCorrectorService::operator()(Jet const &jet, double rho, SystType syst
 }
 
 
-void JetCorrectorService::RegisterIOV(std::string const &label, unsigned long minRun,
-  unsigned long maxRun)
+void JetCorrectorService::RegisterIOV(std::string const &label, EventID::RunNumber_t minRun,
+  EventID::RunNumber_t maxRun)
 {
     // Sanity checks
     if (label == "")
@@ -298,7 +299,7 @@ void JetCorrectorService::RegisterIOV(std::string const &label, unsigned long mi
 }
 
 
-void JetCorrectorService::SelectIOV(unsigned long run) const
+void JetCorrectorService::SelectIOV(EventID::RunNumber_t run) const
 {
     // Do nothing if there is only a match-all IOV and correctors have already been constructed
     if (matchAllMode and curIOV == 0)

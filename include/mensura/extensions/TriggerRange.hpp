@@ -37,13 +37,13 @@ public:
      * the range). Consult documentation for SetDataTriggers and SetMCTriggers for description of
      * the remaining parameters.
      */
-    TriggerRange(unsigned long firstRun, unsigned long lastRun,
+    TriggerRange(EventID::RunNumber_t firstRun, EventID::RunNumber_t lastRun,
       std::initializer_list<std::string> const &dataTriggers, double intLumi,
       std::initializer_list<std::string> const &mcTriggers);
     
     /// Specialization of the above version to be used when a single trigger is requested
-    TriggerRange(unsigned long firstRun, unsigned long lastRun, std::string const &dataTrigger,
-      double intLumi, std::string const &mcTrigger);
+    TriggerRange(EventID::RunNumber_t firstRun, EventID::RunNumber_t lastRun,
+      std::string const &dataTrigger, double intLumi, std::string const &mcTrigger);
     
     /// Default copy constructor
     TriggerRange(TriggerRange const &) = default;
