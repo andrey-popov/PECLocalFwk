@@ -28,7 +28,7 @@ int main()
 {
     // Input dataset
     Dataset dataset(Dataset::Type::MC);
-    dataset.AddFile("ttbar.root", 831.76, 1000000 /* a dummy value */);
+    dataset.AddFile("../ttbar.root", 831.76, 1000000 /* a dummy value */);
     
     
     // Triggers
@@ -45,13 +45,13 @@ int main()
     
     
     // Register b-tagging services
-    processor.RegisterService(new BTagWPService("BTagWP_80Xv1.json"));
+    processor.RegisterService(new BTagWPService("BTagWP_80Xv2.json"));
     
-    BTagEffService *bTagEffService = new BTagEffService("BTagEff_80Xv1.root");
+    BTagEffService *bTagEffService = new BTagEffService("BTagEff_80Xv3.root");
     bTagEffService->SetDefaultEffLabel("ttbar");
     processor.RegisterService(bTagEffService);
     
-    BTagSFService *bTagSFService = new BTagSFService(bTagger, "BTagSF_cMVAv2_80Xv1.csv");
+    BTagSFService *bTagSFService = new BTagSFService(bTagger, "BTagSF_cMVAv2_80Xv3.csv");
     bTagSFService->SetMeasurement(BTagSFService::Flavour::Bottom, "ttbar");
     bTagSFService->SetMeasurement(BTagSFService::Flavour::Charm, "ttbar");
     bTagSFService->SetMeasurement(BTagSFService::Flavour::Light, "incl");

@@ -1,23 +1,12 @@
-# Compiled Object files
-*.slo
-*.lo
-*.o
+# Build directory
+build/
 
-# Compiled Dynamic libraries
-*.so
-*.so.*
-*.dylib
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-
-# ROOT dictionaries
-*.pcm
-
-# Libraries by location
-lib/*
+# Directory with libraries
+lib/
 
 # Uncompressed data files
 data/JERC/*.txt
+
+# Automatically generated file with CMake targets
+cmake/mensuraTargets.cmake
+

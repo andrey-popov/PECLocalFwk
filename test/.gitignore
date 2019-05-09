@@ -1,9 +1,3 @@
-# Compiled test programs
-minimal
-multithread
-btag-scale-factors
-btag-efficiencies
-lepton-scale-factors
-jet-corrections
-jet-met-recorrection
-jet-met-systematics
+bin/
+build/
+

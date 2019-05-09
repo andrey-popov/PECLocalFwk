@@ -18,7 +18,7 @@ int main()
 {
     BTagger const bTagger(BTagger::Algorithm::CSV, BTagger::WorkingPoint::Tight);
     
-    BTagEffService bTagEffService("BTagEff_80Xv1.root");
+    BTagEffService bTagEffService("BTagEff_80Xv3.root");
     bTagEffService.SetDefaultEffLabel("ttbar");
     
     Dataset fakeDataset(Dataset::Type::MC, "ttbar");
