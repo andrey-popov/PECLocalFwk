@@ -161,9 +161,13 @@ std::pair<float, float> BTagCalibrationReader::BTagCalibrationReaderImpl::min_ma
 }
 
 
+BTagCalibrationReader::BTagCalibrationReader() noexcept {}
+
 BTagCalibrationReader::BTagCalibrationReader(BTagEntry::OperatingPoint op,
                                              std::string sysType):
   pimpl(new BTagCalibrationReaderImpl(op, sysType)) {}
+
+BTagCalibrationReader::~BTagCalibrationReader() noexcept {}
 
 void BTagCalibrationReader::load(const BTagCalibration & c,
                                  BTagEntry::JetFlavor jf,

@@ -385,7 +385,7 @@ unsigned Processor::GetPluginIndex(string const &name) const
     {
         index = pluginNameMap.at(name);
     }
-    catch (out_of_range)  // the name has not been found
+    catch (out_of_range const &)  // the name has not been found
     {
         // Re-throw the exception with a more detailed error message
         throw out_of_range(string("Processor::GetPluginIndex: ") + "No plugin with name \"" + name +

@@ -19,9 +19,10 @@
 class BTagCalibrationReader
 {
 public:
-  BTagCalibrationReader() {}
+  BTagCalibrationReader() noexcept;
   BTagCalibrationReader(BTagEntry::OperatingPoint op,
                         std::string sysType="central");
+  ~BTagCalibrationReader() noexcept;
 
   void load(const BTagCalibration & c,
             BTagEntry::JetFlavor jf,
@@ -38,7 +39,7 @@ public:
 
 protected:
   class BTagCalibrationReaderImpl;
-  std::auto_ptr<BTagCalibrationReaderImpl> pimpl;
+  std::unique_ptr<BTagCalibrationReaderImpl> pimpl;
 };
 
 

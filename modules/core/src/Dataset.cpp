@@ -200,9 +200,12 @@ bool Dataset::IsMC() const
 
 Dataset Dataset::CopyParameters() const
 {
-    Dataset emptyDataset(processCodes, generator, showerGenerator);
+    Dataset emptyDataset;
     emptyDataset.sourceDatasetID = sourceDatasetID;
     emptyDataset.isData = isData;
+    emptyDataset.processCodes = processCodes;
+    emptyDataset.generator = generator;
+    emptyDataset.showerGenerator = showerGenerator;
     emptyDataset.flags = flags;
     
     return emptyDataset;

@@ -479,7 +479,7 @@ void JetCorrectorService::UpdateJECUncEvaluator()
                 {
                     jecUncParams.reset(new JetCorrectorParameters(iov.jecUncFile, uncSource));
                 }
-                catch (std::runtime_error)
+                catch (std::runtime_error const &)
                 {
                     std::ostringstream message;
                     message << "JetCorrectorService[\"" << GetName() <<
