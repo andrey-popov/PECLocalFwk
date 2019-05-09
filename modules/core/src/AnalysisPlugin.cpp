@@ -1,4 +1,4 @@
-#include <mensura/core/AnalysisPlugin.hpp>
+#include <mensura/AnalysisPlugin.hpp>
 
 
 AnalysisPlugin::AnalysisPlugin(std::string const &name):

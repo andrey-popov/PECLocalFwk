@@ -1,7 +1,7 @@
-#include <mensura/extensions/JetFunctorFilter.hpp>
+#include <mensura/JetFunctorFilter.hpp>
 
-#include <mensura/core/JetMETReader.hpp>
-#include <mensura/core/Processor.hpp>
+#include <mensura/JetMETReader.hpp>
+#include <mensura/Processor.hpp>
 
 #include <sstream>
 #include <stdexcept>

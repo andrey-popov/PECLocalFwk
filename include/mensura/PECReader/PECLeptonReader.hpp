@@ -1,6 +1,6 @@
 #pragma once
 
-#include <mensura/core/LeptonReader.hpp>
+#include <mensura/LeptonReader.hpp>
 
 #include <mensura/PECReader/Electron.hpp>
 #include <mensura/PECReader/Muon.hpp>

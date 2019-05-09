@@ -1,6 +1,6 @@
-#include <mensura/extensions/TFileService.hpp>
+#include <mensura/TFileService.hpp>
 
-#include <mensura/core/Dataset.hpp>
+#include <mensura/Dataset.hpp>
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/filesystem.hpp>

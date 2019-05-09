@@ -1,8 +1,8 @@
-#include <mensura/core/Processor.hpp>
+#include <mensura/Processor.hpp>
 
-#include <mensura/core/Logger.hpp>
-#include <mensura/core/ROOTLock.hpp>
-#include <mensura/core/RunManager.hpp>
+#include <mensura/Logger.hpp>
+#include <mensura/ROOTLock.hpp>
+#include <mensura/RunManager.hpp>
 
 #include <iostream>
 #include <mutex>

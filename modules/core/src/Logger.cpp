@@ -1,4 +1,4 @@
-#include <mensura/core/Logger.hpp>
+#include <mensura/Logger.hpp>
 
 #include <stdexcept>
 #include <ctime>

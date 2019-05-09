@@ -1,8 +1,8 @@
-#include <mensura/extensions/MetFilter.hpp>
+#include <mensura/MetFilter.hpp>
 
-#include <mensura/core/LeptonReader.hpp>
-#include <mensura/core/JetMETReader.hpp>
-#include <mensura/core/Processor.hpp>
+#include <mensura/LeptonReader.hpp>
+#include <mensura/JetMETReader.hpp>
+#include <mensura/Processor.hpp>
 
 #include <cmath>
 

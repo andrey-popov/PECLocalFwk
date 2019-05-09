@@ -1,14 +1,12 @@
-#include <mensura/extensions/BTagEffService.hpp>
+#include <mensura/BTagEffService.hpp>
 
-#include <mensura/core/FileInPath.hpp>
-#include <mensura/core/PhysicsObjects.hpp>
-#include <mensura/core/ROOTLock.hpp>
+#include <mensura/FileInPath.hpp>
+#include <mensura/PhysicsObjects.hpp>
+#include <mensura/ROOTLock.hpp>
 
 #include <algorithm>
 #include <sstream>
 #include <stdexcept>
-
-/**/#include <iostream>
 
 
 BTagEffService::BTagEffService(std::string const &name, std::string const &path):

@@ -1,4 +1,4 @@
-#include <mensura/extensions/WeightCollector.hpp>
+#include <mensura/WeightCollector.hpp>
 
 #include <sstream>
 #include <stdexcept>

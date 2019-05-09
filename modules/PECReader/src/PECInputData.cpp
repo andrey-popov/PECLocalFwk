@@ -1,7 +1,7 @@
 #include <mensura/PECReader/PECInputData.hpp>
 
-#include <mensura/core/Logger.hpp>
-#include <mensura/core/ROOTLock.hpp>
+#include <mensura/Logger.hpp>
+#include <mensura/ROOTLock.hpp>
 
 #include <algorithm>
 #include <iostream>

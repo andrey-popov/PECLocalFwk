@@ -1,6 +1,6 @@
 #pragma once
 
-#include <mensura/core/GenJetMETReader.hpp>
+#include <mensura/GenJetMETReader.hpp>
 
 #include <mensura/PECReader/Candidate.hpp>
 #include <mensura/PECReader/GenJet.hpp>

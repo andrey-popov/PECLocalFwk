@@ -1,9 +1,9 @@
-#include <mensura/extensions/GenWeightSyst.hpp>
+#include <mensura/GenWeightSyst.hpp>
 
-#include <mensura/core/Dataset.hpp>
-#include <mensura/core/FileInPath.hpp>
-#include <mensura/core/GeneratorReader.hpp>
-#include <mensura/core/Logger.hpp>
+#include <mensura/Dataset.hpp>
+#include <mensura/FileInPath.hpp>
+#include <mensura/GeneratorReader.hpp>
+#include <mensura/Logger.hpp>
 
 #include <mensura/external/JsonCpp/json.hpp>
 

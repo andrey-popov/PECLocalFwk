@@ -1,11 +1,11 @@
-#include <mensura/extensions/BTagWeightCSVShape.hpp>
+#include <mensura/BTagWeightCSVShape.hpp>
 
-#include <mensura/core/BTagger.hpp>
-#include <mensura/core/FileInPath.hpp>
-#include <mensura/core/JetMETReader.hpp>
-#include <mensura/core/PhysicsObjects.hpp>
-#include <mensura/core/Processor.hpp>
-#include <mensura/core/ROOTLock.hpp>
+#include <mensura/BTagger.hpp>
+#include <mensura/FileInPath.hpp>
+#include <mensura/JetMETReader.hpp>
+#include <mensura/PhysicsObjects.hpp>
+#include <mensura/Processor.hpp>
+#include <mensura/ROOTLock.hpp>
 
 #include <TFile.h>
 #include <TH3.h>

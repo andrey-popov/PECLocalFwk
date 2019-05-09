@@ -1,10 +1,10 @@
 #include <mensura/PECReader/PECJetMETReader.hpp>
 
-#include <mensura/core/FileInPath.hpp>
-#include <mensura/core/PileUpReader.hpp>
-#include <mensura/core/Processor.hpp>
-#include <mensura/core/PhysicsObjects.hpp>
-#include <mensura/core/ROOTLock.hpp>
+#include <mensura/FileInPath.hpp>
+#include <mensura/PileUpReader.hpp>
+#include <mensura/Processor.hpp>
+#include <mensura/PhysicsObjects.hpp>
+#include <mensura/ROOTLock.hpp>
 #include <mensura/PECReader/PECInputData.hpp>
 
 #include <TVector2.h>

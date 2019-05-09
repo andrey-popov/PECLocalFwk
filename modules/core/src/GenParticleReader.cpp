@@ -1,4 +1,4 @@
-#include <mensura/core/GenParticleReader.hpp>
+#include <mensura/GenParticleReader.hpp>
 
 
 GenParticleReader::GenParticleReader(std::string const name /*= "GenParticles"*/):

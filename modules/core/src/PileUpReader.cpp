@@ -1,4 +1,4 @@
-#include <mensura/core/PileUpReader.hpp>
+#include <mensura/PileUpReader.hpp>
 
 
 PileUpReader::PileUpReader(std::string const name /*= "PileUp"*/):

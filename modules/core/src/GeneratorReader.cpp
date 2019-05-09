@@ -1,4 +1,4 @@
-#include <mensura/core/GeneratorReader.hpp>
+#include <mensura/GeneratorReader.hpp>
 
 #include <sstream>
 #include <stdexcept>

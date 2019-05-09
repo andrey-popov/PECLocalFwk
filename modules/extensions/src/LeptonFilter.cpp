@@ -1,7 +1,7 @@
-#include <mensura/extensions/LeptonFilter.hpp>
+#include <mensura/LeptonFilter.hpp>
 
-#include <mensura/core/LeptonReader.hpp>
-#include <mensura/core/Processor.hpp>
+#include <mensura/LeptonReader.hpp>
+#include <mensura/Processor.hpp>
 
 
 LeptonFilter::SelectionBin::SelectionBin(Lepton::Flavour flavour_, double minPt_,

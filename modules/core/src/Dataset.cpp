@@ -1,4 +1,4 @@
-#include <mensura/core/Dataset.hpp>
+#include <mensura/Dataset.hpp>
 
 #include <boost/filesystem.hpp>
 

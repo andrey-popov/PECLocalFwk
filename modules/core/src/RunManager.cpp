@@ -1,6 +1,6 @@
-#include <mensura/core/RunManager.hpp>
+#include <mensura/RunManager.hpp>
 
-#include <mensura/core/Logger.hpp>
+#include <mensura/Logger.hpp>
 
 #include <TROOT.h>
 

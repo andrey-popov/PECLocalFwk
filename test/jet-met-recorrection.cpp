@@ -3,12 +3,11 @@
  * and compares results to the reference.
  */
 
-#include <mensura/core/Dataset.hpp>
-#include <mensura/core/Processor.hpp>
-#include <mensura/core/SystService.hpp>
-
-#include <mensura/extensions/JetCorrectorService.hpp>
-#include <mensura/extensions/JetMETUpdate.hpp>
+#include <mensura/Dataset.hpp>
+#include <mensura/JetCorrectorService.hpp>
+#include <mensura/JetMETUpdate.hpp>
+#include <mensura/Processor.hpp>
+#include <mensura/SystService.hpp>
 
 #include <mensura/PECReader/PECGenJetMETReader.hpp>
 #include <mensura/PECReader/PECInputData.hpp>

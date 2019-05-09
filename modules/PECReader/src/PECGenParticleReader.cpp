@@ -1,7 +1,7 @@
 #include <mensura/PECReader/PECGenParticleReader.hpp>
 
-#include <mensura/core/Processor.hpp>
-#include <mensura/core/ROOTLock.hpp>
+#include <mensura/Processor.hpp>
+#include <mensura/ROOTLock.hpp>
 #include <mensura/PECReader/PECInputData.hpp>
 
 #include <algorithm>

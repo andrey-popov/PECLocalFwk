@@ -1,6 +1,6 @@
 #pragma once
 
-#include <mensura/core/GenParticleReader.hpp>
+#include <mensura/GenParticleReader.hpp>
 
 #include <mensura/PECReader/GenParticle.hpp>
 

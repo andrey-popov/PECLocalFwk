@@ -1,4 +1,4 @@
-#include <mensura/extensions/EventCounter.hpp>
+#include <mensura/EventCounter.hpp>
 
 #include <stdexcept>
 #include <iostream>

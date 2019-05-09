@@ -1,10 +1,10 @@
-#include <mensura/extensions/BTagWeight.hpp>
+#include <mensura/BTagWeight.hpp>
 
-#include <mensura/core/BTagWPService.hpp>
-#include <mensura/core/JetMETReader.hpp>
-#include <mensura/core/PhysicsObjects.hpp>
-#include <mensura/core/Processor.hpp>
-#include <mensura/extensions/BTagEffService.hpp>
+#include <mensura/BTagEffService.hpp>
+#include <mensura/BTagWPService.hpp>
+#include <mensura/JetMETReader.hpp>
+#include <mensura/PhysicsObjects.hpp>
+#include <mensura/Processor.hpp>
 
 
 BTagWeight::BTagWeight(std::string const &name, BTagger bTagger_,

@@ -1,4 +1,4 @@
-#include <mensura/core/SystService.hpp>
+#include <mensura/SystService.hpp>
 
 #include <limits>
 #include <sstream>

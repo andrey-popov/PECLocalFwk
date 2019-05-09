@@ -1,4 +1,4 @@
-#include <mensura/extensions/TriggerRange.hpp>
+#include <mensura/TriggerRange.hpp>
 
 #include <boost/algorithm/string/predicate.hpp>
 

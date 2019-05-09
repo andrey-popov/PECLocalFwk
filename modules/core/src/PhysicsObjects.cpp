@@ -1,4 +1,4 @@
-#include <mensura/core/PhysicsObjects.hpp>
+#include <mensura/PhysicsObjects.hpp>
 
 #include <limits>
 #include <sstream>

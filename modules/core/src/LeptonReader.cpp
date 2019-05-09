@@ -1,4 +1,4 @@
-#include <mensura/core/LeptonReader.hpp>
+#include <mensura/LeptonReader.hpp>
 
 
 LeptonReader::LeptonReader(std::string const name /*= "Leptons"*/):

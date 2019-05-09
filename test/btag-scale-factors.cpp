@@ -2,8 +2,8 @@
  * This program tests BTagSFService.
  */
 
-#include <mensura/core/BTagger.hpp>
-#include <mensura/extensions/BTagSFService.hpp>
+#include <mensura/BTagSFService.hpp>
+#include <mensura/BTagger.hpp>
 
 #include <iomanip>
 #include <iostream>

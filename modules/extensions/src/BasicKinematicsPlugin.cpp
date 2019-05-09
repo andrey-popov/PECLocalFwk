@@ -1,14 +1,13 @@
-#include <mensura/extensions/BasicKinematicsPlugin.hpp>
+#include <mensura/BasicKinematicsPlugin.hpp>
 
-#include <mensura/core/LeptonReader.hpp>
-#include <mensura/core/JetMETReader.hpp>
-#include <mensura/core/PileUpReader.hpp>
-#include <mensura/core/Processor.hpp>
-#include <mensura/core/PhysicsObjects.hpp>
-#include <mensura/core/ROOTLock.hpp>
-
-#include <mensura/extensions/TFileService.hpp>
-#include <mensura/extensions/WeightCollector.hpp>
+#include <mensura/LeptonReader.hpp>
+#include <mensura/JetMETReader.hpp>
+#include <mensura/PileUpReader.hpp>
+#include <mensura/Processor.hpp>
+#include <mensura/PhysicsObjects.hpp>
+#include <mensura/ROOTLock.hpp>
+#include <mensura/TFileService.hpp>
+#include <mensura/WeightCollector.hpp>
 
 
 BasicKinematicsPlugin::BasicKinematicsPlugin(std::string const name /*= "BasicKinematics"*/):

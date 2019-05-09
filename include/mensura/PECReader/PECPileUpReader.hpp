@@ -1,6 +1,6 @@
 #pragma once
 
-#include <mensura/core/PileUpReader.hpp>
+#include <mensura/PileUpReader.hpp>
 
 #include <mensura/PECReader/PileUpInfo.hpp>
 

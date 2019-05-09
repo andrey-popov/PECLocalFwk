@@ -1,4 +1,4 @@
-#include <mensura/core/GenJetMETReader.hpp>
+#include <mensura/GenJetMETReader.hpp>
 
 
 GenJetMETReader::GenJetMETReader(std::string const name /*= "GenJetMET"*/):

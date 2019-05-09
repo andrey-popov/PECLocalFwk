@@ -1,4 +1,4 @@
-#include <mensura/core/Service.hpp>
+#include <mensura/Service.hpp>
 
 #include <stdexcept>
 

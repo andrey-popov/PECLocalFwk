@@ -1,4 +1,4 @@
-#include <mensura/core/ReaderPlugin.hpp>
+#include <mensura/ReaderPlugin.hpp>
 
 
 ReaderPlugin::ReaderPlugin(std::string const &name):

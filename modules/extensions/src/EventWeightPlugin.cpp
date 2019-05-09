@@ -1,4 +1,4 @@
-#include <mensura/extensions/EventWeightPlugin.hpp>
+#include <mensura/EventWeightPlugin.hpp>
 
 #include <stdexcept>
 #include <sstream>

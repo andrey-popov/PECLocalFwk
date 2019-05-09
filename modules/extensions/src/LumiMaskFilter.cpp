@@ -1,7 +1,7 @@
-#include <mensura/extensions/LumiMaskFilter.hpp>
+#include <mensura/LumiMaskFilter.hpp>
 
-#include <mensura/core/EventIDReader.hpp>
-#include <mensura/core/Processor.hpp>
+#include <mensura/EventIDReader.hpp>
+#include <mensura/Processor.hpp>
 
 #include <algorithm>
 #include <iostream>

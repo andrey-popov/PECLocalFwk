@@ -1,8 +1,8 @@
 #pragma once
 
-#include <mensura/core/AnalysisPlugin.hpp>
+#include <mensura/AnalysisPlugin.hpp>
 
-#include <mensura/extensions/TriggerRange.hpp>
+#include <mensura/TriggerRange.hpp>
 
 #include <Rtypes.h>
 

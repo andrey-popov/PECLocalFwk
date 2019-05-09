@@ -1,9 +1,9 @@
-#include <mensura/extensions/JetFilter.hpp>
+#include <mensura/JetFilter.hpp>
 
-#include <mensura/core/BTagWPService.hpp>
-#include <mensura/core/JetMETReader.hpp>
-#include <mensura/core/PhysicsObjects.hpp>
-#include <mensura/core/Processor.hpp>
+#include <mensura/BTagWPService.hpp>
+#include <mensura/JetMETReader.hpp>
+#include <mensura/PhysicsObjects.hpp>
+#include <mensura/Processor.hpp>
 
 
 JetFilter::SelectionBin::SelectionBin(unsigned minJets_, unsigned maxJets_, unsigned minTags_,

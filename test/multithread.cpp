@@ -1,17 +1,16 @@
-#include <mensura/core/BTagWPService.hpp>
-#include <mensura/core/Dataset.hpp>
-#include <mensura/core/RunManager.hpp>
-
-#include <mensura/extensions/BasicKinematicsPlugin.hpp>
-#include <mensura/extensions/BTagEffService.hpp>
-#include <mensura/extensions/BTagSFService.hpp>
-#include <mensura/extensions/BTagWeight.hpp>
-#include <mensura/extensions/JetFilter.hpp>
-#include <mensura/extensions/LeptonFilter.hpp>
-#include <mensura/extensions/MetFilter.hpp>
-#include <mensura/extensions/PileUpWeight.hpp>
-#include <mensura/extensions/TFileService.hpp>
-#include <mensura/extensions/WeightCollector.hpp>
+#include <mensura/BasicKinematicsPlugin.hpp>
+#include <mensura/BTagEffService.hpp>
+#include <mensura/BTagSFService.hpp>
+#include <mensura/BTagWPService.hpp>
+#include <mensura/BTagWeight.hpp>
+#include <mensura/Dataset.hpp>
+#include <mensura/JetFilter.hpp>
+#include <mensura/LeptonFilter.hpp>
+#include <mensura/MetFilter.hpp>
+#include <mensura/PileUpWeight.hpp>
+#include <mensura/RunManager.hpp>
+#include <mensura/TFileService.hpp>
+#include <mensura/WeightCollector.hpp>
 
 #include <mensura/PECReader/PECGeneratorReader.hpp>
 #include <mensura/PECReader/PECInputData.hpp>

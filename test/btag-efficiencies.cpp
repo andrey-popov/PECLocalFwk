@@ -2,9 +2,9 @@
  * This program tests BTagEffService.
  */
 
-#include <mensura/core/BTagger.hpp>
-#include <mensura/core/Dataset.hpp>
-#include <mensura/extensions/BTagEffService.hpp>
+#include <mensura/BTagEffService.hpp>
+#include <mensura/BTagger.hpp>
+#include <mensura/Dataset.hpp>
 
 #include <iomanip>
 #include <iostream>

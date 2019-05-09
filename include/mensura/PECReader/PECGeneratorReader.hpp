@@ -1,6 +1,6 @@
 #pragma once
 
-#include <mensura/core/GeneratorReader.hpp>
+#include <mensura/GeneratorReader.hpp>
 
 #include <mensura/PECReader/GeneratorInfo.hpp>
 

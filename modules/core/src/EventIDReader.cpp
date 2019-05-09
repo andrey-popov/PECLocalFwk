@@ -1,4 +1,4 @@
-#include <mensura/core/EventIDReader.hpp>
+#include <mensura/EventIDReader.hpp>
 
 
 EventIDReader::EventIDReader(std::string const name /*= "EventID"*/):

@@ -1,13 +1,12 @@
-#include <mensura/core/BTagWPService.hpp>
-#include <mensura/core/Dataset.hpp>
-#include <mensura/core/Processor.hpp>
-
-#include <mensura/extensions/BTagEffService.hpp>
-#include <mensura/extensions/BTagSFService.hpp>
-#include <mensura/extensions/BTagWeight.hpp>
-#include <mensura/extensions/JetFilter.hpp>
-#include <mensura/extensions/LeptonFilter.hpp>
-#include <mensura/extensions/MetFilter.hpp>
+#include <mensura/BTagEffService.hpp>
+#include <mensura/BTagSFService.hpp>
+#include <mensura/BTagWPService.hpp>
+#include <mensura/BTagWeight.hpp>
+#include <mensura/Dataset.hpp>
+#include <mensura/JetFilter.hpp>
+#include <mensura/LeptonFilter.hpp>
+#include <mensura/MetFilter.hpp>
+#include <mensura/Processor.hpp>
 
 #include <mensura/PECReader/PECGeneratorReader.hpp>
 #include <mensura/PECReader/PECGenJetMETReader.hpp>

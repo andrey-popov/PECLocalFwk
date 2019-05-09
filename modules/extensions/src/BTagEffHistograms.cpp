@@ -1,10 +1,10 @@
-#include <mensura/extensions/BTagEffHistograms.hpp>
+#include <mensura/BTagEffHistograms.hpp>
 
-#include <mensura/core/BTagWPService.hpp>
-#include <mensura/core/JetMETReader.hpp>
-#include <mensura/core/Processor.hpp>
-#include <mensura/extensions/WeightCollector.hpp>
-#include <mensura/extensions/TFileService.hpp>
+#include <mensura/BTagWPService.hpp>
+#include <mensura/JetMETReader.hpp>
+#include <mensura/Processor.hpp>
+#include <mensura/TFileService.hpp>
+#include <mensura/WeightCollector.hpp>
 
 #include <cmath>
 

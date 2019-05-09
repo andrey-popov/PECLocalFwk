@@ -1,9 +1,9 @@
 #pragma once
 
-#include <mensura/core/EventIDReader.hpp>
+#include <mensura/EventIDReader.hpp>
 
-#include <mensura/core/EventID.hpp>
-#include <mensura/core/Dataset.hpp>
+#include <mensura/EventID.hpp>
+#include <mensura/Dataset.hpp>
 #include <mensura/PECReader/EventID.hpp>
 
 #include <TFile.h>

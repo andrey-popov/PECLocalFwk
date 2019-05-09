@@ -2,9 +2,9 @@
  * This test program applies requested JERC variations and prints resulting jet pt and MET.
  */
 
-#include <mensura/core/Dataset.hpp>
-#include <mensura/core/Processor.hpp>
-#include <mensura/core/SystService.hpp>
+#include <mensura/Dataset.hpp>
+#include <mensura/Processor.hpp>
+#include <mensura/SystService.hpp>
 
 #include <mensura/PECReader/PECInputData.hpp>
 #include <mensura/PECReader/PECJetMETReader.hpp>

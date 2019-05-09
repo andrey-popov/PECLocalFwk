@@ -1,9 +1,9 @@
-#include <mensura/extensions/LeptonSFWeight.hpp>
+#include <mensura/LeptonSFWeight.hpp>
 
-#include <mensura/core/FileInPath.hpp>
-#include <mensura/core/LeptonReader.hpp>
-#include <mensura/core/Processor.hpp>
-#include <mensura/core/ROOTLock.hpp>
+#include <mensura/FileInPath.hpp>
+#include <mensura/LeptonReader.hpp>
+#include <mensura/Processor.hpp>
+#include <mensura/ROOTLock.hpp>
 
 #include <TFile.h>
 #include <TObjString.h>

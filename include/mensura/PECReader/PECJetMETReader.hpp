@@ -1,10 +1,10 @@
 #pragma once
 
-#include <mensura/core/JetMETReader.hpp>
+#include <mensura/JetMETReader.hpp>
 
-#include <mensura/core/LeptonReader.hpp>
-#include <mensura/core/GenJetMETReader.hpp>
-#include <mensura/core/SystService.hpp>
+#include <mensura/LeptonReader.hpp>
+#include <mensura/GenJetMETReader.hpp>
+#include <mensura/SystService.hpp>
 
 #include <mensura/external/JERC/JetResolution.hpp>
 

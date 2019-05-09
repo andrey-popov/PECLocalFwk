@@ -1,4 +1,4 @@
-#include <mensura/core/BTagger.hpp>
+#include <mensura/BTagger.hpp>
 
 #include <stdexcept>
 

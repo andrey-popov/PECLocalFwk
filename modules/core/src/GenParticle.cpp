@@ -1,4 +1,4 @@
-#include <mensura/core/GenParticle.hpp>
+#include <mensura/GenParticle.hpp>
 
 #include <algorithm>
 

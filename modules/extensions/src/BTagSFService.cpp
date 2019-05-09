@@ -1,7 +1,7 @@
-#include <mensura/extensions/BTagSFService.hpp>
+#include <mensura/BTagSFService.hpp>
 
-#include <mensura/core/FileInPath.hpp>
-#include <mensura/core/PhysicsObjects.hpp>
+#include <mensura/FileInPath.hpp>
+#include <mensura/PhysicsObjects.hpp>
 #include <mensura/external/BTagCalibration/BTagCalibration.hpp>
 #include <mensura/external/BTagCalibration/BTagCalibrationReader.hpp>
 

@@ -1,6 +1,6 @@
-#include <mensura/core/Plugin.hpp>
+#include <mensura/Plugin.hpp>
 
-#include <mensura/core/Processor.hpp>
+#include <mensura/Processor.hpp>
 
 #include <sstream>
 #include <stdexcept>

@@ -1,4 +1,4 @@
-#include <mensura/core/FileInPath.hpp>
+#include <mensura/FileInPath.hpp>
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/filesystem.hpp>

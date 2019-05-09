@@ -1,7 +1,7 @@
 #pragma once
 
-#include <mensura/core/PhysicsObjects.hpp>
-#include <mensura/core/ReaderPlugin.hpp>
+#include <mensura/PhysicsObjects.hpp>
+#include <mensura/ReaderPlugin.hpp>
 
 #include <mensura/PECReader/Candidate.hpp>
 

@@ -1,7 +1,7 @@
-#include <mensura/extensions/JetCorrectorService.hpp>
+#include <mensura/JetCorrectorService.hpp>
 
-#include <mensura/core/PhysicsObjects.hpp>
-#include <mensura/core/ROOTLock.hpp>
+#include <mensura/PhysicsObjects.hpp>
+#include <mensura/ROOTLock.hpp>
 
 #include <mensura/external/JERC/JetCorrectorParameters.hpp>
 

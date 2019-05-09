@@ -1,4 +1,4 @@
-#include <mensura/core/ROOTLock.hpp>
+#include <mensura/ROOTLock.hpp>
 
 
 std::mutex ROOTLock::globalROOTMutex;

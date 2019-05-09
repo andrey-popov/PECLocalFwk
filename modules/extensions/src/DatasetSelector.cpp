@@ -1,6 +1,6 @@
-#include <mensura/extensions/DatasetSelector.hpp>
+#include <mensura/DatasetSelector.hpp>
 
-#include <mensura/core/Dataset.hpp>
+#include <mensura/Dataset.hpp>
 
 
 DatasetSelector::DatasetSelector(std::string const &name,

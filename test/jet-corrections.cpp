@@ -3,10 +3,9 @@
  * momenta of jets are not altered.
  */
 
-#include <mensura/core/Dataset.hpp>
-#include <mensura/core/Processor.hpp>
-
-#include <mensura/extensions/JetCorrectorService.hpp>
+#include <mensura/Dataset.hpp>
+#include <mensura/JetCorrectorService.hpp>
+#include <mensura/Processor.hpp>
 
 #include <mensura/PECReader/PECGenJetMETReader.hpp>
 #include <mensura/PECReader/PECInputData.hpp>

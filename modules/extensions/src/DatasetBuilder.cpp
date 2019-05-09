@@ -1,6 +1,6 @@
-#include <mensura/extensions/DatasetBuilder.hpp>
+#include <mensura/DatasetBuilder.hpp>
 
-#include <mensura/core/FileInPath.hpp>
+#include <mensura/FileInPath.hpp>
 
 #include <fstream>
 #include <memory>

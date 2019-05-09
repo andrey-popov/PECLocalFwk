@@ -3,11 +3,10 @@
  * scale factors.
  */
 
-#include <mensura/core/Dataset.hpp>
-#include <mensura/core/Processor.hpp>
-
-#include <mensura/extensions/LeptonFilter.hpp>
-#include <mensura/extensions/LeptonSFWeight.hpp>
+#include <mensura/Dataset.hpp>
+#include <mensura/LeptonFilter.hpp>
+#include <mensura/LeptonSFWeight.hpp>
+#include <mensura/Processor.hpp>
 
 #include <mensura/PECReader/PECInputData.hpp>
 #include <mensura/PECReader/PECLeptonReader.hpp>

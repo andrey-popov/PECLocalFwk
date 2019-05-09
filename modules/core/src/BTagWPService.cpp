@@ -1,6 +1,6 @@
-#include <mensura/core/BTagWPService.hpp>
+#include <mensura/BTagWPService.hpp>
 
-#include <mensura/core/FileInPath.hpp>
+#include <mensura/FileInPath.hpp>
 #include <mensura/external/JsonCpp/json.hpp>
 
 #include <fstream>

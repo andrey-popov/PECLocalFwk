@@ -1,9 +1,9 @@
-#include <mensura/extensions/PileUpWeight.hpp>
+#include <mensura/PileUpWeight.hpp>
 
-#include <mensura/core/FileInPath.hpp>
-#include <mensura/core/PileUpReader.hpp>
-#include <mensura/core/Processor.hpp>
-#include <mensura/core/ROOTLock.hpp>
+#include <mensura/FileInPath.hpp>
+#include <mensura/PileUpReader.hpp>
+#include <mensura/Processor.hpp>
+#include <mensura/ROOTLock.hpp>
 
 #include <TKey.h>
 

@@ -1,7 +1,7 @@
-#include <mensura/extensions/EventIDReminderFilter.hpp>
+#include <mensura/EventIDReminderFilter.hpp>
 
-#include <mensura/core/EventIDReader.hpp>
-#include <mensura/core/Processor.hpp>
+#include <mensura/EventIDReader.hpp>
+#include <mensura/Processor.hpp>
 
 
 EventIDReminderFilter::EventIDReminderFilter(std::string const &name,

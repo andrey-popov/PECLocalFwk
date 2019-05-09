@@ -1,4 +1,4 @@
-#include <mensura/core/EventID.hpp>
+#include <mensura/EventID.hpp>
 
 
 EventID::EventID():
