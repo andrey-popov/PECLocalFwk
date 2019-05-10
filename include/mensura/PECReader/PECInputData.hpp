@@ -4,7 +4,6 @@
 
 #include <mensura/EventID.hpp>
 #include <mensura/Dataset.hpp>
-#include <mensura/PECReader/EventID.hpp>
 
 #include <TFile.h>
 #include <TTree.h>
@@ -12,6 +11,11 @@
 #include <map>
 #include <memory>
 #include <string>
+
+
+namespace pec {
+class EventID;
+};
 
 
 /**
@@ -160,13 +164,10 @@ private:
     /// A shortcut to the tree with event IDs
     TTree *eventIDTree;
     
-    /// Buffer to read event ID branch of the tree
-    pec::EventID bfEventID;
-    
     /**
-     * \brief An auxiliary pointer
-     * 
-     * ROOT needs a variable with a pointer to an object to read the object from a tree.
+     * \brief Pointer to buffer to read event ID branch of the tree
+     *
+     * The buffer is allocated by TBranch.
      */
-    pec::EventID *bfEventIDPointer;
+    pec::EventID *bfEventIDP;
 };

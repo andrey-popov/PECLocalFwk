@@ -1,16 +1,16 @@
-#include <mensura/PECReader/Candidate.hpp>
-#include <mensura/PECReader/CandidateWithID.hpp>
-#include <mensura/PECReader/Lepton.hpp>
-#include <mensura/PECReader/Muon.hpp>
-#include <mensura/PECReader/Electron.hpp>
-#include <mensura/PECReader/Jet.hpp>
-#include <mensura/PECReader/GenParticle.hpp>
-#include <mensura/PECReader/GenJet.hpp>
-#include <mensura/PECReader/ShowerParton.hpp>
+#include "Candidate.hpp"
+#include "CandidateWithID.hpp"
+#include "Lepton.hpp"
+#include "Muon.hpp"
+#include "Electron.hpp"
+#include "Jet.hpp"
+#include "GenParticle.hpp"
+#include "GenJet.hpp"
+#include "ShowerParton.hpp"
 
-#include <mensura/PECReader/EventID.hpp>
-#include <mensura/PECReader/PileUpInfo.hpp>
-#include <mensura/PECReader/GeneratorInfo.hpp>
+#include "EventID.hpp"
+#include "PileUpInfo.hpp"
+#include "GeneratorInfo.hpp"
 
 #include <vector>
 

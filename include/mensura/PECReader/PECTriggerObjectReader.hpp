@@ -3,8 +3,6 @@
 #include <mensura/PhysicsObjects.hpp>
 #include <mensura/ReaderPlugin.hpp>
 
-#include <mensura/PECReader/Candidate.hpp>
-
 #include <initializer_list>
 #include <map>
 #include <regex>
@@ -13,6 +11,10 @@
 
 
 class PECInputData;
+
+namespace pec {
+class Candidate;
+};
 
 
 /**

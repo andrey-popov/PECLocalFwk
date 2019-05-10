@@ -3,6 +3,8 @@
 #include <mensura/Logger.hpp>
 #include <mensura/ROOTLock.hpp>
 
+#include "EventID.hpp"
+
 #include <algorithm>
 #include <iostream>
 #include <iterator>
@@ -19,7 +21,7 @@ PECInputData::PECInputData(std::string const name):
     nextFileIt(inputFiles.end()),
     eventIDTreeName("pecEventID/EventID"),
     nEvents(0), nextEvent(0),
-    eventIDTree(nullptr)
+    eventIDTree(nullptr), bfEventIDP(nullptr)
 {}
 
 
@@ -176,9 +178,8 @@ bool PECInputData::NextInputFile()
     
     
     // Set up the tree and update counters
-    bfEventIDPointer = &bfEventID;
     ROOTLock::Lock();
-    eventIDTree->SetBranchAddress("eventId", &bfEventIDPointer);
+    eventIDTree->SetBranchAddress("eventId", &bfEventIDP);
     ROOTLock::Unlock();
     
     nEvents = eventIDTree->GetEntries();
@@ -207,8 +208,8 @@ bool PECInputData::ProcessEvent()
     ++nextEvent;
     
     // Translate the ID from the storage format to the standard format of the framework
-    eventID.Set(bfEventID.RunNumber(), bfEventID.LumiSectionNumber(), bfEventID.EventNumber(),
-      bfEventID.BunchCrossing());
+    eventID.Set(bfEventIDP->RunNumber(), bfEventIDP->LumiSectionNumber(), bfEventIDP->EventNumber(),
+      bfEventIDP->BunchCrossing());
     
     
     // Debug output

@@ -1,4 +1,4 @@
-#include <mensura/PECReader/PileUpInfo.hpp>
+#include "PileUpInfo.hpp"
 
 
 pec::PileUpInfo::PileUpInfo() noexcept:

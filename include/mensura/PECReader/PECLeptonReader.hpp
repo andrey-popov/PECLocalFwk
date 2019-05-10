@@ -2,14 +2,16 @@
 
 #include <mensura/LeptonReader.hpp>
 
-#include <mensura/PECReader/Electron.hpp>
-#include <mensura/PECReader/Muon.hpp>
-
 #include <memory>
 #include <string>
 
 
 class PECInputData;
+
+namespace pec {
+class Electron;
+class Muon;
+};
 
 
 /**

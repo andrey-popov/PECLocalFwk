@@ -2,13 +2,15 @@
 
 #include <mensura/GenParticleReader.hpp>
 
-#include <mensura/PECReader/GenParticle.hpp>
-
 #include <memory>
 #include <string>
 
 
 class PECInputData;
+
+namespace pec {
+class GenParticle;
+};
 
 
 /**

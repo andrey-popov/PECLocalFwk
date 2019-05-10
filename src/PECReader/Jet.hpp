@@ -1,6 +1,6 @@
 #pragma once
 
-#include <mensura/PECReader/CandidateWithID.hpp>
+#include "CandidateWithID.hpp"
 
 
 namespace pec

@@ -4,6 +4,9 @@
 #include <mensura/ROOTLock.hpp>
 #include <mensura/PECReader/PECInputData.hpp>
 
+#include "Electron.hpp"
+#include "Muon.hpp"
+
 #include <algorithm>
 #include <cmath>
 

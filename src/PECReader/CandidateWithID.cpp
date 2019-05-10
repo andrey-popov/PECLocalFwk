@@ -1,4 +1,4 @@
-#include <mensura/PECReader/CandidateWithID.hpp>
+#include "CandidateWithID.hpp"
 
 #include <stdexcept>
 

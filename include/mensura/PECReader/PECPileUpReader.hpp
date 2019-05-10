@@ -2,10 +2,12 @@
 
 #include <mensura/PileUpReader.hpp>
 
-#include <mensura/PECReader/PileUpInfo.hpp>
-
 
 class PECInputData;
+
+namespace pec {
+class PileUpInfo;
+};
 
 
 /**
@@ -69,13 +71,10 @@ private:
     /// Name of the tree containing pile-up information
     std::string treeName;
     
-    /// Buffer to read the only branch of the tree
-    pec::PileUpInfo bfPileUpInfo;
-    
     /**
-     * \brief An auxiliary pointer to the buffer
-     * 
-     * Need by ROOT to read the object from a tree.
+     * \brief Pointer to buffer to read the only branch of the tree
+     *
+     * The buffer is allocated by TBranch.
      */
-    decltype(bfPileUpInfo) *bfPileUpInfoPointer;
+    pec::PileUpInfo *bfPileUpInfoP;
 };

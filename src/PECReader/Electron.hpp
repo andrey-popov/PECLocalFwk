@@ -1,6 +1,6 @@
 #pragma once
 
-#include <mensura/PECReader/Lepton.hpp>
+#include "Lepton.hpp"
 
 
 namespace pec

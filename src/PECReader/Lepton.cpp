@@ -1,4 +1,4 @@
-#include <mensura/PECReader/Lepton.hpp>
+#include "Lepton.hpp"
 
 #include <stdexcept>
 

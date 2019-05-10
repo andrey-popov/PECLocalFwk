@@ -1,4 +1,4 @@
-#include <mensura/PECReader/Muon.hpp>
+#include "Muon.hpp"
 
 
 pec::Muon::Muon() noexcept:

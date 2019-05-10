@@ -2,13 +2,15 @@
 
 #include <mensura/GeneratorReader.hpp>
 
-#include <mensura/PECReader/GeneratorInfo.hpp>
-
 #include <utility>
 #include <vector>
 
 
 class PECInputData;
+
+namespace pec {
+class GeneratorInfo;
+};
 
 
 /**
@@ -127,13 +129,10 @@ private:
     /// Name of the tree with generator information
     std::string treeName;
     
-    /// Buffer to read the only branch of the tree
-    pec::GeneratorInfo bfGenerator;
-    
     /**
-     * \brief An auxiliary pointer to the buffer
-     * 
-     * Need by ROOT to read the object from a tree.
+     * \brief Pointer to buffer to read the only branch of the tree
+     *
+     * The buffer is allocated by TBranch.
      */
-    decltype(bfGenerator) *bfGeneratorPointer;
+    pec::GeneratorInfo *bfGeneratorP;
 };

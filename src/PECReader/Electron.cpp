@@ -1,4 +1,4 @@
-#include <mensura/PECReader/Electron.hpp>
+#include "Electron.hpp"
 
 #include <algorithm>
 #include <iterator>

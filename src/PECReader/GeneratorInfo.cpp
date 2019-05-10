@@ -1,4 +1,4 @@
-#include <mensura/PECReader/GeneratorInfo.hpp>
+#include "GeneratorInfo.hpp"
 
 #include <algorithm>
 #include <stdexcept>

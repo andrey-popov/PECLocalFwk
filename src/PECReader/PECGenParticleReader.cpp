@@ -4,6 +4,8 @@
 #include <mensura/ROOTLock.hpp>
 #include <mensura/PECReader/PECInputData.hpp>
 
+#include "GenParticle.hpp"
+
 #include <algorithm>
 
 

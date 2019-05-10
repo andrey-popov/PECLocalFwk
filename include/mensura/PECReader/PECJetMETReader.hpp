@@ -7,14 +7,16 @@
 #include <mensura/GenJetMETReader.hpp>
 #include <mensura/SystService.hpp>
 
-#include <mensura/PECReader/Candidate.hpp>
-#include <mensura/PECReader/Jet.hpp>
-
 #include <memory>
 
 
 class PileUpReader;
 class PECInputData;
+
+namespace pec {
+class Candidate;
+class Jet;
+};
 
 
 /**

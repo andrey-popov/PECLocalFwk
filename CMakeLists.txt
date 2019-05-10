@@ -130,7 +130,6 @@ set(CMAKE_INSTALL_LIBDIR "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 root_generate_dictionary(mensura-pec_dict
     src/PECReader/classes.h LINKDEF src/PECReader/classes_def.xml
     MODULE mensura-pec
-    OPTIONS "-I${CMAKE_SOURCE_DIR}/include"
 )
 
 add_library(mensura-pec SHARED

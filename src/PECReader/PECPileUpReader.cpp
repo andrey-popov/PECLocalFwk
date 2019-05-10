@@ -4,12 +4,14 @@
 #include <mensura/ROOTLock.hpp>
 #include <mensura/PECReader/PECInputData.hpp>
 
+#include "PileUpInfo.hpp"
+
 
 PECPileUpReader::PECPileUpReader(std::string const name /*= "PileUp"*/):
     PileUpReader(name),
     inputDataPluginName("InputData"),
     inputDataPlugin(nullptr),
-    treeName("pecPileUp/PileUp"), bfPileUpInfoPointer(&bfPileUpInfo)
+    treeName("pecPileUp/PileUp"), bfPileUpInfoP(nullptr)
 {}
 
 
@@ -18,7 +20,7 @@ PECPileUpReader::PECPileUpReader(PECPileUpReader const &src) noexcept:
     inputDataPluginName(src.inputDataPluginName),
     inputDataPlugin(src.inputDataPlugin),
     treeName(src.treeName),
-    bfPileUpInfoPointer(&bfPileUpInfo)
+    bfPileUpInfoP(nullptr)
 {}
 
 
@@ -38,7 +40,7 @@ void PECPileUpReader::BeginRun(Dataset const &)
     TTree *tree = inputDataPlugin->ExposeTree(treeName);
     ROOTLock::Lock();
     tree->SetBranchStatus("inTimeNumPU", false);
-    tree->SetBranchAddress("puInfo", &bfPileUpInfoPointer);
+    tree->SetBranchAddress("puInfo", &bfPileUpInfoP);
     ROOTLock::Unlock();
 }
 
@@ -54,9 +56,9 @@ bool PECPileUpReader::ProcessEvent()
     // Read the tree
     inputDataPlugin->ReadEventFromTree(treeName);
     
-    numVertices = bfPileUpInfo.NumPV();
-    expectedPileUp = bfPileUpInfo.TrueNumPU();
-    rho = bfPileUpInfo.Rho();
+    numVertices = bfPileUpInfoP->NumPV();
+    expectedPileUp = bfPileUpInfoP->TrueNumPU();
+    rho = bfPileUpInfoP->Rho();
     
     
     // Since this reader does not have access to the input file, it does not know when there are

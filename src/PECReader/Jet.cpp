@@ -1,4 +1,4 @@
-#include <mensura/PECReader/Jet.hpp>
+#include "Jet.hpp"
 
 #include <cmath>
 #include <cstdlib>

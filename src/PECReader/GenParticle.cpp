@@ -1,4 +1,4 @@
-#include <mensura/PECReader/GenParticle.hpp>
+#include "GenParticle.hpp"
 
 #include <stdexcept>
 

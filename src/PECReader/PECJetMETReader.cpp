@@ -7,6 +7,9 @@
 #include <mensura/ROOTLock.hpp>
 #include <mensura/PECReader/PECInputData.hpp>
 
+#include "Candidate.hpp"
+#include "Jet.hpp"
+
 #include <TVector2.h>
 
 #include <cmath>

@@ -1,4 +1,4 @@
-#include <mensura/PECReader/GenJet.hpp>
+#include "GenJet.hpp"
 
 
 pec::GenJet::GenJet() noexcept:

@@ -4,6 +4,8 @@
 #include <mensura/ROOTLock.hpp>
 #include <mensura/PECReader/PECInputData.hpp>
 
+#include "GeneratorInfo.hpp"
+
 #include <sstream>
 #include <stdexcept>
 
@@ -16,7 +18,8 @@ PECGeneratorReader::PECGeneratorReader(std::string const name /*= "Generator"*/)
     inputDataPluginName("InputData"),
     inputDataPlugin(nullptr),
     readAltWeights(false),
-    treeName("pecGenerator/Generator"), bfGeneratorPointer(&bfGenerator)
+    treeName("pecGenerator/Generator"),
+    bfGeneratorP{nullptr}
 {}
 
 
@@ -26,7 +29,7 @@ PECGeneratorReader::PECGeneratorReader(PECGeneratorReader const &src) noexcept:
     inputDataPlugin(src.inputDataPlugin),
     readAltWeights(src.readAltWeights),
     treeName(src.treeName),
-    bfGeneratorPointer(&bfGenerator)
+    bfGeneratorP{nullptr}
 {}
 
 
@@ -54,7 +57,7 @@ void PECGeneratorReader::BeginRun(Dataset const &dataset)
     if (not readAltWeights)
         tree->SetBranchStatus("altWeights", false);
     
-    tree->SetBranchAddress("generator", &bfGeneratorPointer);
+    tree->SetBranchAddress("generator", &bfGeneratorP);
     ROOTLock::Unlock();
 }
 
@@ -75,22 +78,22 @@ double PECGeneratorReader::GetAltWeight(unsigned index) const
         throw std::logic_error(message.str());
     }
     
-    if (index >= bfGenerator.AltWeights().size())
+    if (index >= bfGeneratorP->AltWeights().size())
     {
         std::ostringstream message;
         message << "PECGeneratorReader[\"" << GetName() <<
           "\"]::GetAltWeight: Weight with index " << index << " is requested, but only " <<
-          bfGenerator.AltWeights().size() << " weights are available.";
+          bfGeneratorP->AltWeights().size() << " weights are available.";
         throw std::logic_error(message.str());
     }
     
-    return bfGenerator.AltWeights()[index];
+    return bfGeneratorP->AltWeights()[index];
 }
 
 
 double PECGeneratorReader::GetNominalWeight() const
 {
-    return bfGenerator.NominalWeight();
+    return bfGeneratorP->NominalWeight();
 }
 
 
@@ -99,31 +102,31 @@ unsigned PECGeneratorReader::GetNumAltWeights() const
     if (not readAltWeights)
         return 0;
     else
-        return bfGenerator.AltWeights().size();
+        return bfGeneratorP->AltWeights().size();
 }
 
 
 std::pair<int, int> PECGeneratorReader::GetPdfPart() const
 {
-    return {bfGenerator.PdfId(0), bfGenerator.PdfId(1)};
+    return {bfGeneratorP->PdfId(0), bfGeneratorP->PdfId(1)};
 }
 
 
 std::pair<double, double> PECGeneratorReader::GetPdfX() const
 {
-    return {bfGenerator.PdfX(0), bfGenerator.PdfX(1)};
+    return {bfGeneratorP->PdfX(0), bfGeneratorP->PdfX(1)};
 }
 
 
 int PECGeneratorReader::GetProcessID() const
 {
-    return bfGenerator.ProcessId();
+    return bfGeneratorP->ProcessId();
 }
 
 
 double PECGeneratorReader::GetScale() const
 {
-    return bfGenerator.PdfQScale();
+    return bfGeneratorP->PdfQScale();
 }
 
 

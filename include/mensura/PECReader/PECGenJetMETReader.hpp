@@ -2,11 +2,13 @@
 
 #include <mensura/GenJetMETReader.hpp>
 
-#include <mensura/PECReader/Candidate.hpp>
-#include <mensura/PECReader/GenJet.hpp>
-
 
 class PECInputData;
+
+namespace pec {
+class Candidate;
+class GenJet;
+};
 
 
 /**

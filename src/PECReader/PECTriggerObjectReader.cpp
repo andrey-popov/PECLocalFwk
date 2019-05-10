@@ -4,6 +4,8 @@
 #include <mensura/ROOTLock.hpp>
 #include <mensura/PECReader/PECInputData.hpp>
 
+#include "Candidate.hpp"
+
 #include <TTree.h>
 
 #include <sstream>

@@ -1,4 +1,4 @@
-#include <mensura/PECReader/Candidate.hpp>
+#include "Candidate.hpp"
 
 
 pec::Candidate::Candidate() noexcept:
