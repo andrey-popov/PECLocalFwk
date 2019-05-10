@@ -1,5 +1,3 @@
-#!/bin/sh
-
 export MENSURA_INSTALL=$PWD
 export CMAKE_PREFIX_PATH="$MENSURA_INSTALL/cmake:$CMAKE_PREFIX_PATH"
 
