@@ -45,7 +45,6 @@ add_library(jerc STATIC
     src/external/JERC/SimpleJetCorrectionUncertainty.cpp
     src/external/JERC/SimpleJetCorrector.cpp
 )
-target_include_directories(jerc PUBLIC include)
 target_link_libraries(jerc
     PRIVATE ROOT::GenVector ROOT::Hist
 )
@@ -91,6 +90,7 @@ add_library(mensura SHARED
     src/JetFunctorFilter.cpp
     src/JetMETReader.cpp
     src/JetMETUpdate.cpp
+    src/JetResolution.cpp
     src/LeptonFilter.cpp
     src/LeptonReader.cpp
     src/LeptonSFWeight.cpp

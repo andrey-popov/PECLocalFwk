@@ -1,6 +1,6 @@
-#include <mensura/external/JERC/SimpleJetCorrector.hpp>
-#include <mensura/external/JERC/JetCorrectorParameters.hpp>
-#include <mensura/external/JERC/Utilities.hpp>
+#include "SimpleJetCorrector.hpp"
+#include "JetCorrectorParameters.hpp"
+#include "Utilities.hpp"
 #include <iostream>
 #include <sstream>
 #include <cmath>

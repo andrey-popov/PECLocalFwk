@@ -7,8 +7,8 @@
 #include <FWCore/Utilities/interface/EDMException.h>
 
 #else
-#include <mensura/external/JERC/JetResolutionObject.hpp>
-#include <mensura/external/JERC/Utilities.hpp>
+#include "JetResolutionObject.hpp"
+#include "Utilities.hpp"
 #include <exception>
 
 namespace edm {

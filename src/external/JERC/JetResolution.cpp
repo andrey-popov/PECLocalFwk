@@ -8,7 +8,7 @@
 #include <CondFormats/DataRecord/interface/JetResolutionRcd.h>
 #include <CondFormats/DataRecord/interface/JetResolutionScaleFactorRcd.h>
 #else
-#include <mensura/external/JERC/JetResolution.hpp>
+#include "JetResolution.hpp"
 #endif
 
 namespace JME {

@@ -3,7 +3,10 @@
 #include <mensura/PhysicsObjects.hpp>
 #include <mensura/ROOTLock.hpp>
 
-#include <mensura/external/JERC/JetCorrectorParameters.hpp>
+#include "external/JERC/FactorizedJetCorrector.hpp"
+#include "external/JERC/JetCorrectionUncertainty.hpp"
+#include "external/JERC/JetCorrectorParameters.hpp"
+#include "external/JERC/JetResolution.hpp"
 
 #include <cmath>
 #include <iostream>

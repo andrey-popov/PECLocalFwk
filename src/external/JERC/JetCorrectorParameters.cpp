@@ -6,8 +6,8 @@
 //
 // Generic parameters for Jet corrections
 //
-#include <mensura/external/JERC/JetCorrectorParameters.hpp>
-#include <mensura/external/JERC/Utilities.hpp>
+#include "JetCorrectorParameters.hpp"
+#include "Utilities.hpp"
 #include <iostream>
 #include <iomanip>
 #include <fstream>

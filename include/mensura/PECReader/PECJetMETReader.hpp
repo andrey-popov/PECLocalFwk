@@ -2,11 +2,10 @@
 
 #include <mensura/JetMETReader.hpp>
 
+#include <mensura/JetResolution.hpp>
 #include <mensura/LeptonReader.hpp>
 #include <mensura/GenJetMETReader.hpp>
 #include <mensura/SystService.hpp>
-
-#include <mensura/external/JERC/JetResolution.hpp>
 
 #include <mensura/PECReader/Candidate.hpp>
 #include <mensura/PECReader/Jet.hpp>
@@ -138,11 +137,9 @@ public:
      * If this method is called, the matching to generator-level jets will be performed based not
      * only on the angular distance but requiring additionally that the difference in pt between
      * the two jets is compatible with the pt resolution in simulation.
-     * 
-     * The pt resultion is described in file jerFile, which must follow the standard format adopted
-     * in the JERC group. The path to the file is resolved using the FileInPath service under a
-     * subdirectory "JERC". The factor jerPtFactor is applied to the resolution before the
-     * comparison.
+     *
+     * The pt resolution is read with the help of class JetResolution. The factor jerPtFactor is
+     * applied to the resolution before the comparison.
      * 
      * If the pt matching has been requested, this plugin will also attempt to read pileup
      * information from the dedicated plugin.
@@ -260,7 +257,7 @@ private:
      * 
      * Uninitialized if the jet matching based on pt has not been requested.
      */
-    std::unique_ptr<JME::JetResolution> jerProvider;
+    std::unique_ptr<JetResolution> jerProvider;
     
     /// Type of requested systematical variation
     SystType systType;

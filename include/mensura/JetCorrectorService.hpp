@@ -6,10 +6,6 @@
 #include <mensura/FileInPath.hpp>
 #include <mensura/SystService.hpp>
 
-#include <mensura/external/JERC/FactorizedJetCorrector.hpp>
-#include <mensura/external/JERC/JetCorrectionUncertainty.hpp>
-#include <mensura/external/JERC/JetResolution.hpp>
-
 #include <TRandom3.h>
 
 #include <initializer_list>
@@ -21,6 +17,14 @@
 
 
 class Jet;
+
+class FactorizedJetCorrector;
+class JetCorrectionUncertainty;
+
+namespace JME {
+class JetResolution;
+class JetResolutionScaleFactor;
+};
 
 
 /**

@@ -120,7 +120,7 @@ void PECJetMETReader::BeginRun(Dataset const &)
     
     // Create an object to access jet pt resolution
     if (jerFilePath != "")
-        jerProvider.reset(new JME::JetResolution(jerFilePath));
+        jerProvider.reset(new JetResolution(jerFilePath));
 }
 
 
@@ -323,9 +323,7 @@ bool PECJetMETReader::ProcessEvent()
             
             if (jerProvider)
             {
-                double const ptResolution = jerProvider->getResolution(
-                  {{JME::Binning::JetPt, p4.Pt()}, {JME::Binning::JetEta, p4.Eta()},
-                  {JME::Binning::Rho, puPlugin->GetRho()}});
+                double const ptResolution = (*jerProvider)(p4.Pt(), p4.Eta(), puPlugin->GetRho());
                 maxDPt = ptResolution * p4.Pt() * jerPtFactor;
             }
             

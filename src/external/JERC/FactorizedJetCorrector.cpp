@@ -3,10 +3,10 @@
 // Author: Konstantinos Kousouris, Philipp Schieferdecker
 // Email:  kkousour@fnal.gov, philipp.schieferdecker@cern.ch
 
-#include <mensura/external/JERC/FactorizedJetCorrector.hpp>
-#include <mensura/external/JERC/SimpleJetCorrector.hpp>
-#include <mensura/external/JERC/JetCorrectorParameters.hpp>
-#include <mensura/external/JERC/Utilities.hpp>
+#include "FactorizedJetCorrector.hpp"
+#include "SimpleJetCorrector.hpp"
+#include "JetCorrectorParameters.hpp"
+#include "Utilities.hpp"
 #include "Math/PtEtaPhiE4D.h"
 #include "Math/Vector3D.h"
 #include "Math/LorentzVector.h"

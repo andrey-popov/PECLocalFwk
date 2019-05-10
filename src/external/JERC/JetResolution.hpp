@@ -1,7 +1,7 @@
 #ifndef JetResolution_h
 #define JetResolution_h
 
-#include <mensura/external/JERC/JetResolutionObject.hpp>
+#include "JetResolutionObject.hpp"
 
 #if 0
 namespace edm {
