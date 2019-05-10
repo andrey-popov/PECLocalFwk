@@ -95,6 +95,10 @@ DatasetBuilder::DatasetBuilder(std::string const &dbSampleFileName)
 }
 
 
+DatasetBuilder::~DatasetBuilder() noexcept
+{}
+
+
 std::list<Dataset> DatasetBuilder::Build(std::initializer_list<std::string> const &datasetIDs)
   const
 {

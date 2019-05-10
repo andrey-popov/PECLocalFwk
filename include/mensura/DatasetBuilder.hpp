@@ -54,6 +54,8 @@ public:
      * Directory that contains the file is set as the base directory.
      */
     DatasetBuilder(std::string const &dbSampleFileName);
+
+    ~DatasetBuilder() noexcept;
     
 public:
     /**
