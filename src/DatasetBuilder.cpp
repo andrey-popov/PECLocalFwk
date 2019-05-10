@@ -1,6 +1,7 @@
 #include <mensura/DatasetBuilder.hpp>
 
 #include <mensura/FileInPath.hpp>
+#include <mensura/external/JsonCpp/json.hpp>
 
 #include <fstream>
 #include <memory>

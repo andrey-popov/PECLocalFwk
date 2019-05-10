@@ -2,12 +2,15 @@
 
 #include <mensura/Dataset.hpp>
 
-#include <mensura/external/JsonCpp/json.hpp>
-
 #include <initializer_list>
 #include <list>
 #include <map>
 #include <string>
+
+
+namespace Json {
+    class Value;
+};
 
 
 /**
