@@ -70,6 +70,7 @@ add_library(mensura SHARED
     src/BTagWeight.cpp
     src/BTagWeightCSVShape.cpp
     src/BTagWPService.cpp
+    src/Config.cpp
     src/DatasetBuilder.cpp
     src/Dataset.cpp
     src/DatasetSelector.cpp
@@ -116,6 +117,7 @@ target_link_libraries(mensura
     PRIVATE
         jsoncpp btag jerc
     PUBLIC
+        stdc++fs
         Boost::boost Boost::filesystem
     PUBLIC
         ROOT::Hist ROOT::MathCore ROOT::Physics ROOT::Tree ROOT::TreePlayer

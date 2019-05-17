@@ -1,7 +1,7 @@
 #include <mensura/GenWeightSyst.hpp>
 
+#include <mensura/Config.hpp>
 #include <mensura/Dataset.hpp>
-#include <mensura/FileInPath.hpp>
 #include <mensura/GeneratorReader.hpp>
 #include <mensura/Logger.hpp>
 
@@ -44,24 +44,8 @@ GenWeightSyst::GenWeightSyst(std::string const &name, std::string const &weightI
     meanWeightsCurDataset(nullptr)
 {
     // Create a JSON parser and read file with mean weights
-    std::string const resolvedPath(FileInPath::Resolve(weightIndicesFile));
-    std::ifstream configFile(resolvedPath, std::ifstream::binary);
-    Json::Value root;
-    
-    try
-    {
-        configFile >> root;
-    }
-    catch (Json::Exception const &)
-    {
-        std::ostringstream message;
-        message << "GenWeightSyst[\"" << GetName() << "\"]::GenWeightSyst: " <<
-          "Failed to parse file \"" << resolvedPath << "\". It is not a valid JSON file or "
-          "corrupted.";
-        throw std::runtime_error(message.str());
-    }
-    
-    configFile.close();
+    Config config(weightIndicesFile);
+    auto const &root = config.Get();
     
     
     // Check top-level structure of the file
@@ -69,7 +53,7 @@ GenWeightSyst::GenWeightSyst(std::string const &name, std::string const &weightI
     {
         std::ostringstream message;
         message << "GenWeightSyst[\"" << GetName() << "\"]::GenWeightSyst: " <<
-          "File \"" << resolvedPath << "\" does not contain a list of samples on its top level.";
+          "File " << config.FilePath() << " does not contain a list of samples on its top level.";
         throw std::logic_error(message.str());
     }
     
@@ -77,7 +61,7 @@ GenWeightSyst::GenWeightSyst(std::string const &name, std::string const &weightI
     {
         std::ostringstream message;
         message << "GenWeightSyst[\"" << GetName() << "\"]::GenWeightSyst: " <<
-          "List of samples in file \"" << resolvedPath << "\" is empty.";
+          "List of samples in file " << config.FilePath() << " is empty.";
         throw std::logic_error(message.str());
     }
     
@@ -91,8 +75,8 @@ GenWeightSyst::GenWeightSyst(std::string const &name, std::string const &weightI
         {
             std::ostringstream message;
             message << "GenWeightSyst[\"" << GetName() << "\"]::GenWeightSyst: " <<
-              "Sample #" << iSample << " in file \"" << resolvedPath <<
-              "\" does not represent a valid object.";
+              "Sample #" << iSample << " in file " << config.FilePath() <<
+              " does not represent a valid object.";
             throw std::logic_error(message.str());
         }
         
@@ -102,8 +86,8 @@ GenWeightSyst::GenWeightSyst(std::string const &name, std::string const &weightI
         {
             std::ostringstream message;
             message << "GenWeightSyst[\"" << GetName() << "\"]::GenWeightSyst: " <<
-              "Sample #" << iSample << " in file \"" << resolvedPath <<
-              "\" does not contain mandatory field \"datasetId\" or the corresponding value "
+              "Sample #" << iSample << " in file " << config.FilePath() <<
+              " does not contain mandatory field \"datasetId\" or the corresponding value "
               "is not a string.";
             throw std::logic_error(message.str());
         }
@@ -118,8 +102,8 @@ GenWeightSyst::GenWeightSyst(std::string const &name, std::string const &weightI
         {
             std::ostringstream message;
             message << "GenWeightSyst[\"" << GetName() << "\"]::GenWeightSyst: " <<
-              "Sample #" << iSample << " in file \"" << resolvedPath <<
-              "\" does not contain mandatory field \"weightPairs\" or the corresponding value "
+              "Sample #" << iSample << " in file " << config.FilePath() <<
+              " does not contain mandatory field \"weightPairs\" or the corresponding value "
               "is not an array.";
             throw std::logic_error(message.str());
         }
@@ -135,7 +119,7 @@ GenWeightSyst::GenWeightSyst(std::string const &name, std::string const &weightI
                 std::ostringstream message;
                 message << "GenWeightSyst[\"" << GetName() << "\"]::GenWeightSyst: " <<
                   "Element #" << iPair << " in array \"weightPairs\" for sample #" << iSample <<
-                  " in file \"" << resolvedPath << "\" is not an array of size 2.";
+                  " in file " << config.FilePath() << " is not an array of size 2.";
                 throw std::logic_error(message.str());
             }
             
@@ -144,7 +128,7 @@ GenWeightSyst::GenWeightSyst(std::string const &name, std::string const &weightI
                 std::ostringstream message;
                 message << "GenWeightSyst[\"" << GetName() << "\"]::GenWeightSyst: " <<
                   "Elements of weight pair #" << iPair << " in sample #" << iSample <<
-                  " in file \"" << resolvedPath << "\" are not unsigned integer numbers.";
+                  " in file " << config.FilePath() << " are not unsigned integer numbers.";
                 throw std::logic_error(message.str());
             }
             
@@ -273,24 +257,8 @@ void GenWeightSyst::NormalizeByMeanWeights(std::string const &dbFileName)
     
     
     // Create a JSON parser and read file with mean weights
-    std::string const resolvedPath(FileInPath::Resolve(dbFileName));
-    std::ifstream dbFile(resolvedPath, std::ifstream::binary);
-    Json::Value root;
-    
-    try
-    {
-        dbFile >> root;
-    }
-    catch (Json::Exception const &)
-    {
-        std::ostringstream message;
-        message << "GenWeightSyst[\"" << GetName() << "\"]::NormalizeByMeanWeights: " <<
-          "Failed to parse file \"" << resolvedPath << "\". It is not a valid JSON file or is "
-          "corrupted.";
-        throw std::runtime_error(message.str());
-    }
-    
-    dbFile.close();
+    Config config(dbFileName);
+    auto const &root = config.Get();
     
     
     // Check top-level structure of the file
@@ -298,7 +266,7 @@ void GenWeightSyst::NormalizeByMeanWeights(std::string const &dbFileName)
     {
         std::ostringstream message;
         message << "GenWeightSyst[\"" << GetName() << "\"]::NormalizeByMeanWeights: " <<
-          "File \"" << resolvedPath << "\" does not contain a list of samples on its top level.";
+          "File \"" << config.FilePath() << "\" does not contain a list of samples on its top level.";
         throw std::logic_error(message.str());
     }
     
@@ -306,7 +274,7 @@ void GenWeightSyst::NormalizeByMeanWeights(std::string const &dbFileName)
     {
         std::ostringstream message;
         message << "GenWeightSyst[\"" << GetName() << "\"]::NormalizeByMeanWeights: " <<
-          "List of samples in file \"" << resolvedPath << "\" is empty.";
+          "List of samples in file " << config.FilePath() << " is empty.";
         throw std::logic_error(message.str());
     }
     
@@ -320,8 +288,8 @@ void GenWeightSyst::NormalizeByMeanWeights(std::string const &dbFileName)
         {
             std::ostringstream message;
             message << "GenWeightSyst[\"" << GetName() << "\"]::NormalizeByMeanWeights: " <<
-              "Sample #" << iSample << " in file \"" << resolvedPath <<
-              "\" does not represent a valid object.";
+              "Sample #" << iSample << " in file " << config.FilePath() <<
+              " does not represent a valid object.";
             throw std::logic_error(message.str());
         }
         
@@ -331,8 +299,8 @@ void GenWeightSyst::NormalizeByMeanWeights(std::string const &dbFileName)
         {
             std::ostringstream message;
             message << "GenWeightSyst[\"" << GetName() << "\"]::NormalizeByMeanWeights: " <<
-              "Sample #" << iSample << " in file \"" << resolvedPath <<
-              "\" does not contain mandatory field \"datasetId\" or the corresponding value "
+              "Sample #" << iSample << " in file " << config.FilePath() <<
+              " does not contain mandatory field \"datasetId\" or the corresponding value "
               "is not a string.";
             throw std::logic_error(message.str());
         }
@@ -353,8 +321,8 @@ void GenWeightSyst::NormalizeByMeanWeights(std::string const &dbFileName)
         {
             std::ostringstream message;
             message << "GenWeightSyst[\"" << GetName() << "\"]::NormalizeByMeanWeights: " <<
-              "Sample #" << iSample << " in file \"" << resolvedPath <<
-              "\" does not contain mandatory field \"meanLHEWeights\" or the corresponding value "
+              "Sample #" << iSample << " in file " << config.FilePath() <<
+              " does not contain mandatory field \"meanLHEWeights\" or the corresponding value "
               "is not an array.";
             throw std::logic_error(message.str());
         }
@@ -369,8 +337,8 @@ void GenWeightSyst::NormalizeByMeanWeights(std::string const &dbFileName)
             {
                 std::ostringstream message;
                 message << "GenWeightSyst[\"" << GetName() << "\"]::NormalizeByMeanWeights: " <<
-                  "Weight #" << iWeight << " in sample #" << iSample << " in file \"" <<
-                  resolvedPath << "\" does not represent a valid object.";
+                  "Weight #" << iWeight << " in sample #" << iSample << " in file " <<
+                  config.FilePath() << " does not represent a valid object.";
                 throw std::logic_error(message.str());
             }
             
@@ -380,8 +348,8 @@ void GenWeightSyst::NormalizeByMeanWeights(std::string const &dbFileName)
             {
                 std::ostringstream message;
                 message << "GenWeightSyst[\"" << GetName() << "\"]::NormalizeByMeanWeights: " <<
-                  "Weight #" << iWeight << " in sample #" << iSample << " in file \"" <<
-                  resolvedPath << "\" does not contain mandatory field \"index\" or the "
+                  "Weight #" << iWeight << " in sample #" << iSample << " in file " <<
+                  config.FilePath() << " does not contain mandatory field \"index\" or the "
                   "corresponding value is not an unsigned integer number.";
                 throw std::logic_error(message.str());
             }
@@ -410,8 +378,8 @@ void GenWeightSyst::NormalizeByMeanWeights(std::string const &dbFileName)
             {
                 std::ostringstream message;
                 message << "GenWeightSyst[\"" << GetName() << "\"]::NormalizeByMeanWeights: " <<
-                  "Weight #" << iWeight << " in sample #" << iSample << " in file \"" <<
-                  resolvedPath << "\" does not contain mandatory field \"value\" or the "
+                  "Weight #" << iWeight << " in sample #" << iSample << " in file " <<
+                  config.FilePath() << " does not contain mandatory field \"value\" or the "
                   "corresponding value is not a valid number.";
                 throw std::logic_error(message.str());
             }

@@ -2,6 +2,7 @@
 
 #include <mensura/Dataset.hpp>
 
+#include <filesystem>
 #include <initializer_list>
 #include <list>
 #include <map>
@@ -85,7 +86,7 @@ public:
     }
     
     /// Changes the directory with respect to which paths to input files are resolved
-    void SetBaseDirectory(std::string const &path);
+    void SetBaseDirectory(std::filesystem::path const &path);
     
 private:
     /**
@@ -95,10 +96,6 @@ private:
      */
     std::map<std::string, Json::Value> dbSamples;
     
-    /**
-     * \brief Directory from which paths to files are resolved
-     * 
-     * Ends with a slash.
-     */
-    std::string baseDirectory;
+    /// Directory from which paths to files are resolved
+    std::filesystem::path baseDirectory;
 };

@@ -1,6 +1,6 @@
 #include <mensura/BTagWPService.hpp>
 
-#include <mensura/FileInPath.hpp>
+#include <mensura/Config.hpp>
 #include <mensura/external/JsonCpp/json.hpp>
 
 #include <fstream>
@@ -18,24 +18,8 @@ BTagWPService::BTagWPService(std::string const &name, std::string const &dataFil
     
     
     // Read the data JSON file
-    std::string const resolvedPath(FileInPath::Resolve("BTag", dataFileName));
-    std::ifstream dbFile(resolvedPath, std::ifstream::binary);
-    Json::Value root;
-    
-    try
-    {
-        dbFile >> root;
-    }
-    catch (Json::Exception const &)
-    {
-        std::ostringstream message;
-        message << "BTagWPService[\"" << GetName() << "\"]::BTagWPService: " <<
-          "Failed to parse file \"" << resolvedPath << "\". It is not a valid JSON file, or the "
-          "file is corrupted.";
-        throw std::runtime_error(message.str());
-    }
-    
-    dbFile.close();
+    Config config("BTag", dataFileName);
+    auto const &root = config.Get();
     
     if (not root.isObject())
     {
@@ -43,7 +27,7 @@ BTagWPService::BTagWPService(std::string const &name, std::string const &dataFil
         std::ostringstream message;
         message << "BTagWPService[\"" << GetName() << "\"]::BTagWPService: " <<
           "Top-level structure in the data file must be a dictionary. This is not true for " <<
-          "file \"" << resolvedPath << "\".";
+          "file " << config.FilePath() << ".";
         throw std::runtime_error(message.str());
     }
     
@@ -60,7 +44,7 @@ BTagWPService::BTagWPService(std::string const &name, std::string const &dataFil
         {
             std::ostringstream message;
             message << "BTagWPService[\"" << GetName() << "\"]::BTagWPService: " <<
-              "File \"" << resolvedPath << "\" does not contain entry for algorithm \"" <<
+              "File " << config.FilePath() << " does not contain entry for algorithm \"" <<
               bTagLabel << "\".";
             throw std::runtime_error(message.str());
         }
@@ -77,8 +61,8 @@ BTagWPService::BTagWPService(std::string const &name, std::string const &dataFil
         {
             std::ostringstream message;
             message << "BTagWPService[\"" << GetName() << "\"]::BTagWPService: " <<
-              "Entry for algorithm \"" << bTagLabel << "\" in file \"" << resolvedPath <<
-              "\" follows an unexpected format.";
+              "Entry for algorithm \"" << bTagLabel << "\" in file " << config.FilePath() <<
+              " follows an unexpected format.";
             throw std::runtime_error(message.str());
         }
     }

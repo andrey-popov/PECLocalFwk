@@ -1,8 +1,9 @@
 #include <mensura/DatasetBuilder.hpp>
 
-#include <mensura/FileInPath.hpp>
+#include <mensura/Config.hpp>
 #include <mensura/external/JsonCpp/json.hpp>
 
+#include <filesystem>
 #include <fstream>
 #include <memory>
 #include <sstream>
@@ -12,24 +13,8 @@
 DatasetBuilder::DatasetBuilder(std::string const &dbSampleFileName)
 {
     // Parse the database file
-    std::string const resolvedPath(FileInPath::Resolve(dbSampleFileName));
-    std::ifstream dbFile(resolvedPath, std::ifstream::binary);
-    Json::Value root;
-    
-    try
-    {
-        dbFile >> root;
-    }
-    catch (Json::Exception const &)
-    {
-        std::ostringstream message;
-        message << "DatasetBuilder::DatasetBuilder: " <<
-          "Failed to parse file \"" << resolvedPath << "\". It is not a valid JSON file, or "
-          "the file is corrupted.";
-        throw std::runtime_error(message.str());
-    }
-    
-    dbFile.close();
+    Config config(dbSampleFileName);
+    auto const &root = config.Get();
     
     
     // Basic sanity check
@@ -37,7 +22,7 @@ DatasetBuilder::DatasetBuilder(std::string const &dbSampleFileName)
     {
         std::ostringstream message;
         message << "DatasetBuilder::DatasetBuilder: " <<
-          "File \"" << resolvedPath << "\" does not contain a list of datasets on its top level.";
+          "File " << config.FilePath() << " does not contain a list of datasets on its top level.";
         throw std::logic_error(message.str());
     }
     
@@ -45,7 +30,7 @@ DatasetBuilder::DatasetBuilder(std::string const &dbSampleFileName)
     {
         std::ostringstream message;
         message << "DatasetBuilder::DatasetBuilder: " <<
-          "List of datasets in file \"" << resolvedPath << "\" is empty.";
+          "List of datasets in file " << config.FilePath() << " is empty.";
         throw std::logic_error(message.str());
     }
     
@@ -59,8 +44,8 @@ DatasetBuilder::DatasetBuilder(std::string const &dbSampleFileName)
         {
             std::ostringstream message;
             message << "DatasetBuilder::DatasetBuilder: " <<
-              "Entry #" << iSample << " in file \"" << resolvedPath <<
-              "\" does not represent a valid object.";
+              "Entry #" << iSample << " in file " << config.FilePath() <<
+              " does not represent a valid object.";
             throw std::logic_error(message.str());
         }
         
@@ -70,8 +55,8 @@ DatasetBuilder::DatasetBuilder(std::string const &dbSampleFileName)
         {
             std::ostringstream message;
             message << "DatasetBuilder::DatasetBuilder: " <<
-              "Entry #" << iSample << " in file \"" << resolvedPath <<
-              "\" does not contain mandatory field \"datasetId\", or the corresponding value "
+              "Entry #" << iSample << " in file " << config.FilePath() <<
+              " does not contain mandatory field \"datasetId\", or the corresponding value "
               "is not a string.";
             throw std::logic_error(message.str());
         }
@@ -86,12 +71,7 @@ DatasetBuilder::DatasetBuilder(std::string const &dbSampleFileName)
     
     // Set directory from which paths to input files will be resolved. It is initialized to the
     //directory containing the database file
-    auto pos = resolvedPath.find_last_of('/');
-    
-    if (pos == std::string::npos)
-        baseDirectory = "";
-    else
-        baseDirectory = resolvedPath.substr(0, pos + 1);
+    baseDirectory = config.FilePath().parent_path();
 }
 
 
@@ -142,11 +122,11 @@ std::list<Dataset> DatasetBuilder::Build(std::initializer_list<std::string> cons
         }
         
         auto const &fileArray = sample["files"];
-        std::list<std::string> filePaths;
+        std::list<std::filesystem::path> filePaths;
         
         for (unsigned i = 0; i < fileArray.size(); ++i)
         {
-            std::string const extractedPath(fileArray[i].asString());
+            std::filesystem::path const extractedPath(fileArray[i].asString());
             
             if (extractedPath.empty())
             {
@@ -156,15 +136,12 @@ std::list<Dataset> DatasetBuilder::Build(std::initializer_list<std::string> cons
                 throw std::logic_error(message.str());
             }
             
-            if (extractedPath[0] == '/')
-            {
-                // This is an absolute path. Use it as is
+            if (extractedPath.is_absolute())
                 filePaths.emplace_back(extractedPath);
-            }
             else
             {
                 // This is a relative path. Resolve it with respect to the standard location
-                filePaths.emplace_back(baseDirectory + extractedPath);
+                filePaths.emplace_back(baseDirectory / extractedPath);
             }
         }
         
@@ -237,7 +214,7 @@ std::list<Dataset> DatasetBuilder::Build(std::initializer_list<std::string> cons
 }
 
 
-void DatasetBuilder::SetBaseDirectory(std::string const &path)
+void DatasetBuilder::SetBaseDirectory(std::filesystem::path const &path)
 {
     baseDirectory = path;
 }
