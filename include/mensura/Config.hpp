@@ -41,6 +41,18 @@ public:
      */
     static Json::Value const &Get(Json::Value const &root, std::initializer_list<std::string> = {});
 
+    /**
+     * \brief Deleted overload to flag a subtle error
+     *
+     * Without this overload, erroneuos code
+     *   \code
+     *   config.Get("abc");
+     *   \endcode
+     * compiles fine because the string is converted into Json::Value.
+     */
+    static Json::Value const &Get(std::string const &,
+      std::initializer_list<std::string> = {}) = delete;
+
 private:
     Json::Value root;
     std::filesystem::path resolvedPath;

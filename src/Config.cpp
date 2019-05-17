@@ -53,22 +53,28 @@ Json::Value const &Config::Get(Json::Value const &root, std::initializer_list<st
 
     for (auto const &key: keys)
     {
-        if (not node->isMember(key))
+        if (node->isNull() or not node->isObject() or not node->isMember(key))
         {
-            std::ostringstream message;
-            message << "Node with path ";
+            std::ostringstream nodePath;
             int i = 0;
 
             for (auto const &key: keys)
             {
-                message << "[\"" << key << "\"]";
+                nodePath << "[\"" << key << "\"]";
                 ++i;
 
                 if (i > curIndex)
                     break;
             }
 
-            message << " is not found.";
+
+            std::ostringstream message;
+
+            if (not node->isObject())
+                message << "Node with path " << nodePath.str() << " is not a dictionary.";
+            else
+                message << "Node with path " << nodePath.str() << " is not found.";
+
             throw std::runtime_error(message.str());
         }
 
