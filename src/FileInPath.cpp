@@ -1,9 +1,9 @@
 #include <mensura/FileInPath.hpp>
 
 #include <boost/algorithm/string/predicate.hpp>
-#include <boost/filesystem.hpp>
 
 #include <cstdlib>
+#include <filesystem>
 #include <sstream>
 #include <stdexcept>
 
@@ -40,15 +40,15 @@ void FileInPath::AddLocation(std::string path)
 
 std::string FileInPath::Resolve(std::string subDir, std::string const &path)
 {
-    namespace fs = boost::filesystem;
-    
+    namespace fs = std::filesystem;
+
     // Check if an absolute or explicit relative path is provided. In this case the first argument
     //is ignored and the path is returned as is
     if (boost::starts_with(path, "/") or boost::starts_with(path, "./") or
       boost::starts_with(path, "../"))
     {
         // Make sure the requested file exists
-        if (not fs::exists(path) or not fs::is_regular(path))
+        if (not fs::exists(path) or not fs::is_regular_file(path))
         {
             std::ostringstream message;
             message << "FileInPath::Resolve: "
@@ -78,14 +78,14 @@ std::string FileInPath::Resolve(std::string subDir, std::string const &path)
         {
             tryPath = *locationIt + subDir + path;
             
-            if (fs::exists(tryPath) and fs::is_regular(tryPath))
+            if (fs::exists(tryPath) and fs::is_regular_file(tryPath))
                 return tryPath;
         }
         
         // Try to resolve the path ignoring the subdir
         tryPath = *locationIt + path;
         
-        if (fs::exists(tryPath) and fs::is_regular(tryPath))
+        if (fs::exists(tryPath) and fs::is_regular_file(tryPath))
             return tryPath;
     }
     
@@ -96,11 +96,11 @@ std::string FileInPath::Resolve(std::string subDir, std::string const &path)
     {
         std::string tryPath = subDir + path;
         
-        if (fs::exists(tryPath) and fs::is_regular(tryPath))
+        if (fs::exists(tryPath) and fs::is_regular_file(tryPath))
             return fs::current_path().native() + "/" + tryPath;
     }
     
-    if (fs::exists(path) and fs::is_regular(path))
+    if (fs::exists(path) and fs::is_regular_file(path))
         return fs::current_path().native() + "/" + path;
     
     

@@ -3,11 +3,12 @@
 #include <mensura/Dataset.hpp>
 
 #include <boost/algorithm/string/predicate.hpp>
-#include <boost/filesystem.hpp>
 
 #include <algorithm>
+#include <filesystem>
 
 
+namespace fs = std::filesystem;
 using namespace std::literals::string_literals;
 
 
@@ -74,7 +75,7 @@ void TFileService::EndRun()
 void TFileService::CheckOutputPath()
 {
     // Split output path into directory and file name
-    boost::filesystem::path const outputPath(outFileName);
+    fs::path const outputPath(outFileName);
     std::string const directoryName(outputPath.parent_path().string());
     std::string const fileName(outputPath.filename().string());
     
@@ -98,7 +99,7 @@ void TFileService::CheckOutputPath()
     
     // Create the directories
     if (directoryName != "")
-        boost::filesystem::create_directories(directoryName);
+        fs::create_directories(directoryName);
     
     
     // Add file extension if needed

@@ -1,7 +1,6 @@
 #include <mensura/Dataset.hpp>
 
-#include <boost/filesystem.hpp>
-
+#include <filesystem>
 #include <regex>
 #include <sstream>
 #include <stdexcept>
@@ -236,7 +235,7 @@ bool Dataset::TestFlag(string const &flagName) const
 
 std::list<std::string> Dataset::ExpandPathMask(std::string const &path)
 {
-    namespace fs = boost::filesystem;
+    namespace fs = std::filesystem;
     
     // Check if the path includes a wildcard
     auto const wildcardPos = path.find_first_of("*?");

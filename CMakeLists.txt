@@ -14,7 +14,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib")
 
 
 # External dependencies
-find_package(Boost 1.69 REQUIRED COMPONENTS filesystem)
+find_package(Boost 1.69 REQUIRED)
 find_package(ROOT 6 REQUIRED)
 
 
@@ -118,7 +118,7 @@ target_link_libraries(mensura
         jsoncpp btag jerc
     PUBLIC
         stdc++fs
-        Boost::boost Boost::filesystem
+        Boost::boost
     PUBLIC
         ROOT::Hist ROOT::MathCore ROOT::Physics ROOT::Tree ROOT::TreePlayer
 )
