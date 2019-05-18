@@ -55,7 +55,9 @@ void PECGeneratorReader::BeginRun(Dataset const &dataset)
     
     ROOTLock::Lock();
     if (not readAltWeights)
-        tree->SetBranchStatus("altWeights", false);
+        tree->SetBranchStatus("altLheWeights", false);
+
+    tree->SetBranchStatus("altPsWeights", false);
     
     tree->SetBranchAddress("generator", &bfGeneratorP);
     ROOTLock::Unlock();
@@ -78,16 +80,16 @@ double PECGeneratorReader::GetAltWeight(unsigned index) const
         throw std::logic_error(message.str());
     }
     
-    if (index >= bfGeneratorP->AltWeights().size())
+    if (index >= bfGeneratorP->AltLheWeights().size())
     {
         std::ostringstream message;
         message << "PECGeneratorReader[\"" << GetName() <<
           "\"]::GetAltWeight: Weight with index " << index << " is requested, but only " <<
-          bfGeneratorP->AltWeights().size() << " weights are available.";
+          bfGeneratorP->AltLheWeights().size() << " weights are available.";
         throw std::logic_error(message.str());
     }
     
-    return bfGeneratorP->AltWeights()[index];
+    return bfGeneratorP->AltLheWeights()[index];
 }
 
 
@@ -102,7 +104,7 @@ unsigned PECGeneratorReader::GetNumAltWeights() const
     if (not readAltWeights)
         return 0;
     else
-        return bfGeneratorP->AltWeights().size();
+        return bfGeneratorP->AltLheWeights().size();
 }
 
 

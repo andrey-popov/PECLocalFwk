@@ -48,6 +48,14 @@ public:
      */
     void SetInTimePU(unsigned n);
     
+    /**
+     * \brief Sets the largest ptHat of pile-up interactions in the nominal bunch crossing
+     * 
+     * The method must be used for simulation only. If an event contains no pileup interactions,
+     * set the value to zero.
+     */
+    void SetMaxPtHat(float maxPtHat);
+    
     /// Returns the number of good reconstructed primary vertices
     unsigned NumPV() const;
     
@@ -73,6 +81,13 @@ public:
      */
     unsigned InTimePU() const;
     
+    /**
+     * \brief Returns the largest ptHat of pile-up interactions in the nominal bunch crossing
+     * 
+     * Returns a zero in case of real data.
+     */
+    float MaxPtHat() const;
+    
 private:
     /// Number of good reconstructed primary vertices
     UChar_t numPV;
@@ -93,5 +108,8 @@ private:
      * Zero in case of real data.
      */
     UChar_t inTimeNumPU;
+    
+    /// Largest ptHat of admixed in-time pileup interactions
+    Float_t maxPtHat;
 };
 }  // end of namespace pec

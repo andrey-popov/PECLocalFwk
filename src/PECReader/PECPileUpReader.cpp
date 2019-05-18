@@ -40,6 +40,7 @@ void PECPileUpReader::BeginRun(Dataset const &)
     TTree *tree = inputDataPlugin->ExposeTree(treeName);
     ROOTLock::Lock();
     tree->SetBranchStatus("inTimeNumPU", false);
+    tree->SetBranchStatus("maxPtHat", false);
     tree->SetBranchAddress("puInfo", &bfPileUpInfoP);
     ROOTLock::Unlock();
 }
