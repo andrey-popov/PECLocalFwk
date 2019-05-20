@@ -21,9 +21,6 @@
  * 
  * User can add arbitrary boolean flags to provide additional information about the dataset to
  * custom plugins.
- * 
- * Currently a number of properties are described with enumerations Process, Generator, and
- * ShowerGenerator. This functionality is deprecated and will be eliminated in future.
  */
 class Dataset
 {
@@ -86,82 +83,6 @@ public:
         Data,
         MC
     };
-    
-    /**
-     * \enum Generator
-     * \brief Defines the supported generators for the hard process
-     */
-    enum class Generator
-    {
-        Undefined,
-        Nature,
-        Pythia,
-        MadGraph,
-        aMCatNLO,
-        POWHEG,
-        CompHEP,
-        SHERPA
-    };
-    
-    /**
-     * \enum ShowerGenerator
-     * \brief Parton shower and hadronization generator
-     */
-    enum class ShowerGenerator
-    {
-        Undefined,
-        Nature,
-        Pythia,
-        Herwig
-    };
-    
-    /**
-     * \enum Process
-     * \brief Code to describe physics process represented by the dataset
-     * 
-     * Specialised process codes must always be described after the corresponding more general codes
-     * so that when the enumeration values are converted into integer numbers more general
-     * categories get smaller numbers.
-     */
-    enum class Process
-    {
-        Undefined,
-        
-        ppData,       ///< Generic category for any real pp collisions
-        pp7TeV,
-        pp8TeV,
-        pp13TeV,
-        
-        BSM,          ///< Common category for BSM signals
-        
-        tHq,          ///< tHq with any couplings
-        tHqExotic,    ///< tHq with kappa_t = -1
-        tHqSM,        ///< Standard-Model tHq (kappa_t = +1)
-        
-        ZPrime,
-        WPrime,
-        
-        ttbar,        ///< Generic category for any ttbar dataset
-        ttInclusive,  ///< Inclusive ttbar, i.e. the dataset contains any decays
-        ttSemilep,    ///< Exclusive semileptonic ttbar
-        ttDilep,
-        ttHad,        ///< Exclusive hadronic ttbar
-        
-        SingleTop,    ///< Generic category to describe any single-top process
-        ttchan,
-        tschan,
-        ttWchan,
-        
-        ttH,
-        
-        EWK,          ///< Generic category for production of W and Z bosons
-        Wjets,
-        Diboson,      ///< WW, WZ, or ZZ
-        DrellYan,
-        
-        QCD,
-        Photon        ///< Prompt-photon production
-    };
 
 public:
     /// Constructor with no parameters
@@ -174,42 +95,6 @@ public:
      * first file when added.
      */
     Dataset(Type type, std::string sourceDatasetID = "");
-    
-    /**
-     * \brief Constructor with parameters
-     * 
-     * A dataset can be assigned more than one process code. In this case the codes must be
-     * logically compatible (a dataset cannot be both Wjets and DrellYan). If a specialised code is
-     * used, the most general code of the category must also be specified. For example, if a dataset
-     * is semileptonic ttbar, it must be described as (generic) ttbar as well.
-     * 
-     * By default, generator and shower generator are set to Undefined. However, if the process
-     * is real data, they are changed to Nature.
-     */
-    [[deprecated]]
-    Dataset(std::list<Process> &&processCodes, Generator generator = Generator::Undefined,
-     ShowerGenerator showerGenerator = ShowerGenerator::Undefined) noexcept;
-    
-    /**
-     * \brief Constructor with parameters
-     * 
-     * A specialised version used when the list of process codes cannot be given as an rvalue.
-     * Refer to documentation of the first version of constructor for details.
-     */
-    [[deprecated]]
-    Dataset(std::list<Process> const &processCodes, Generator generator = Generator::Undefined,
-     ShowerGenerator showerGenerator = ShowerGenerator::Undefined) noexcept;
-    
-    /**
-     * \brief Constructor with parameters
-     * 
-     * This version is intended for backward compatibility and for a bit of syntax sugar when a
-     * dataset is assigned a single process code. Refer to documentation of the first version of
-     * constructor for details.
-     */
-    [[deprecated]]
-    Dataset(Process process, Generator generator = Generator::Undefined,
-     ShowerGenerator showerGenerator = ShowerGenerator::Undefined) noexcept;
     
     /// Default copy constructor
     Dataset(Dataset const &) = default;
@@ -245,35 +130,6 @@ public:
     
     /// Returns label that uniquely identifies the source dataset
     std::string const &GetSourceDatasetID() const;
-    
-    /**
-     * \brief Returns the hard-process generator
-     */
-    [[deprecated]]
-    Generator GetGenerator() const;
-    
-    /**
-     * \brief Returns parton-shower and hadronization generator
-     */
-    [[deprecated]]
-    ShowerGenerator GetShowerGenerator() const;
-    
-    /**
-     * \brief Returns the most specialised process code
-     * 
-     * Technically, the last process code is returned because the list is ordered from most general
-     * to most specialised specification.
-     */
-    [[deprecated]]
-    Process GetProcess() const;
-    
-    /// Return a list of all assigned process codes
-    [[deprecated]]
-    std::list<Process> const &GetProcessCodes() const;
-    
-    /// Tests if the given process code is assigned to the dataset
-    [[deprecated]]
-    bool TestProcess(Process code) const;
     
     /**
      * \brief Checks if the dataset corresponds to the simulation and not the real data
@@ -328,24 +184,6 @@ private:
      */
     void SetDefaultSourceDatasetID();
     
-    /// Orders process codes from most general to most specialised
-    static std::list<Process> SortProcessCodes(std::list<Process> &&processCodes);
-    
-    /**
-     * \brief Orders process codes from most general to most specialised
-     * 
-     * Internally it calls the above version with rvalue reference.
-     */
-    static std::list<Process> SortProcessCodes(std::list<Process> const &processCodes);
-    
-    /**
-     * \brief Initialisation block called from each constructor
-     * 
-     * If generator of showerGenerator are undefined and the process is real data, sets the
-     * generator codes appropriately.
-     */
-    void Init();
-    
 private:
     /// Source files
     std::list<File> files;
@@ -355,20 +193,6 @@ private:
     
     /// Indicates whether this dataset is data or simulation
     bool isData;
-    
-    /**
-     * \brief Description of the physical process
-     * 
-     * If several process codes are provided, they are ordered following the integer representation
-     * of the Process enumeration.
-     */
-    std::list<Process> processCodes;
-    
-    /// Generator of the hard interaction
-    Generator generator;
-    
-    /// Shower generator
-    ShowerGenerator showerGenerator;
     
     /// A facility to emulate user-defined flags
     std::unordered_set<std::string> flags;

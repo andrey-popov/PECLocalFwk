@@ -56,18 +56,12 @@ double Dataset::File::GetWeight() const
 
 Dataset::Dataset() noexcept:
     sourceDatasetID(""),
-    isData(false),
-    processCodes({Process::Undefined}),
-    generator(Generator::Undefined),
-    showerGenerator(ShowerGenerator::Undefined)
+    isData(false)
 {}
 
 
 Dataset::Dataset(Dataset::Type type, std::string sourceDatasetID_ /*= ""*/):
-    sourceDatasetID(sourceDatasetID_),
-    processCodes({Process::Undefined}),
-    generator(Generator::Undefined),
-    showerGenerator(ShowerGenerator::Undefined)
+    sourceDatasetID(sourceDatasetID_)
 {
     if (type == Type::Data)
         isData = true;
@@ -79,42 +73,6 @@ Dataset::Dataset(Dataset::Type type, std::string sourceDatasetID_ /*= ""*/):
         message << "Dataset::Dataset: Received unknown type " << int(type) << ".";
         throw std::logic_error(message.str());
     }
-}
-
-
-Dataset::Dataset(list<Dataset::Process> &&processCodes_,
- Dataset::Generator generator_ /*= Dataset::Generator::Undefined*/,
- Dataset::ShowerGenerator showerGenerator_ /*= Dataset::ShowerGenerator::Undefined*/) noexcept:
-    sourceDatasetID(""),
-    processCodes(SortProcessCodes(move(processCodes_))),
-    generator(generator_),
-    showerGenerator(showerGenerator_)
-{
-    Init();
-}
-
-
-Dataset::Dataset(list<Dataset::Process> const &processCodes_,
- Dataset::Generator generator_ /*= Dataset::Generator::Undefined*/,
- Dataset::ShowerGenerator showerGenerator_ /*= Dataset::ShowerGenerator::Undefined*/) noexcept:
-    sourceDatasetID(""),
-    processCodes(SortProcessCodes(processCodes_)),
-    generator(generator_),
-    showerGenerator(showerGenerator_)
-{
-    Init();
-}
-
-
-Dataset::Dataset(Dataset::Process process,
- Dataset::Generator generator_ /*= Dataset::Generator::Undefined*/,
- Dataset::ShowerGenerator showerGenerator_ /*= Dataset::ShowerGenerator::Undefined*/) noexcept:
-    sourceDatasetID(""),
-    processCodes({process}),
-    generator(generator_),
-    showerGenerator(showerGenerator_)
-{
-    Init();
 }
 
 
@@ -156,41 +114,6 @@ std::string const &Dataset::GetSourceDatasetID() const
 }
 
 
-Dataset::Generator Dataset::GetGenerator() const
-{
-    return generator;
-}
-
-
-Dataset::ShowerGenerator Dataset::GetShowerGenerator() const
-{
-    return showerGenerator;
-}
-
-
-Dataset::Process Dataset::GetProcess() const
-{
-    return processCodes.back();
-}
-
-
-list<Dataset::Process> const &Dataset::GetProcessCodes() const
-{
-    return processCodes;
-}
-
-
-bool Dataset::TestProcess(Dataset::Process code) const
-{
-    for (Process const &c: processCodes)
-        if (c == code)
-            return true;
-    
-    // If the workflow reaches this point, the required process code has not been found
-    return false;
-}
-
-
 bool Dataset::IsMC() const
 {
     return not isData;
@@ -202,9 +125,6 @@ Dataset Dataset::CopyParameters() const
     Dataset emptyDataset;
     emptyDataset.sourceDatasetID = sourceDatasetID;
     emptyDataset.isData = isData;
-    emptyDataset.processCodes = processCodes;
-    emptyDataset.generator = generator;
-    emptyDataset.showerGenerator = showerGenerator;
     emptyDataset.flags = flags;
     
     return emptyDataset;
@@ -330,41 +250,3 @@ void Dataset::SetDefaultSourceDatasetID()
     sourceDatasetID = std::regex_replace(files.back().GetBaseName(), fileNameRegex, "");
 }
 
-
-list<Dataset::Process> Dataset::SortProcessCodes(list<Dataset::Process> &&processCodes)
-{
-    processCodes.sort([](Process code1, Process code2){return (int(code1) < int(code2));});
-    
-    return processCodes;
-}
-
-
-list<Dataset::Process> Dataset::SortProcessCodes(list<Dataset::Process> const &origProcessCodes)
-{
-    auto processCodes = origProcessCodes;
-    SortProcessCodes(move(processCodes));
-    
-    return processCodes;
-}
-
-
-void Dataset::Init()
-{
-    Process const process = processCodes.front();
-    
-    if (process == Process::ppData or process == Process::pp7TeV or process == Process::pp8TeV or
-     process == Process::pp13TeV)
-    //^ Codes pp*TeV are checked to recover from a potential user's error when (s)he does not set
-    //ppData. It also ensures backward compatibility
-    {
-        isData = true;
-        
-        if (generator == Generator::Undefined)
-            generator = Generator::Nature;
-        
-        if (showerGenerator == ShowerGenerator::Undefined)
-            showerGenerator = ShowerGenerator::Nature;
-    }
-    else
-        isData = false;
-}
