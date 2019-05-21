@@ -34,12 +34,13 @@ int main()
     
     datasets.emplace_back(Dataset(Dataset::Type::MC));
     Dataset *d = &datasets.back();
-    d->AddFile(filePrefix + "ttbar-pw_3.1.0_wdo_p1.root", 831.76, 97994442);
-    d->AddFile(filePrefix + "ttbar-pw_3.1.0_wdo_p2.root", 831.76, 97994442);
-    d->AddFile(filePrefix + "ttbar-pw_3.1.0_wdo_p3.root", 831.76, 97994442);
-    d->AddFile(filePrefix + "ttbar-pw_3.1.0_wdo_p4.root", 831.76, 97994442);
-    d->AddFile(filePrefix + "ttbar-pw_3.1.0_wdo_p5.root", 831.76, 97994442);
+    d->AddFile(filePrefix + "ttbar-pw_3.1.0_wdo_p1.root");
+    d->AddFile(filePrefix + "ttbar-pw_3.1.0_wdo_p2.root");
+    d->AddFile(filePrefix + "ttbar-pw_3.1.0_wdo_p3.root");
+    d->AddFile(filePrefix + "ttbar-pw_3.1.0_wdo_p4.root");
+    d->AddFile(filePrefix + "ttbar-pw_3.1.0_wdo_p5.root");
     //^ Only a fraction of available files included here
+    d->SetNormalization(831.76, 97994442);
     
     
     // Triggers

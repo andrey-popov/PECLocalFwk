@@ -8,6 +8,7 @@
 #include <TFile.h>
 #include <TTree.h>
 
+#include <filesystem>
 #include <map>
 #include <memory>
 #include <string>
@@ -133,10 +134,10 @@ private:
     
 private:
     /// Files in the current dataset
-    std::list<Dataset::File> inputFiles;
+    std::list<std::filesystem::path> inputFiles;
     
     /// Iterator pointing to the next file in the dataset
-    std::list<Dataset::File>::const_iterator nextFileIt;
+    std::list<std::filesystem::path>::const_iterator nextFileIt;
     
     /// Currently opened input file
     std::unique_ptr<TFile> curInputFile;

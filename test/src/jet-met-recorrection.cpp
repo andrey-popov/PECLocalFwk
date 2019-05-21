@@ -65,7 +65,8 @@ int main(int argc, char **argv)
     
     // Input dataset
     Dataset dataset(Dataset::Type::MC);
-    dataset.AddFile("../ttbar.root", 831.76, 1000000 /* a dummy value */);
+    dataset.AddFile("../ttbar.root");
+    dataset.SetNormalization(831.76, 1000000 /* a dummy value */);
     
     
     // Processor object

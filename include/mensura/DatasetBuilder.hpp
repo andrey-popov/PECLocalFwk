@@ -24,6 +24,7 @@ namespace Json {
  * a list of fully constructed instances of class Dataset.
  * 
  * Input JSON file should have the following structure:
+ * \code{.json}
  *   [
  *     {
  *       "datasetId": "SingleMuon-Run2016B_320_rjq",
@@ -39,6 +40,7 @@ namespace Json {
  *       "meanWeight": 1.
  *     },
  *   ]
+ * \endcode
  * The first entry is an example for experimental data, the second one is for simulation. Comments
  * are allowed.
  * 

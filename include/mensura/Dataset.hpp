@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <string>
 #include <list>
 #include <unordered_set>
@@ -25,55 +26,6 @@
 class Dataset
 {
 public:
-    /**
-     * \struct File
-     * \brief Aggregates path to a file, cross section, number of events in the parent dataset, and
-     * mean generator-level weight
-     */
-    struct File
-    {
-        /// Default constructor
-        File() noexcept;
-        
-        /**
-         * \brief Constructor from file name only (to be used for real data)
-         * 
-         * This constructor is made explicit in order to avoid ambiguity in Dataset::AddFile.
-         */
-        explicit File(std::string const &name) noexcept;
-        
-        /// Simple initializing constructor
-        File(std::string const &name, double xSec, unsigned long nEvents, double meanWeight = 1.)
-          noexcept;
-        
-        /// Returns file basename with stripped extension
-        std::string GetBaseName() const;
-        
-        /// Returns name of directory containing the file
-        std::string GetDirName() const;
-        
-        /**
-         * \brief Computes event weight to obtain correct normalization in simulation
-         * 
-         * The weight is computed as xSec / (meanWeight * nEvents) and corresponds to normalization
-         * of simulation to an integrated luminosity of 1/pb. The result is meaningless in case of
-         * experimental data.
-         */
-        double GetWeight() const;
-        
-        /// Fully-qualified file name
-        std::string name;
-        
-        /// Cross section in pb
-        double xSec;
-        
-        /// Number of events in the parent dataset
-        unsigned long nEvents;
-        
-        /// Mean generator-leve weight
-        double meanWeight;
-    };
-    
     /**
      * \enum Type
      * \brief A type to distinguish collision data and simulation
@@ -107,29 +59,32 @@ public:
 
 public:
     /**
-     * \brief Adds a new file to the list
+     * \brief Adds a new input file
      * 
      * The file name part of the given path can contain wildcards '*' and '?'. Consult
      * documentation for ExpandPathMask for details.
      */
-    void AddFile(std::string const &path, double xSec, unsigned long nEvents,
-      double meanWeight = 1.);
+    void AddFile(std::filesystem::path const &path);
     
-    /// A short-cut of the above method to be used with data
-    void AddFile(std::string const &path);
-    
-    /**
-     * \brief Adds a new file to the list
-     */
-    void AddFile(File const &file) noexcept;
+    /// Creates a clone of this dataset with an empty file list
+    Dataset CopyParameters() const;
     
     /**
      * \brief Returns the list of the files
      */
-    std::list<File> const &GetFiles() const;
+    std::list<std::filesystem::path> const &GetFiles() const;
     
     /// Returns label that uniquely identifies the source dataset
     std::string const &GetSourceDatasetID() const;
+
+    /**
+     * \brief Computes event weight to obtain correct normalization in simulation
+     * 
+     * The weight is computed as crossSection / (meanWeight * nunEvents) and corresponds to
+     * normalization of simulation to an integrated luminosity of 1/pb. The result is meaningless in
+     * case of real data.
+     */
+    double GetWeight() const;
     
     /**
      * \brief Checks if the dataset corresponds to the simulation and not the real data
@@ -138,9 +93,6 @@ public:
      * if it is undefined, then method returns true.
      */
     bool IsMC() const;
-    
-    /// Creates a clone of this dataset with an empty file list
-    Dataset CopyParameters() const;
     
     /**
      * \brief Sets a flag with given name
@@ -152,6 +104,16 @@ public:
      * intuition.
      */
     void SetFlag(std::string const &flagName);
+
+    /**
+     * \brief Sets normalization for a simulated data set
+     *
+     * \param[in] crossSection  Cross section for the sample, in pb.
+     * \param[in] numEvents     Number of simulated events in the source data set, before any event
+     *     selection.
+     * \param[in] meanWeight    Mean generator-level event weight, before any event selection.
+     */
+    void SetNormalization(double crossSection, unsigned long numEvents, double meanWeight = 1.);
     
     /**
      * \brief Unsets the flag with given name
@@ -175,7 +137,7 @@ private:
      * If the path mask does not contain wildcards, it is returned without modifications. In this
      * case the method does not verify that the file exists.
      */
-    static std::list<std::string> ExpandPathMask(std::string const &path);
+    static std::list<std::filesystem::path> ExpandPathMask(std::filesystem::path const &path);
     
     /**
      * \brief Sets source dataset ID based on the name of the last added file
@@ -186,13 +148,34 @@ private:
     
 private:
     /// Source files
-    std::list<File> files;
+    std::list<std::filesystem::path> files;
     
     /// A label that uniquely identifies the source dataset
     std::string sourceDatasetID;
     
     /// Indicates whether this dataset is data or simulation
     bool isData;
+
+    /**
+     * \brief Cross section, in pb
+     *
+     * Set to zero for real data.
+     */
+    double crossSection;
+    
+    /**
+     * \brief Number of events in the parent dataset
+     *
+     * Set to zero for real data.
+     */
+    unsigned long numEvents;
+    
+    /**
+     * \brief Mean generator-level weight
+     *
+     * Set to zero for real data.
+     */
+    double meanWeight;
     
     /// A facility to emulate user-defined flags
     std::unordered_set<std::string> flags;

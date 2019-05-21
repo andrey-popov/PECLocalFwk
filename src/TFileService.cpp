@@ -46,7 +46,10 @@ void TFileService::BeginRun(Dataset const &dataset)
     auto const substitutionPos = curOutFileName.find("%");
     
     if (substitutionPos != std::string::npos)
-        curOutFileName.replace(substitutionPos, 1, dataset.GetFiles().front().GetBaseName());
+    {
+        curOutFileName.replace(substitutionPos, 1, dataset.GetFiles().front().stem());
+        // Note that outFileName includes the .root extension by construction
+    }
     
     
     // Create the output file

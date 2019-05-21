@@ -147,16 +147,9 @@ std::list<Dataset> DatasetBuilder::Build(std::initializer_list<std::string> cons
         
         
         // Create the dataset
-        if (isData)
-        {
-            Dataset dataset(Dataset::Type::Data, datasetID);
-            
-            for (auto const &filePath: filePaths)
-                dataset.AddFile(filePath);
-            
-            datasets.emplace_back(std::move(dataset));
-        }
-        else
+        Dataset dataset{(isData) ? Dataset::Type::Data : Dataset::Type::MC, datasetID};
+
+        if (not isData)
         {
             // Read information for normalization
             if (not sample.isMember("crossSection") or not sample["crossSection"].isNumeric())
@@ -199,14 +192,13 @@ std::list<Dataset> DatasetBuilder::Build(std::initializer_list<std::string> cons
             }
             
             
-            // Now can create the dataset
-            Dataset dataset(Dataset::Type::MC, datasetID);
-            
-            for (auto const &filePath: filePaths)
-                dataset.AddFile(filePath, crossSection, eventsProcessed, meanWeight);
-            
-            datasets.emplace_back(std::move(dataset));
+            dataset.SetNormalization(crossSection, eventsProcessed, meanWeight);
         }
+
+        for (auto const &filePath: filePaths)
+            dataset.AddFile(filePath);
+        
+        datasets.emplace_back(std::move(dataset));
     }
     
     

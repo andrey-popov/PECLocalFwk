@@ -43,7 +43,7 @@ void PECInputData::BeginRun(Dataset const &dataset)
     if (srcFiles.size() > 1)
         logger << "Error in PECInputData: Currently the class only supports datasets " <<
           "containing a single file, but the given dataset consists of " << srcFiles.size() <<
-          " files. Only first file (\"" << nextFileIt->name << "\") will be processed." << eom;
+          " files. Only first file (" << *nextFileIt << ") will be processed." << eom;
     
     
     // Report an error is the dataset is empty. This does not pose a problem for PECInputData, but
@@ -158,19 +158,19 @@ bool PECInputData::NextInputFile()
     
     // Open the new file and read the tree with event IDs
     ROOTLock::Lock();
-    curInputFile.reset(TFile::Open(nextFileIt->name.c_str()));
+    curInputFile.reset(TFile::Open(nextFileIt->c_str()));
     ROOTLock::Unlock();
         
     if (not curInputFile or curInputFile->IsZombie())
-        throw std::runtime_error("PECInputData::NextInputFile: File \""s + nextFileIt->name +
-         "\" does not exist or is not a valid ROOT file.");
+        throw std::runtime_error("PECInputData::NextInputFile: File "s + nextFileIt->string() +
+         " does not exist or is not a valid ROOT file.");
     
     LoadTree(eventIDTreeName);
     eventIDTree = ExposeTree(eventIDTreeName);
     
     if (not eventIDTree)
-        throw std::runtime_error("PECInputData::NextInputFile: File \""s + nextFileIt->name +
-         "\" does not contain tree \"pecEventID/EventID\".");
+        throw std::runtime_error("PECInputData::NextInputFile: File "s + nextFileIt->string() +
+         " does not contain tree \"pecEventID/EventID\".");
     
     
     // Update the file iterator for subsequent calls

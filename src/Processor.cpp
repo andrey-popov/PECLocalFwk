@@ -274,8 +274,8 @@ Plugin::EventOutcome Processor::ProcessEvent()
 
 void Processor::ProcessDataset(Dataset const &dataset)
 {
-    logger << timestamp << "Start processing source file \"" <<
-     dataset.GetFiles().front().GetBaseName() << ".root\"." << eom;
+    logger << timestamp << "Start processing source file " <<
+     dataset.GetFiles().front() << "." << eom;
     
     OpenDataset(dataset);
     

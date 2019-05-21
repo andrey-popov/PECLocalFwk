@@ -227,8 +227,8 @@ void GenWeightSyst::BeginRun(Dataset const &dataset)
         else
         {
             logging::logger << "Warning in GenWeightSyst[\"" << GetName() << "\"]::BeginRun: "
-              "When starting processing file \"" << dataset.GetFiles().front().name <<
-              "\" (dataset ID \"" << datasetID << "\") mean weights were not found. All "
+              "When starting processing file " << dataset.GetFiles().front() <<
+              " (dataset ID \"" << datasetID << "\") mean weights were not found. All "
               "systematic uncertainties from this plugin will be switched off." << logging::eom;
             
             meanWeightsCurDataset = nullptr;

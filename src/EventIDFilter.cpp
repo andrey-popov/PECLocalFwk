@@ -49,10 +49,7 @@ void EventIDFilter::BeginRun(Dataset const &dataset)
     std::string datasetID;
     
     if (useFileName)
-    {
-        std::string const &fileName = dataset.GetFiles().front().name;
-        datasetID = fileName.substr(fileName.find_last_of('/') + 1);
-    }
+        datasetID = dataset.GetFiles().front().filename();
     else
         datasetID = dataset.GetSourceDatasetID();
     
