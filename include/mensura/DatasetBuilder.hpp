@@ -74,6 +74,19 @@ public:
     {
         return Build({datasetID});
     }
+
+    /**
+     * \brief Constructs an empty data set with metadata set according to the given data set ID
+     *
+     * The returned data set is fully constructed except that its list of input files is empty.
+     */
+    Dataset BuildEmpty(std::string const &datasetID) const;
+
+    /// Returns directory with respect to which paths to input files are resolved
+    std::filesystem::path const &GetBaseDirectory() const
+    {
+        return baseDirectory;
+    }
     
     /// Shortcut for method Build
     std::list<Dataset> operator()(std::initializer_list<std::string> const &datasetIDs) const

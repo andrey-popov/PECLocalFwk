@@ -86,32 +86,12 @@ std::list<Dataset> DatasetBuilder::Build(std::initializer_list<std::string> cons
     
     for (auto const &datasetID: datasetIDs)
     {
-        // Find details for the current dataset ID
-        auto entryIt = dbSamples.find(datasetID);
+        // Construct an empty data set for the current data set ID
+        Dataset dataset = BuildEmpty(datasetID);
+
         
-        if (entryIt == dbSamples.end())
-        {
-            std::ostringstream message;
-            message << "DatasetBuilder::Build: Requested dataset ID \"" << datasetID <<
-              "\" is not found in the database.";
-            throw std::runtime_error(message.str());
-        }
-        
-        auto const &sample = entryIt->second;
-        
-        
-        // Read the type of the dataset and the list of files
-        if (not sample.isMember("isData") or not sample["isData"].isBool())
-        {
-            std::ostringstream message;
-            message << "DatasetBuilder::Build: Entry for dataset ID \"" << datasetID <<
-              "\" does not contain mandatory field \"isData\", or the corresponding value is " <<
-              "not a boolean.";
-            throw std::logic_error(message.str());
-        }
-        
-        bool const isData = sample["isData"].asBool();
-        
+        // Attach input files to the data set
+        auto const &sample = dbSamples.find(datasetID)->second;
         
         if (not sample.isMember("files") or not sample["files"].isArray())
         {
@@ -146,55 +126,6 @@ std::list<Dataset> DatasetBuilder::Build(std::initializer_list<std::string> cons
         }
         
         
-        // Create the dataset
-        Dataset dataset{(isData) ? Dataset::Type::Data : Dataset::Type::MC, datasetID};
-
-        if (not isData)
-        {
-            // Read information for normalization
-            if (not sample.isMember("crossSection") or not sample["crossSection"].isNumeric())
-            {
-                std::ostringstream message;
-                message << "DatasetBuilder::Build: Entry for dataset ID \"" << datasetID <<
-                  "\" does not contain field \"crossSection\", or the corresponding value is "
-                  "not numeric.";
-                throw std::logic_error(message.str());
-            }
-            
-            double const crossSection = sample["crossSection"].asDouble();
-            
-            if (not sample.isMember("eventsProcessed") or
-              not sample["eventsProcessed"].isNumeric())
-            {
-                std::ostringstream message;
-                message << "DatasetBuilder::Build: Entry for dataset ID \"" << datasetID <<
-                  "\" does not contain field \"eventsProcessed\", or the corresponding value is "
-                  "not numeric.";
-                throw std::logic_error(message.str());
-            }
-            
-            unsigned long const eventsProcessed = sample["eventsProcessed"].asLargestUInt();
-            
-            
-            double meanWeight = 1.;
-            
-            if (sample.isMember("meanWeight"))
-            {
-                if (not sample["meanWeight"].isNumeric())
-                {
-                    std::ostringstream message;
-                    message << "DatasetBuilder::Build: Entry for dataset ID \"" << datasetID <<
-                      "\" contains field \"meanWeight\" which is not of a numeric type.";
-                    throw std::logic_error(message.str());
-                }
-                
-                meanWeight = sample["meanWeight"].asDouble();
-            }
-            
-            
-            dataset.SetNormalization(crossSection, eventsProcessed, meanWeight);
-        }
-
         for (auto const &filePath: filePaths)
             dataset.AddFile(filePath);
         
@@ -203,6 +134,89 @@ std::list<Dataset> DatasetBuilder::Build(std::initializer_list<std::string> cons
     
     
     return datasets;
+}
+
+
+Dataset DatasetBuilder::BuildEmpty(std::string const &datasetID) const
+{
+    // Find details for the given data set ID
+    auto const entryIt = dbSamples.find(datasetID);
+    
+    if (entryIt == dbSamples.end())
+    {
+        std::ostringstream message;
+        message << "DatasetBuilder::Build: Requested dataset ID \"" << datasetID <<
+          "\" is not found in the database.";
+        throw std::runtime_error(message.str());
+    }
+    
+    auto const &sample = entryIt->second;
+    
+    
+    // Read the type of the dataset and the list of files
+    if (not sample.isMember("isData") or not sample["isData"].isBool())
+    {
+        std::ostringstream message;
+        message << "DatasetBuilder::Build: Entry for dataset ID \"" << datasetID <<
+          "\" does not contain mandatory field \"isData\", or the corresponding value is " <<
+          "not a boolean.";
+        throw std::logic_error(message.str());
+    }
+    
+    bool const isData = sample["isData"].asBool();
+    
+    
+    // Create the dataset
+    Dataset dataset{(isData) ? Dataset::Type::Data : Dataset::Type::MC, datasetID};
+
+    if (not isData)
+    {
+        // Read information for normalization
+        if (not sample.isMember("crossSection") or not sample["crossSection"].isNumeric())
+        {
+            std::ostringstream message;
+            message << "DatasetBuilder::Build: Entry for dataset ID \"" << datasetID <<
+              "\" does not contain field \"crossSection\", or the corresponding value is "
+              "not numeric.";
+            throw std::logic_error(message.str());
+        }
+        
+        double const crossSection = sample["crossSection"].asDouble();
+        
+        if (not sample.isMember("eventsProcessed") or
+          not sample["eventsProcessed"].isNumeric())
+        {
+            std::ostringstream message;
+            message << "DatasetBuilder::Build: Entry for dataset ID \"" << datasetID <<
+              "\" does not contain field \"eventsProcessed\", or the corresponding value is "
+              "not numeric.";
+            throw std::logic_error(message.str());
+        }
+        
+        unsigned long const eventsProcessed = sample["eventsProcessed"].asLargestUInt();
+        
+        
+        double meanWeight = 1.;
+        
+        if (sample.isMember("meanWeight"))
+        {
+            if (not sample["meanWeight"].isNumeric())
+            {
+                std::ostringstream message;
+                message << "DatasetBuilder::Build: Entry for dataset ID \"" << datasetID <<
+                  "\" contains field \"meanWeight\" which is not of a numeric type.";
+                throw std::logic_error(message.str());
+            }
+            
+            meanWeight = sample["meanWeight"].asDouble();
+        }
+        
+        
+        dataset.SetNormalization(crossSection, eventsProcessed, meanWeight);
+    }
+
+    
+    return dataset;
 }
 
 
