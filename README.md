@@ -15,7 +15,8 @@ The framework uses Boost and [ROOT 6](http://root.cern.ch), and modern C++ compi
 . ./env.sh
 
 mkdir -p build && cd build
-cmake .. && make
+cmake -DCMAKE_BUILD_TYPE=Release ..  # Change build type if needed
+make
 
 cd ../test
 mkdir -p build && cd build
